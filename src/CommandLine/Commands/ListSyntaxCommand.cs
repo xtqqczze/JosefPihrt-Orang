@@ -3,11 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-using System.Xml.Linq;
 using Orang.Syntax;
 using static Orang.Logger;
 
@@ -24,15 +21,7 @@ namespace Orang.CommandLine
 
         protected override CommandResult ExecuteCore(CancellationToken cancellationToken = default)
         {
-            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.Combine("Resources", "RegexSyntax.xml"));
-
-            IEnumerable<SyntaxItem> items = XDocument.Load(path)
-                .Root
-                .Elements()
-                .Select(f => new SyntaxItem(
-                    f.Element("Text").Value,
-                    (SyntaxSection)Enum.Parse(typeof(SyntaxSection), f.Element("Category").Value),
-                    f.Element("Description").Value));
+            IEnumerable<SyntaxItem> items = SyntaxItems.Load();
 
             string filter = Options.Filter;
 

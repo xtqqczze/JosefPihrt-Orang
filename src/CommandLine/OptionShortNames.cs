@@ -15,6 +15,7 @@ namespace Orang.CommandLine
         public const char Input = 'i';
         public const char LineNumber = 'l';
         public const char Name = 'n';
+        public const char Options = 'o';
         public const char Output = 'o';
         public const char Replacement = 'r';
         public const char Section = 's';

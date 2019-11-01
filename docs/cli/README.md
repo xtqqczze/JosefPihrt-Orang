@@ -8,6 +8,7 @@ Search, replace, rename and delete files and its content using the power or \.NE
 * [escape](escape-command.md)
 * [find](find-command.md)
 * [help](help-command.md)
+* [list-patterns](list-patterns-command.md)
 * [list-syntax](list-syntax-command.md)
 * [match](match-command.md)
 * [rename](rename-command.md)
