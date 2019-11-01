@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
@@ -10,6 +16,8 @@ namespace Orang.CommandLine
     internal class FindContentCommand : CommonFindContentCommand<FindCommandOptions>
     {
         private AskMode _askMode;
+        private List<string> _values;
+        private List<string> _fileValues;
         private OutputSymbols _symbols;
         private MatchWriterOptions _fileWriterOptions;
         private MatchWriterOptions _directoryWriterOptions;
@@ -19,6 +27,8 @@ namespace Orang.CommandLine
         }
 
         protected override bool CanExecuteFile => true;
+
+        private List<string> FileValues => _fileValues ?? (_fileValues = new List<string>());
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 
@@ -32,6 +42,9 @@ namespace Orang.CommandLine
 
             if (ConsoleOut.Verbosity >= Verbosity.Minimal)
                 _askMode = Options.AskMode;
+
+            if (Options.ModifyOptions.Aggregate)
+                _values = new List<string>();
 
             base.ExecuteCore(context);
         }
@@ -119,32 +132,52 @@ namespace Orang.CommandLine
             {
                 WriteLine(Verbosity.Minimal);
 
-                MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
-
-                using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, values: null, outputInfo, ask: _askMode == AskMode.Value))
+                if (Options.ContentDisplayStyle == ContentDisplayStyle.Value
+                    && (Options.ModifyOptions.HasAnyOperation))
                 {
-                    WriteMatches(matchWriter, match, context);
-                    telemetry.MatchCount += matchWriter.MatchCount;
+                    EnumerateValues();
 
-                    if (matchWriter.MatchingLineCount >= 0)
+                    ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
+                    ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
+
+                    var valueWriter = new ValueWriter(writerOptions.Indent, includeEndingIndent: false);
+
+                    foreach (string value in FileValues.Modify(Options.ModifyOptions))
                     {
-                        if (telemetry.MatchingLineCount == -1)
-                            telemetry.MatchingLineCount = 0;
-
-                        telemetry.MatchingLineCount += matchWriter.MatchingLineCount;
+                        valueWriter.Write(value, Symbols, colors, boundaryColors);
+                        WriteLine(Verbosity.Normal);
+                        telemetry.MatchCount++;
                     }
+                }
+                else
+                {
+                    MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
 
-                    if (_askMode == AskMode.Value)
+                    using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _values, outputInfo, ask: _askMode == AskMode.Value))
                     {
-                        if (matchWriter is AskValueMatchWriter askValueMatchWriter)
+                        WriteMatches(matchWriter, match, context);
+                        telemetry.MatchCount += matchWriter.MatchCount;
+
+                        if (matchWriter.MatchingLineCount >= 0)
                         {
-                            if (!askValueMatchWriter.Ask)
-                                _askMode = AskMode.None;
+                            if (telemetry.MatchingLineCount == -1)
+                                telemetry.MatchingLineCount = 0;
+
+                            telemetry.MatchingLineCount += matchWriter.MatchingLineCount;
                         }
-                        else if (matchWriter is AskLineMatchWriter askLineMatchWriter)
+
+                        if (_askMode == AskMode.Value)
                         {
-                            if (!askLineMatchWriter.Ask)
-                                _askMode = AskMode.None;
+                            if (matchWriter is AskValueMatchWriter askValueMatchWriter)
+                            {
+                                if (!askValueMatchWriter.Ask)
+                                    _askMode = AskMode.None;
+                            }
+                            else if (matchWriter is AskLineMatchWriter askLineMatchWriter)
+                            {
+                                if (!askLineMatchWriter.Ask)
+                                    _askMode = AskMode.None;
+                            }
                         }
                     }
                 }
@@ -152,6 +185,9 @@ namespace Orang.CommandLine
             else
             {
                 int fileMatchCount = EnumerateValues();
+
+                if (Options.ModifyOptions.HasAnyOperation)
+                    fileMatchCount = FileValues.Modify(Options.ModifyOptions).Count();
 
                 Write(" ", Colors.Message_OK, Verbosity.Minimal);
                 WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
@@ -162,11 +198,20 @@ namespace Orang.CommandLine
 
             int EnumerateValues()
             {
-                using (var matchWriter = new EmptyMatchWriter(null, writerOptions))
+                if (Options.ModifyOptions.Aggregate
+                    || Options.ModifyOptions.HasAnyOperation)
+                {
+                    FileValues.Clear();
+                }
+
+                using (var matchWriter = new EmptyMatchWriter(null, writerOptions, FileValues))
                 {
                     WriteMatches(matchWriter, match, context);
 
-                    if (matchWriter.MatchingLineCount >= 0)
+                    _values?.AddRange(FileValues);
+
+                    if (matchWriter.MatchingLineCount >= 0
+                        && !Options.ModifyOptions.HasAnyOperation)
                     {
                         if (telemetry.MatchingLineCount == -1)
                             telemetry.MatchingLineCount = 0;
@@ -181,6 +226,67 @@ namespace Orang.CommandLine
 
         protected override void WriteSummary(SearchTelemetry telemetry)
         {
+            if (_values != null)
+            {
+                int count = 0;
+
+                IEnumerable<string> values = _values.Modify(Options.ModifyOptions);
+
+                ImmutableArray<string> paths = Options.ModifyOptions.OutputPaths;
+
+                if (paths.Any())
+                    values = values.ToList();
+
+                using (IEnumerator<string> en = values.GetEnumerator())
+                {
+                    if (en.MoveNext())
+                    {
+                        OutputSymbols symbols = OutputSymbols.Create(Options.HighlightOptions);
+                        ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
+                        ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
+                        var valueWriter = new ValueWriter(includeEndingIndent: false, verbosity: Verbosity.Quiet);
+
+                        WriteLine();
+
+                        do
+                        {
+                            valueWriter.Write(en.Current, symbols, colors, boundaryColors);
+                            WriteLine();
+                            count++;
+
+                        } while (en.MoveNext());
+
+                        WriteLine();
+                        WriteCount("Values", count);
+                        WriteLine();
+                    }
+                }
+
+                foreach (string path in paths)
+                {
+                    StreamWriter writer = null;
+
+                    try
+                    {
+                        WriteLine($"Saving '{path}'", Verbosity.Diagnostic);
+
+                        writer = new StreamWriter(path, false, Encoding.UTF8);
+
+                        foreach (string value in values)
+                            writer.WriteLine(value);
+                    }
+                    catch (Exception ex) when (ex is IOException
+                        || ex is UnauthorizedAccessException)
+                    {
+                        WriteWarning(ex);
+                    }
+                    finally
+                    {
+                        writer?.Dispose();
+                    }
+                }
+            }
+
             WriteSearchedFilesAndDirectories(telemetry, Options.SearchTarget);
 
             if (!ShouldLog(Verbosity.Minimal))

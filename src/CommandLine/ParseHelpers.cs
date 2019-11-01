@@ -15,6 +15,85 @@ namespace Orang.CommandLine
 {
     internal static class ParseHelpers
     {
+        public static bool TryParseModifyOptions(
+            IEnumerable<string> values,
+            string optionName,
+            out ModifyOptions modifyOptions)
+        {
+            modifyOptions = null;
+
+            Func<IEnumerable<string>, IEnumerable<string>> modify = null;
+            List<string> options = null;
+            List<string> outputPaths = null;
+
+            foreach (string value in values)
+            {
+                int index = value.IndexOf('=');
+
+                if (index >= 0)
+                {
+                    string key = value.Substring(0, index);
+                    string value2 = value.Substring(index + 1);
+
+                    if (OptionValues.Output.IsKeyOrShortKey(key))
+                    {
+                        if (!TryEnsureFullPath(value2, out string path))
+                            return false;
+
+                        (outputPaths ?? (outputPaths = new List<string>())).Add(path);
+                    }
+                    else if (OptionValues.Method.IsKeyOrShortKey(key))
+                    {
+                        if (!DelegateFactory.TryCreate(value2, new Type[] { typeof(IEnumerable<string>) }, out modify))
+                            return false;
+                    }
+                    else
+                    {
+                        string helpText = OptionValueProviders.ModifyFlagsProvider.GetHelpText();
+                        WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    (options ?? (options = new List<string>())).Add(value);
+                }
+            }
+
+            var modifyFlags = ModifyFlags.None;
+
+            if (options != null
+                && !TryParseAsEnumFlags(options, optionName, out modifyFlags, provider: OptionValueProviders.ModifyFlagsProvider))
+            {
+                return false;
+            }
+
+            if (modifyFlags != ModifyFlags.None)
+            {
+                modifyOptions = new ModifyOptions(
+                    distinct: (modifyFlags & ModifyFlags.Distinct) != 0,
+                    sort: (modifyFlags & ModifyFlags.Sort) != 0,
+                    sortDescending: (modifyFlags & ModifyFlags.SortDescending) != 0,
+                    removeEmpty: (modifyFlags & ModifyFlags.RemoveEmpty) != 0,
+                    removeWhiteSpace: (modifyFlags & ModifyFlags.RemoveWhiteSpace) != 0,
+                    trimStart: (modifyFlags & ModifyFlags.TrimStart) != 0,
+                    trimEnd: (modifyFlags & ModifyFlags.TrimEnd) != 0,
+                    toLower: (modifyFlags & ModifyFlags.ToLower) != 0,
+                    toUpper: (modifyFlags & ModifyFlags.ToUpper) != 0,
+                    aggregate: (modifyFlags & ModifyFlags.Aggregate) != 0,
+                    ignoreCase: (modifyFlags & ModifyFlags.IgnoreCase) != 0,
+                    cultureInvariant: (modifyFlags & ModifyFlags.CultureInvariant) != 0,
+                    modify: modify,
+                    outputPaths: outputPaths);
+            }
+            else
+            {
+                modifyOptions = ModifyOptions.Default;
+            }
+
+            return true;
+        }
+
         public static bool TryParseFileLogOptions(
             IEnumerable<string> values,
             string optionName,

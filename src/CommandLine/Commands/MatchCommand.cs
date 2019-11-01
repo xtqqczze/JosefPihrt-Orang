@@ -51,12 +51,20 @@ namespace Orang.CommandLine
             WriteGroups(matchData.GroupDefinitions);
             WriteLine(Verbosity.Minimal);
 
-            WriteCount("Matches", matchData.Count, Colors.Message_OK, Verbosity.Minimal);
-
-            if (count != matchData.Count)
+            if (Options.ContentDisplayStyle == ContentDisplayStyle.Value
+                && Options.ModifyOptions.HasAnyOperation)
             {
-                Write("  ", Colors.Message_OK, Verbosity.Minimal);
-                WriteCount("Captures", count, Colors.Message_OK, Verbosity.Minimal);
+                WriteCount("Values", count, Colors.Message_OK, Verbosity.Minimal);
+            }
+            else
+            {
+                WriteCount("Matches", matchData.Count, Colors.Message_OK, Verbosity.Minimal);
+
+                if (count != matchData.Count)
+                {
+                    Write("  ", Colors.Message_OK, Verbosity.Minimal);
+                    WriteCount("Captures", count, Colors.Message_OK, Verbosity.Minimal);
+                }
             }
 
             WriteLine(Verbosity.Minimal);

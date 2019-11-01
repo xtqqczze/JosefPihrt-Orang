@@ -33,6 +33,13 @@ namespace Orang.CommandLine
         [OptionValueProvider(OptionValueProviderNames.FindHighlightOptions)]
         public IEnumerable<string> Highlight { get; set; }
 
+        // --modify bez aggregate a bez --format value nic nedělá
+        // --modify > --modify-values, --value-list, --values
+        [Option(longName: OptionNames.Modify,
+            HelpText = "",
+            MetaValue = MetaValues.ModifyOptions)]
+        public IEnumerable<string> Modify { get; set; }
+
         public bool TryParse(ref FindCommandOptions options)
         {
             var baseOptions = (CommonFindContentCommandOptions)options;
@@ -81,6 +88,10 @@ namespace Orang.CommandLine
                 contentDisplayStyle = (askMode == AskMode.Value) ? ContentDisplayStyle.Value : ContentDisplayStyle.Line;
             }
 
+            if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
+                return false;
+
+            options.ModifyOptions = modifyOptions;
             options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, lineOptions: LineDisplayOptions);
             options.AskMode = askMode;
             options.HighlightOptions = highlightOptions;

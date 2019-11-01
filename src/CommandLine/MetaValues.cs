@@ -15,6 +15,7 @@ namespace Orang.CommandLine
         public const string Input = "<INPUT>";
         public const string LogOptions = "<LOG_OPTIONS>";
         public const string MaxOptions = "<MAX_OPTIONS>";
+        public const string ModifyOptions = "<MODIFY_OPTIONS>";
         public const string NamePart = "<NAME_PART>";
         public const string PatternOptions = "<PATTERN_OPTIONS>";
         public const string Regex = "<REGEX>";

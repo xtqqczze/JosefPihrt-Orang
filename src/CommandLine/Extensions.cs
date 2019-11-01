@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Orang
@@ -41,6 +43,72 @@ namespace Orang
                 if ((options & RegexOptions.CultureInvariant) != 0)
                     yield return RegexOptions.CultureInvariant;
             }
+        }
+
+        public static IEnumerable<string> Modify(
+            this IEnumerable<string> values,
+            ModifyOptions options)
+        {
+            StringComparer comparer;
+            if (options.IgnoreCase)
+            {
+                comparer = (options.CultureInvariant)
+                    ? StringComparer.InvariantCultureIgnoreCase
+                    : StringComparer.CurrentCultureIgnoreCase;
+            }
+            else
+            {
+                comparer = (options.CultureInvariant)
+                    ? StringComparer.InvariantCulture
+                    : StringComparer.CurrentCulture;
+            }
+
+            if (options.Sort)
+            {
+                values = values.OrderBy(f => f, comparer);
+            }
+            else if (options.SortDescending)
+            {
+                values = values.OrderByDescending(f => f, comparer);
+            }
+
+            if (options.Distinct)
+                values = values.Distinct(comparer);
+
+            if (options.RemoveEmpty)
+                values = values.Where(f => !string.IsNullOrEmpty(f));
+
+            if (options.RemoveWhiteSpace)
+                values = values.Where(f => !string.IsNullOrWhiteSpace(f));
+
+            if (options.Trim)
+            {
+                values = values.Select(f => f.Trim());
+            }
+            else if (options.TrimStart)
+            {
+                values = values.Select(f => f.TrimStart());
+            }
+            else if (options.TrimEnd)
+            {
+                values = values.Select(f => f.TrimEnd());
+            }
+
+            if (options.ToLower)
+            {
+                values = values.Select(f => f.ToLower((options.CultureInvariant) ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture));
+            }
+            else if (options.ToUpper)
+            {
+                values = values.Select(f => f.ToUpper((options.CultureInvariant) ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture));
+            }
+
+            if (options.Modify != null)
+            {
+                values = options.Modify(values);
+            }
+
+            return values;
         }
 
         public static int CountMatches(this Match match)

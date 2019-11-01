@@ -134,6 +134,24 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(SyntaxSection.Substitutions)
         );
 
+        public static OptionValueProvider ModifyFlagsProvider { get; } = new OptionValueProvider(MetaValues.ModifyOptions,
+            OptionValues.Method,
+            OptionValues.Output,
+            SimpleOptionValue.Create(ModifyFlags.Aggregate, description: "Display list of all values at the end of search."),
+            SimpleOptionValue.Create(ModifyFlags.CultureInvariant, shortValue: "ci", helpValue: "[c]ulture-[i]nvariant", description: "Ignore cultural differences between languages."),
+            SimpleOptionValue.Create(ModifyFlags.Distinct, description: "Return distinct values."),
+            SimpleOptionValue.Create(ModifyFlags.IgnoreCase, description: "Use case-insensitive matching."),
+            SimpleOptionValue.Create(ModifyFlags.RemoveEmpty, shortValue: "re", helpValue: "[r]emove-[e]mpty", description: "Remove values that are empty strings."),
+            SimpleOptionValue.Create(ModifyFlags.RemoveWhiteSpace, shortValue: "rw", helpValue: "[r]emove-[w]hitespace", description: "Remove values that are empty or consist of white-space."),
+            SimpleOptionValue.Create(ModifyFlags.Sort, description: "Sort values in an ascending order."),
+            SimpleOptionValue.Create(ModifyFlags.SortDescending, shortValue: "sd", helpValue: "[s]ort-[d]escending", description: "Sort values in a descending order."),
+            SimpleOptionValue.Create(ModifyFlags.ToLower, shortValue: "tl", description: "Convert value to lowercase."),
+            SimpleOptionValue.Create(ModifyFlags.ToUpper, shortValue: "tu", description: "Convert value to uppercase."),
+            SimpleOptionValue.Create(ModifyFlags.Trim, description: "Trim leading and trailing white-space."),
+            SimpleOptionValue.Create(ModifyFlags.TrimEnd, shortValue: "te", description: "Trim trailing white-space."),
+            SimpleOptionValue.Create(ModifyFlags.TrimStart, shortValue: "ts", description: "Trim leading white-space.")
+        );
+
         public static OptionValueProvider HighlightOptionsProvider { get; } = new OptionValueProvider(MetaValues.Highlight,
             SimpleOptionValue.Create(HighlightOptions.None, description: "No highlighting."),
             SimpleOptionValue.Create(HighlightOptions.Match, description: "Highlight match value."),

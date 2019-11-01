@@ -51,7 +51,7 @@ namespace Orang.CommandLine
             WriteLine(Verbosity.Minimal);
 
             WriteCount(
-                "Splits",
+                (Options.ContentDisplayStyle == ContentDisplayStyle.Value && Options.ModifyOptions.HasAnyOperation) ? "Values" : "Splits",
                 count,
                 Colors.Message_OK,
                 Verbosity.Minimal);

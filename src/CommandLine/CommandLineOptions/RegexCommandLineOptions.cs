@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using CommandLine;
 using static Orang.CommandLine.ParseHelpers;
@@ -25,6 +26,11 @@ namespace Orang.CommandLine
             HelpText = "Text to search.",
             MetaValue = MetaValues.Input)]
         public string Input { get; set; }
+
+        [Option(longName: OptionNames.Modify,
+            HelpText = "",
+            MetaValue = MetaValues.ModifyOptions)]
+        public IEnumerable<string> Modify { get; set; }
 
         [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
             HelpText = "Path to a file that should store results.",
@@ -79,6 +85,10 @@ namespace Orang.CommandLine
             if (!TryParseAsEnum(ContentDisplay, OptionNames.ContentDisplay, out ContentDisplayStyle contentDisplayStyle, ContentDisplayStyle.Value, provider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines))
                 return false;
 
+            if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
+                return false;
+
+            options.ModifyOptions = modifyOptions;
             options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle);
             options.Input = input;
             options.OutputPath = outputPath;
