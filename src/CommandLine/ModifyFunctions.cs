@@ -11,6 +11,7 @@ namespace Orang
         Distinct = 1,
         Sort = 1 << 1,
         SortDescending = 1 << 2,
+        Enumerable = Distinct | Sort | SortDescending,
         RemoveEmpty = 1 << 3,
         RemoveWhiteSpace = 1 << 4,
         TrimStart = 1 << 5,

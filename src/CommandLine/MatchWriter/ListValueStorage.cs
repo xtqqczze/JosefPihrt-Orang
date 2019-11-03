@@ -22,10 +22,5 @@ namespace Orang.CommandLine
         {
             Values.Add(value);
         }
-
-        public void AddRange(IEnumerable<string> values)
-        {
-            Values.AddRange(values);
-        }
     }
 }

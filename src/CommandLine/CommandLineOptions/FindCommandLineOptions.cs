@@ -33,8 +33,6 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Path)]
         public string Output { get; set; }
 
-        // --modify bez aggregate a bez --format value nic nedělá
-        // --modify > --modify-values, --value-list, --values
         [Option(longName: OptionNames.Modify,
             HelpText = "",
             MetaValue = MetaValues.ModifyOptions)]
@@ -99,6 +97,10 @@ namespace Orang.CommandLine
 
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;
+
+            //TODO: ?
+            if (modifyOptions.HasAnyFunction)
+                contentDisplayStyle = ContentDisplayStyle.Value;
 
             options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, pathDisplayStyle: pathDisplayStyle, lineOptions: LineDisplayOptions);
             options.ModifyOptions = modifyOptions;

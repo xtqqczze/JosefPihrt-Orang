@@ -67,6 +67,8 @@ namespace Orang.CommandLine
 
                                 valueWriter.WriteMatch(en.Current, symbols);
 
+                                output?.WriteLine(en.Current);
+
                                 count++;
 
                                 if (en.MoveNext())
@@ -119,7 +121,7 @@ namespace Orang.CommandLine
                                         omitMatchInfo,
                                         omitGroupInfo));
 
-                                output?.WriteLine(captureItem.Value);
+                                    output?.WriteLine(captureItem.Value);
                                 }
 
                                 valueWriter.WriteMatch(captureItem.Value, symbols);
@@ -197,6 +199,9 @@ namespace Orang.CommandLine
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 valueWriter.WriteSplit(en.Current, symbols, splitColors, boundaryColors);
+
+                                output?.WriteLine(en.Current);
+
                                 count++;
 
                                 if (en.MoveNext())
@@ -238,7 +243,7 @@ namespace Orang.CommandLine
 
                                 valueWriter.WriteSplit(item.Value, symbols, splitColors, boundaryColors);
 
-                            output?.WriteLine(item.Value);
+                                output?.WriteLine(item.Value);
 
                                 if (en.MoveNext())
                                 {

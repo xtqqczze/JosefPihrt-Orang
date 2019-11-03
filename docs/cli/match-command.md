@@ -11,6 +11,7 @@ orang match [<PATH>]
 [-h|--highlight] <HIGHLIGHT>
 [   --input]     <INPUT>
 [   --max-count] <NUMBER>
+[   --modify]    <MODIFY_OPTIONS>
 [-o|--output]    <PATH>
 [-v|--verbosity] <VERBOSITY>
 [   --file-log]  <FILE_LOG>
@@ -43,6 +44,10 @@ Text to search\.
 **`[--max-count] <NUMBER>`**
 
 Maximum number of matches returned\.
+
+**`[--modify] <MODIFY_OPTIONS>`**
+
+Allowed values are \[m\]ethod=\<METHOD>, \[o\]utput=\<PATH>, \[a\]ggregate, \[c\]ulture\-\[i\]nvariant, \[d\]istinct, \[i\]gnore\-case, \[r\]emove\-\[e\]mpty, \[r\]emove\-\[w\]hitespace, \[s\]ort, \[s\]ort\-\[d\]escending, \[tl\] to\-lower, \[tu\] to\-upper, \[t\]rim, \[te\] trim\-end and \[ts\] trim\-start\.
 
 **`[-o|--output] <PATH>`**
 

@@ -23,6 +23,8 @@ namespace Orang.CommandLine
 
         protected virtual bool CanExecuteFile => false;
 
+        protected virtual bool OmitSummary => false;
+
         private ProgressReporterMode ReporterMode
         {
             get
@@ -79,6 +81,9 @@ namespace Orang.CommandLine
                 writer?.Dispose();
             }
 
+            if (!OmitSummary)
+                WriteSummary(context.Telemetry);
+
             return (context?.Telemetry.MatchingFileCount > 0) ? CommandResult.Success : CommandResult.NoSuccess;
         }
 
@@ -104,11 +109,7 @@ namespace Orang.CommandLine
 
             stopwatch.Stop();
 
-            SearchTelemetry telemetry = context.Telemetry;
-
-            telemetry.Elapsed = stopwatch.Elapsed;
-
-            WriteSummary(telemetry);
+            context.Telemetry.Elapsed = stopwatch.Elapsed;
         }
 
         private void ExecuteCore(string path, SearchContext context)

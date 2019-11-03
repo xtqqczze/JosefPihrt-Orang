@@ -97,6 +97,10 @@ namespace Orang.CommandLine
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;
 
+            //TODO: ?
+            if (modifyOptions.HasAnyFunction)
+                contentDisplayStyle = ContentDisplayStyle.Value;
+
             options.ModifyOptions = modifyOptions;
             options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle);
             options.Input = input;

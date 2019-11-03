@@ -108,11 +108,11 @@ namespace Orang
 
             if ((functions & ModifyFunctions.Sort) != 0)
             {
-                values = values.OrderBy(f => f, comparer);
+                return values.OrderBy(f => f, comparer);
             }
             else if ((functions & ModifyFunctions.SortDescending) != 0)
             {
-                values = values.OrderByDescending(f => f, comparer);
+                return values.OrderByDescending(f => f, comparer);
             }
 
             return values;

@@ -11,6 +11,7 @@ orang split [<PATH>]
 [-h|--highlight] <HIGHLIGHT>
 [   --input]     <INPUT>
 [   --max-count] <NUMBER>
+[   --modify]    <MODIFY_OPTIONS>
 [   --no-groups]
 [-o|--output]    <PATH>
 [-v|--verbosity] <VERBOSITY>
@@ -44,6 +45,10 @@ Text to search\.
 **`[--max-count] <NUMBER>`**
 
 Maximum number of times the split can occur\.
+
+**`[--modify] <MODIFY_OPTIONS>`**
+
+Allowed values are \[m\]ethod=\<METHOD>, \[o\]utput=\<PATH>, \[a\]ggregate, \[c\]ulture\-\[i\]nvariant, \[d\]istinct, \[i\]gnore\-case, \[r\]emove\-\[e\]mpty, \[r\]emove\-\[w\]hitespace, \[s\]ort, \[s\]ort\-\[d\]escending, \[tl\] to\-lower, \[tu\] to\-upper, \[t\]rim, \[te\] trim\-end and \[ts\] trim\-start\.
 
 **`[--no-groups]`**
 

@@ -17,6 +17,7 @@ orang find [<PATH>]
 [-i|--include-directory]  <REGEX>
 [-l|--line-number]
 [   --max-count]          <MAX_OPTIONS>
+[   --modify]             <MODIFY_OPTIONS>
 [-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <PATH>
@@ -76,6 +77,10 @@ Include line number\.
 **`[--max-count] <MAX_OPTIONS>`**
 
 Stop searching after specified number is reached\. Allowed values are \[m\]atches=\<NUM>, \[m\]atches\-\[i\]n\-\[f\]ile and \[m\]atching\-\[f\]iles\.
+
+**`[--modify] <MODIFY_OPTIONS>`**
+
+Allowed values are \[m\]ethod=\<METHOD>, \[o\]utput=\<PATH>, \[a\]ggregate, \[c\]ulture\-\[i\]nvariant, \[d\]istinct, \[i\]gnore\-case, \[r\]emove\-\[e\]mpty, \[r\]emove\-\[w\]hitespace, \[s\]ort, \[s\]ort\-\[d\]escending, \[tl\] to\-lower, \[tu\] to\-upper, \[t\]rim, \[te\] trim\-end and \[ts\] trim\-start\.
 
 **`[-n|--name] <REGEX>`**
 

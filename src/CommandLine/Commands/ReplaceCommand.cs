@@ -23,6 +23,8 @@ namespace Orang.CommandLine
 
         protected override bool CanExecuteFile => true;
 
+        protected override bool OmitSummary => Options.Input != null;
+
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 
         private MatchEvaluator MatchEvaluator => _matchEvaluator ?? (_matchEvaluator = Options.MatchEvaluator ?? new MatchEvaluator(f => f.Result(Options.Replacement)));
