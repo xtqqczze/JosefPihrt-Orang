@@ -24,7 +24,6 @@ namespace Orang.CommandLine
 
             Func<IEnumerable<string>, IEnumerable<string>> modify = null;
             List<string> options = null;
-            List<string> outputPaths = null;
 
             foreach (string value in values)
             {
@@ -35,14 +34,7 @@ namespace Orang.CommandLine
                     string key = value.Substring(0, index);
                     string value2 = value.Substring(index + 1);
 
-                    if (OptionValues.Output.IsKeyOrShortKey(key))
-                    {
-                        if (!TryEnsureFullPath(value2, out string path))
-                            return false;
-
-                        (outputPaths ?? (outputPaths = new List<string>())).Add(path);
-                    }
-                    else if (OptionValues.Method.IsKeyOrShortKey(key))
+                    if (OptionValues.Method.IsKeyOrShortKey(key))
                     {
                         if (!DelegateFactory.TryCreate(value2, new Type[] { typeof(IEnumerable<string>) }, out modify))
                             return false;
@@ -68,23 +60,43 @@ namespace Orang.CommandLine
                 return false;
             }
 
+            var functions = ModifyFunctions.None;
+
+            if ((modifyFlags & ModifyFlags.Distinct) != 0)
+                functions |= ModifyFunctions.Distinct;
+
+            if ((modifyFlags & ModifyFlags.Sort) != 0)
+                functions |= ModifyFunctions.Sort;
+
+            if ((modifyFlags & ModifyFlags.SortDescending) != 0)
+                functions |= ModifyFunctions.SortDescending;
+
+            if ((modifyFlags & ModifyFlags.RemoveEmpty) != 0)
+                functions |= ModifyFunctions.RemoveEmpty;
+
+            if ((modifyFlags & ModifyFlags.RemoveWhiteSpace) != 0)
+                functions |= ModifyFunctions.RemoveWhiteSpace;
+
+            if ((modifyFlags & ModifyFlags.TrimStart) != 0)
+                functions |= ModifyFunctions.TrimStart;
+
+            if ((modifyFlags & ModifyFlags.TrimEnd) != 0)
+                functions |= ModifyFunctions.TrimEnd;
+
+            if ((modifyFlags & ModifyFlags.ToLower) != 0)
+                functions |= ModifyFunctions.ToLower;
+
+            if ((modifyFlags & ModifyFlags.ToUpper) != 0)
+                functions |= ModifyFunctions.ToUpper;
+
             if (modifyFlags != ModifyFlags.None)
             {
                 modifyOptions = new ModifyOptions(
-                    distinct: (modifyFlags & ModifyFlags.Distinct) != 0,
-                    sort: (modifyFlags & ModifyFlags.Sort) != 0,
-                    sortDescending: (modifyFlags & ModifyFlags.SortDescending) != 0,
-                    removeEmpty: (modifyFlags & ModifyFlags.RemoveEmpty) != 0,
-                    removeWhiteSpace: (modifyFlags & ModifyFlags.RemoveWhiteSpace) != 0,
-                    trimStart: (modifyFlags & ModifyFlags.TrimStart) != 0,
-                    trimEnd: (modifyFlags & ModifyFlags.TrimEnd) != 0,
-                    toLower: (modifyFlags & ModifyFlags.ToLower) != 0,
-                    toUpper: (modifyFlags & ModifyFlags.ToUpper) != 0,
+                    functions: functions,
                     aggregate: (modifyFlags & ModifyFlags.Aggregate) != 0,
                     ignoreCase: (modifyFlags & ModifyFlags.IgnoreCase) != 0,
                     cultureInvariant: (modifyFlags & ModifyFlags.CultureInvariant) != 0,
-                    modify: modify,
-                    outputPaths: outputPaths);
+                    modify: modify);
             }
             else
             {
@@ -92,6 +104,89 @@ namespace Orang.CommandLine
             }
 
             return true;
+        }
+
+        public static bool TryParseDisplay(
+            IEnumerable<string> values,
+            string optionName,
+            out ContentDisplayStyle contentDisplayStyle,
+            out PathDisplayStyle pathDisplayStyle,
+            ContentDisplayStyle defaultContentDisplayStyle,
+            PathDisplayStyle defaultPathDisplayStyle,
+            OptionValueProvider contentDisplayStyleProvider = null,
+            OptionValueProvider pathDisplayStyleProvider = null)
+        {
+            if (!TryParseDisplay(
+                values: values,
+                optionName: optionName,
+                contentDisplayStyle: out ContentDisplayStyle? contentDisplayStyle2,
+                pathDisplayStyle: out PathDisplayStyle? pathDisplayStyle2,
+                contentDisplayStyleProvider: contentDisplayStyleProvider,
+                pathDisplayStyleProvider: pathDisplayStyleProvider))
+            {
+                contentDisplayStyle = 0;
+                pathDisplayStyle = 0;
+                return false;
+            }
+
+            contentDisplayStyle = contentDisplayStyle2 ?? defaultContentDisplayStyle;
+            pathDisplayStyle = pathDisplayStyle2 ?? defaultPathDisplayStyle;
+            return true;
+        }
+
+        public static bool TryParseDisplay(
+            IEnumerable<string> values,
+            string optionName,
+            out ContentDisplayStyle? contentDisplayStyle,
+            out PathDisplayStyle? pathDisplayStyle,
+            OptionValueProvider contentDisplayStyleProvider = null,
+            OptionValueProvider pathDisplayStyleProvider = null)
+        {
+            contentDisplayStyle = null;
+            pathDisplayStyle = null;
+
+            foreach (string value in values)
+            {
+                int index = value.IndexOf('=');
+
+                if (index >= 0)
+                {
+                    string key = value.Substring(0, index);
+                    string value2 = value.Substring(index + 1);
+
+                    if (OptionValues.Content.IsKeyOrShortKey(key))
+                    {
+                        if (!TryParseAsEnum(value2, optionName, out ContentDisplayStyle contentDisplayStyle2, provider: contentDisplayStyleProvider))
+                            return false;
+
+                        contentDisplayStyle = contentDisplayStyle2;
+                    }
+                    else if (OptionValues.Path.IsKeyOrShortKey(key))
+                    {
+                        if (!TryParseAsEnum(value2, optionName, out PathDisplayStyle pathDisplayStyle2, provider: pathDisplayStyleProvider))
+                            return false;
+
+                        pathDisplayStyle = pathDisplayStyle2;
+                    }
+                    else
+                    {
+                        ThrowException(value);
+                    }
+                }
+                else
+                {
+                    ThrowException(value);
+                }
+            }
+
+            return true;
+
+            void ThrowException(string value)
+            {
+                string helpText = (OptionValueProviders.DisplayProvider ?? OptionValueProviders.PatternOptionsProvider).GetHelpText();
+
+                throw new ArgumentException($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.", nameof(values));
+            }
         }
 
         public static bool TryParseFileLogOptions(

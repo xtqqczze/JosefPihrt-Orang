@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
@@ -16,11 +12,10 @@ namespace Orang.CommandLine
     internal class FindContentCommand : CommonFindContentCommand<FindCommandOptions>
     {
         private AskMode _askMode;
-        private List<string> _values;
-        private List<string> _fileValues;
+        private IValueStorage _values;
+        private IValueStorage _fileValues;
+        private List<string> _fileValueList;
         private OutputSymbols _symbols;
-        private MatchWriterOptions _fileWriterOptions;
-        private MatchWriterOptions _directoryWriterOptions;
 
         public FindContentCommand(FindCommandOptions options) : base(options)
         {
@@ -28,13 +23,11 @@ namespace Orang.CommandLine
 
         protected override bool CanExecuteFile => true;
 
-        private List<string> FileValues => _fileValues ?? (_fileValues = new List<string>());
+        private IValueStorage FileValues => _fileValues ?? (_fileValues = new ListValueStorage(FileValueList));
+
+        private List<string> FileValueList => _fileValueList ?? (_fileValueList = new List<string>());
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
-
-        private MatchWriterOptions FileWriterOptions => _fileWriterOptions ?? (_fileWriterOptions = CreateMatchWriteOptions(Options.Indent));
-
-        private MatchWriterOptions DirectoryWriterOptions => _directoryWriterOptions ?? (_directoryWriterOptions = CreateMatchWriteOptions(Options.DoubleIndent));
 
         protected override void ExecuteCore(SearchContext context)
         {
@@ -44,9 +37,18 @@ namespace Orang.CommandLine
                 _askMode = Options.AskMode;
 
             if (Options.ModifyOptions.Aggregate)
-                _values = new List<string>();
+            {
+                _values = new ListValueStorage();
+            }
+            else if (Options.OutputPath != null)
+            {
+                _values = new TextWriterValueStorage(context.Output);
+            }
 
             base.ExecuteCore(context);
+
+            if (Options.ModifyOptions.Aggregate)
+                WriteAggregatedValues(context);
         }
 
         protected override void ExecuteFile(string filePath, SearchContext context)
@@ -61,7 +63,9 @@ namespace Orang.CommandLine
 
                 if (Options.ContentFilter.IsMatch(match))
                 {
-                    WritePath(filePath, colors: Colors.Matched_Path, verbosity: Verbosity.Minimal);
+                    if (!Options.OmitPath)
+                        WritePath(filePath, colors: Colors.Matched_Path, verbosity: Verbosity.Minimal);
+
                     WriteMatches(input, match, FileWriterOptions, context);
 
                     if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
@@ -73,12 +77,12 @@ namespace Orang.CommandLine
         protected override void ExecuteDirectory(string directoryPath, SearchContext context, FileSystemFinderProgressReporter progress)
         {
             Regex regex = Options.ContentFilter.Regex;
-
-            string basePath = (Options.Format.Includes(MiscellaneousDisplayOptions.IncludeFullPath)) ? null : directoryPath;
+            string basePath = (Options.PathDisplayStyle == PathDisplayStyle.Full) ? null : directoryPath;
+            string indent = (Options.PathDisplayStyle == PathDisplayStyle.Relative) ? Options.Indent : "";
 
             foreach (FileSystemFinderResult result in FileSystemHelpers.Find(directoryPath, Options, progress, context.CancellationToken))
             {
-                string input = ReadFile(result.Path, directoryPath, Options.DefaultEncoding, progress, Options.Indent);
+                string input = ReadFile(result.Path, directoryPath, Options.DefaultEncoding, progress, indent);
 
                 if (input == null)
                     continue;
@@ -88,11 +92,13 @@ namespace Orang.CommandLine
                 if (Options.ContentFilter.IsMatch(match))
                 {
                     EndProgress(progress);
-                    WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default, indent: Options.Indent, verbosity: Verbosity.Minimal);
+
+                    if (!Options.OmitPath)
+                        WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default, indent: indent, verbosity: Verbosity.Minimal);
 
                     if (Options.ContentFilter.IsNegative)
                     {
-                        WriteLine(Verbosity.Minimal);
+                        WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
                     }
                     else
                     {
@@ -106,7 +112,7 @@ namespace Orang.CommandLine
                         break;
 
                     if (_askMode == AskMode.File
-                        && ConsoleHelpers.Question("Continue without asking?", Options.Indent))
+                        && ConsoleHelpers.Question("Continue without asking?", indent))
                     {
                         _askMode = AskMode.None;
                     }
@@ -130,10 +136,10 @@ namespace Orang.CommandLine
 
             if (ShouldLog(Verbosity.Normal))
             {
-                WriteLine(Verbosity.Minimal);
+                WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
 
                 if (Options.ContentDisplayStyle == ContentDisplayStyle.Value
-                    && (Options.ModifyOptions.HasAnyOperation))
+                    && (Options.ModifyOptions.HasAnyFunction))
                 {
                     EnumerateValues();
 
@@ -142,7 +148,7 @@ namespace Orang.CommandLine
 
                     var valueWriter = new ValueWriter(writerOptions.Indent, includeEndingIndent: false);
 
-                    foreach (string value in FileValues.Modify(Options.ModifyOptions))
+                    foreach (string value in FileValueList.Modify(Options.ModifyOptions))
                     {
                         valueWriter.Write(value, Symbols, colors, boundaryColors);
                         WriteLine(Verbosity.Normal);
@@ -186,32 +192,33 @@ namespace Orang.CommandLine
             {
                 int fileMatchCount = EnumerateValues();
 
-                if (Options.ModifyOptions.HasAnyOperation)
-                    fileMatchCount = FileValues.Modify(Options.ModifyOptions).Count();
+                if (Options.ModifyOptions.HasAnyFunction)
+                    fileMatchCount = FileValueList.Modify(Options.ModifyOptions).Count();
 
-                Write(" ", Colors.Message_OK, Verbosity.Minimal);
-                WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
-                WriteLine(Verbosity.Minimal);
+                if (!Options.OmitPath)
+                {
+                    Write(" ", Colors.Message_OK, Verbosity.Minimal);
+                    WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
+                    WriteLine(Verbosity.Minimal);
+                }
 
                 telemetry.MatchCount += fileMatchCount;
             }
 
             int EnumerateValues()
             {
-                if (Options.ModifyOptions.Aggregate
-                    || Options.ModifyOptions.HasAnyOperation)
-                {
-                    FileValues.Clear();
-                }
+                if (Options.ModifyOptions.HasAnyFunction)
+                    FileValueList.Clear();
 
-                using (var matchWriter = new EmptyMatchWriter(null, writerOptions, FileValues))
+                using (var matchWriter = new EmptyMatchWriter(null, writerOptions, (Options.ModifyOptions.HasAnyFunction) ? FileValues : _values))
                 {
                     WriteMatches(matchWriter, match, context);
 
-                    _values?.AddRange(FileValues);
+                    if (Options.ModifyOptions.HasAnyFunction)
+                        _values?.AddRange(FileValueList);
 
                     if (matchWriter.MatchingLineCount >= 0
-                        && !Options.ModifyOptions.HasAnyOperation)
+                        && !Options.ModifyOptions.HasAnyFunction)
                     {
                         if (telemetry.MatchingLineCount == -1)
                             telemetry.MatchingLineCount = 0;
@@ -224,69 +231,53 @@ namespace Orang.CommandLine
             }
         }
 
-        protected override void WriteSummary(SearchTelemetry telemetry)
+        private void WriteAggregatedValues(SearchContext context)
         {
-            if (_values != null)
+            int count = 0;
+
+            IEnumerable<string> allValues = ((ListValueStorage)_values).Values;
+
+            const ModifyFunctions filter = ModifyFunctions.Distinct | ModifyFunctions.Sort | ModifyFunctions.SortDescending;
+
+            IEnumerable<string> values = allValues.Modify(Options.ModifyOptions, filter);
+
+            if (Options.OutputPath != null)
+                values = values.ToList();
+
+            using (IEnumerator<string> en = values.GetEnumerator())
             {
-                int count = 0;
-
-                IEnumerable<string> values = _values.Modify(Options.ModifyOptions);
-
-                ImmutableArray<string> paths = Options.ModifyOptions.OutputPaths;
-
-                if (paths.Any())
-                    values = values.ToList();
-
-                using (IEnumerator<string> en = values.GetEnumerator())
+                if (en.MoveNext())
                 {
-                    if (en.MoveNext())
-                    {
-                        OutputSymbols symbols = OutputSymbols.Create(Options.HighlightOptions);
-                        ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
-                        ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
-                        var valueWriter = new ValueWriter(includeEndingIndent: false, verbosity: Verbosity.Quiet);
+                    OutputSymbols symbols = OutputSymbols.Create(Options.HighlightOptions);
+                    ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
+                    ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
+                    var valueWriter = new ValueWriter(includeEndingIndent: false, verbosity: Verbosity.Quiet);
 
+                    WriteLine();
+
+                    do
+                    {
+                        valueWriter.Write(en.Current, symbols, colors, boundaryColors);
                         WriteLine();
+                        count++;
 
-                        do
-                        {
-                            valueWriter.Write(en.Current, symbols, colors, boundaryColors);
-                            WriteLine();
-                            count++;
+                    } while (en.MoveNext());
 
-                        } while (en.MoveNext());
-
-                        WriteLine();
-                        WriteCount("Values", count);
-                        WriteLine();
-                    }
-                }
-
-                foreach (string path in paths)
-                {
-                    StreamWriter writer = null;
-
-                    try
-                    {
-                        WriteLine($"Saving '{path}'", Verbosity.Diagnostic);
-
-                        writer = new StreamWriter(path, false, Encoding.UTF8);
-
-                        foreach (string value in values)
-                            writer.WriteLine(value);
-                    }
-                    catch (Exception ex) when (ex is IOException
-                        || ex is UnauthorizedAccessException)
-                    {
-                        WriteWarning(ex);
-                    }
-                    finally
-                    {
-                        writer?.Dispose();
-                    }
+                    WriteLine();
+                    WriteCount("Values", count);
+                    WriteLine();
                 }
             }
 
+            if (Options.OutputPath != null)
+            {
+                foreach (string value in values)
+                    context.Output.WriteLine(value);
+            }
+        }
+
+        protected override void WriteSummary(SearchTelemetry telemetry)
+        {
             WriteSearchedFilesAndDirectories(telemetry, Options.SearchTarget);
 
             if (!ShouldLog(Verbosity.Minimal))
@@ -311,7 +302,7 @@ namespace Orang.CommandLine
             WriteLine(Verbosity.Minimal);
         }
 
-        private MatchWriterOptions CreateMatchWriteOptions(string indent)
+        protected override MatchWriterOptions CreateMatchWriteOptions(string indent)
         {
             int groupNumber = Options.ContentFilter.GroupNumber;
 

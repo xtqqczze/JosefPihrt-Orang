@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace Orang
 {
@@ -11,56 +10,20 @@ namespace Orang
         public static ModifyOptions Default { get; } = new ModifyOptions();
 
         public ModifyOptions(
-            bool distinct = false,
-            bool sort = false,
-            bool sortDescending = false,
-            bool removeEmpty = false,
-            bool removeWhiteSpace = false,
-            bool trimStart = false,
-            bool trimEnd = false,
-            bool toLower = false,
-            bool toUpper = false,
+            ModifyFunctions functions = ModifyFunctions.None,
             bool aggregate = false,
             bool ignoreCase = false,
             bool cultureInvariant = false,
-            Func<IEnumerable<string>, IEnumerable<string>> modify = null,
-            IEnumerable<string> outputPaths = null)
+            Func<IEnumerable<string>, IEnumerable<string>> modify = null)
         {
-            Distinct = distinct;
-            Sort = sort;
-            SortDescending = sortDescending;
-            RemoveEmpty = removeEmpty;
-            RemoveWhiteSpace = removeWhiteSpace;
-            TrimStart = trimStart;
-            TrimEnd = trimEnd;
-            ToLower = toLower;
-            ToUpper = toUpper;
+            Functions = functions;
             Aggregate = aggregate;
             IgnoreCase = ignoreCase;
             CultureInvariant = cultureInvariant;
             Modify = modify;
-            OutputPaths = outputPaths?.ToImmutableArray() ?? ImmutableArray<string>.Empty;
         }
 
-        public bool Distinct { get; }
-
-        public bool Sort { get; }
-
-        public bool SortDescending { get; }
-
-        public bool RemoveEmpty { get; }
-
-        public bool RemoveWhiteSpace { get; }
-
-        public bool TrimStart { get; }
-
-        public bool TrimEnd { get; }
-
-        public bool Trim => TrimStart && TrimEnd;
-
-        public bool ToLower { get; }
-
-        public bool ToUpper { get; }
+        public ModifyFunctions Functions { get; }
 
         public bool Aggregate { get; }
 
@@ -70,19 +33,11 @@ namespace Orang
 
         public Func<IEnumerable<string>, IEnumerable<string>> Modify { get; }
 
-        public ImmutableArray<string> OutputPaths { get; }
-
-        public bool HasAnyOperation
+        public bool HasAnyFunction
         {
             get
             {
-                return Distinct
-                    || Sort
-                    || SortDescending
-                    || RemoveEmpty
-                    || RemoveWhiteSpace
-                    || TrimStart
-                    || TrimEnd
+                return Functions != ModifyFunctions.None
                     || Modify != null;
             }
         }

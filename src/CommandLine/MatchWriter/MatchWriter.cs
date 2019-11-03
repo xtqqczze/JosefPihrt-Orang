@@ -43,7 +43,7 @@ namespace Orang.CommandLine
             ContentDisplayStyle contentDisplayStyle,
             string input,
             MatchWriterOptions options,
-            List<string> values,
+            IValueStorage values,
             MatchOutputInfo outputInfo,
             bool ask = false)
         {

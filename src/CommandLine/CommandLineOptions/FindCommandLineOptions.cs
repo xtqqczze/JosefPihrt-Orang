@@ -22,16 +22,16 @@ namespace Orang.CommandLine
         [OptionValueProvider(OptionValueProviderNames.PatternOptionsWithoutPart)]
         public IEnumerable<string> Content { get; set; }
 
-        [Option(shortName: OptionShortNames.ContentDisplay, longName: OptionNames.ContentDisplay,
-            HelpText = "Display of the content.",
-            MetaValue = MetaValues.ContentDisplay)]
-        public string ContentDisplay { get; set; }
-
         [Option(shortName: OptionShortNames.Highlight, longName: OptionNames.Highlight,
             HelpText = "Parts of the output to highlight.",
             MetaValue = MetaValues.Highlight)]
         [OptionValueProvider(OptionValueProviderNames.FindHighlightOptions)]
         public IEnumerable<string> Highlight { get; set; }
+
+        [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
+            HelpText = "Path to a file that should store results.",
+            MetaValue = MetaValues.Path)]
+        public string Output { get; set; }
 
         // --modify bez aggregate a bez --format value nic nedělá
         // --modify > --modify-values, --value-list, --values
@@ -70,33 +70,43 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            ContentDisplayStyle contentDisplayStyle;
-            if (ContentDisplay != null)
+            if (!TryParseDisplay(
+                values: Display,
+                optionName: OptionNames.Display,
+                contentDisplayStyle: out ContentDisplayStyle contentDisplayStyle,
+                pathDisplayStyle: out PathDisplayStyle pathDisplayStyle,
+                defaultContentDisplayStyle: (askMode == AskMode.Value) ? ContentDisplayStyle.Value : ContentDisplayStyle.Line,
+                defaultPathDisplayStyle: PathDisplayStyle.Relative,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
+                pathDisplayStyleProvider: (contentFilter != null) ? OptionValueProviders.PathDisplayStyleProvider : OptionValueProviders.PathDisplayStyleProvider_WithoutOmit))
             {
-                if (!TryParseAsEnum(ContentDisplay, OptionNames.ContentDisplay, out contentDisplayStyle, provider: OptionValueProviders.ContentDisplayStyleProvider))
-                    return false;
-
-                if (askMode == AskMode.Value
-                    && (contentDisplayStyle == ContentDisplayStyle.AllLines || contentDisplayStyle == ContentDisplayStyle.UnmatchedLines))
-                {
-                    WriteError($"Option '{OptionNames.GetHelpText(OptionNames.ContentDisplay)}' cannot have value '{OptionValueProviders.ContentDisplayStyleProvider.GetValue(contentDisplayStyle.ToString()).HelpValue}' when option '{OptionNames.GetHelpText(OptionNames.Ask)}' has value '{OptionValueProviders.AskModeProvider.GetValue(nameof(AskMode.Value)).HelpValue}'.");
-                    return false;
-                }
+                return false;
             }
-            else
+
+            if (askMode == AskMode.Value
+                && (contentDisplayStyle == ContentDisplayStyle.AllLines || contentDisplayStyle == ContentDisplayStyle.UnmatchedLines))
             {
-                contentDisplayStyle = (askMode == AskMode.Value) ? ContentDisplayStyle.Value : ContentDisplayStyle.Line;
+                WriteError($"Option '{OptionNames.GetHelpText(OptionNames.Display)}' cannot have value '{OptionValueProviders.ContentDisplayStyleProvider.GetValue(contentDisplayStyle.ToString()).HelpValue}' when option '{OptionNames.GetHelpText(OptionNames.Ask)}' has value '{OptionValueProviders.AskModeProvider.GetValue(nameof(AskMode.Value)).HelpValue}'.");
+                return false;
+            }
+
+            string outputPath = null;
+            if (Output != null
+                && !TryEnsureFullPath(Output, out outputPath))
+            {
+                return false;
             }
 
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;
 
+            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, pathDisplayStyle: pathDisplayStyle, lineOptions: LineDisplayOptions);
             options.ModifyOptions = modifyOptions;
-            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, lineOptions: LineDisplayOptions);
             options.AskMode = askMode;
             options.HighlightOptions = highlightOptions;
             options.SearchTarget = GetSearchTarget();
             options.ContentFilter = contentFilter;
+            options.OutputPath = outputPath;
 
             return true;
         }

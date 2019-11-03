@@ -11,6 +11,7 @@ orang delete [<PATH>]
 [   --attributes-to-skip] <ATTRIBUTES>
 [-c|--content]            <REGEX>
 [   --content-only]
+[-y|--display]            <DISPLAY_OPTIONS>
 [-d|--dry-run]
 [   --encoding]           <ENCODING>
 [-e|--extension]          <EXTENSION_FILTER>
@@ -20,6 +21,7 @@ orang delete [<PATH>]
 [   --max-count]          <NUMBER>
  -n|--name                <REGEX>
 [   --no-recurse]
+[-o|--output]             <PATH>
 [   --progress]
 [-v|--verbosity]          <VERBOSITY>
 [   --file-log]           <FILE_LOG>
@@ -52,6 +54,10 @@ Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTION
 **`[--content-only]`**
 
 Delete content of a file or directory but not the file or directory itself\.
+
+**`[-y|--display] <DISPLAY_OPTIONS>`**
+
+Display of the results\. Allowed values are \[c\]ontent=\<CONTENT\_DISPLAY> and \[p\]ath=\<PATH\_DISPLAY>\.
 
 **`[-d|--dry-run]`**
 
@@ -88,6 +94,10 @@ Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN
 **`[--no-recurse]`**
 
 Do not search subdirectories\.
+
+**`[-o|--output] <PATH>`**
+
+Path to a file that should store results\.
 
 **`[--progress]`**
 

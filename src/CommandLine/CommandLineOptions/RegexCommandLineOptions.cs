@@ -16,11 +16,10 @@ namespace Orang.CommandLine
             MetaName = ArgumentMetaNames.Path)]
         public string Path { get; set; }
 
-        [Option(shortName: OptionShortNames.ContentDisplay, longName: OptionNames.ContentDisplay,
-            HelpText = "Display of the content.",
-            MetaValue = MetaValues.ContentDisplay)]
-        [OptionValueProvider(OptionValueProviderNames.ContentDisplayStyle_WithoutLineAndUnmatchedLines)]
-        public string ContentDisplay { get; set; }
+        [Option(shortName: OptionShortNames.Display, longName: OptionNames.Display,
+            HelpText = "Display of the results.",
+            MetaValue = MetaValues.DisplayOptions)]
+        public IEnumerable<string> Display { get; set; }
 
         [Option(longName: OptionNames.Input,
             HelpText = "Text to search.",
@@ -76,14 +75,24 @@ namespace Orang.CommandLine
 
             string outputPath = null;
 
-            if (outputPath != null
+            if (Output != null
                 && !TryEnsureFullPath(Output, out outputPath))
             {
                 return false;
             }
 
-            if (!TryParseAsEnum(ContentDisplay, OptionNames.ContentDisplay, out ContentDisplayStyle contentDisplayStyle, ContentDisplayStyle.Value, provider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines))
+            if (!TryParseDisplay(
+                values: Display,
+                optionName: OptionNames.Display,
+                contentDisplayStyle: out ContentDisplayStyle contentDisplayStyle,
+                pathDisplayStyle: out PathDisplayStyle _,
+                defaultContentDisplayStyle: ContentDisplayStyle.Value,
+                defaultPathDisplayStyle: 0,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines,
+                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider))
+            {
                 return false;
+            }
 
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;

@@ -47,8 +47,14 @@ namespace Orang
 
         public static IEnumerable<string> Modify(
             this IEnumerable<string> values,
-            ModifyOptions options)
+            ModifyOptions options,
+            ModifyFunctions? filter = null)
         {
+            ModifyFunctions functions = options.Functions;
+
+            if (filter != null)
+                functions &= filter.Value;
+
             StringComparer comparer;
             if (options.IgnoreCase)
             {
@@ -63,49 +69,50 @@ namespace Orang
                     : StringComparer.CurrentCulture;
             }
 
-            if (options.Sort)
-            {
-                values = values.OrderBy(f => f, comparer);
-            }
-            else if (options.SortDescending)
-            {
-                values = values.OrderByDescending(f => f, comparer);
-            }
+            bool trimStart = (functions & ModifyFunctions.TrimStart) != 0;
+            bool trimEnd = (functions & ModifyFunctions.TrimEnd) != 0;
 
-            if (options.Distinct)
-                values = values.Distinct(comparer);
-
-            if (options.RemoveEmpty)
-                values = values.Where(f => !string.IsNullOrEmpty(f));
-
-            if (options.RemoveWhiteSpace)
-                values = values.Where(f => !string.IsNullOrWhiteSpace(f));
-
-            if (options.Trim)
+            if (trimStart && trimEnd)
             {
                 values = values.Select(f => f.Trim());
             }
-            else if (options.TrimStart)
+            else if (trimStart)
             {
                 values = values.Select(f => f.TrimStart());
             }
-            else if (options.TrimEnd)
+            else if (trimEnd)
             {
                 values = values.Select(f => f.TrimEnd());
             }
 
-            if (options.ToLower)
+            if ((functions & ModifyFunctions.RemoveEmpty) != 0)
+                values = values.Where(f => !string.IsNullOrEmpty(f));
+
+            if ((functions & ModifyFunctions.RemoveWhiteSpace) != 0)
+                values = values.Where(f => !string.IsNullOrWhiteSpace(f));
+
+            if ((functions & ModifyFunctions.ToLower) != 0)
             {
                 values = values.Select(f => f.ToLower((options.CultureInvariant) ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture));
             }
-            else if (options.ToUpper)
+            else if ((functions & ModifyFunctions.ToUpper) != 0)
             {
                 values = values.Select(f => f.ToUpper((options.CultureInvariant) ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture));
             }
 
             if (options.Modify != null)
-            {
                 values = options.Modify(values);
+
+            if ((functions & ModifyFunctions.Distinct) != 0)
+                values = values.Distinct(comparer);
+
+            if ((functions & ModifyFunctions.Sort) != 0)
+            {
+                values = values.OrderBy(f => f, comparer);
+            }
+            else if ((functions & ModifyFunctions.SortDescending) != 0)
+            {
+                values = values.OrderByDescending(f => f, comparer);
             }
 
             return values;

@@ -49,6 +49,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Regex)]
         public IEnumerable<string> Name { get; set; }
 
+        [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
+            HelpText = "Path to a file that should store results.",
+            MetaValue = MetaValues.Path)]
+        public string Output { get; set; }
+
         public bool TryParse(ref DeleteCommandOptions options)
         {
             var baseOptions = (CommonFindCommandOptions)options;
@@ -72,7 +77,28 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None);
+            string outputPath = null;
+
+            if (Output != null
+                && !TryEnsureFullPath(Output, out outputPath))
+            {
+                return false;
+            }
+
+            if (!TryParseDisplay(
+                values: Display,
+                optionName: OptionNames.Display,
+                contentDisplayStyle: out ContentDisplayStyle _,
+                pathDisplayStyle: out PathDisplayStyle pathDisplayStyle,
+                defaultContentDisplayStyle: 0,
+                defaultPathDisplayStyle: PathDisplayStyle.Relative,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
+                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider_WithoutOmit))
+            {
+                return false;
+            }
+
+            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None, pathDisplayStyle);
             options.Ask = Ask;
             options.DryRun = DryRun;
             options.HighlightOptions = highlightOptions;
@@ -82,6 +108,7 @@ namespace Orang.CommandLine
             options.ContentOnly = ContentOnly;
             options.IncludingBom = IncludingBom;
             options.MaxMatchingFiles = MaxCount;
+            options.OutputPath = outputPath;
 
             return true;
         }
