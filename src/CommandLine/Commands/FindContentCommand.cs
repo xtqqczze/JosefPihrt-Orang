@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
@@ -10,6 +11,7 @@ namespace Orang.CommandLine
     internal class FindContentCommand : CommonFindContentCommand<FindCommandOptions>
     {
         private AskMode _askMode;
+        private IValueStorage _values;
         private OutputSymbols _symbols;
 
         public FindContentCommand(FindCommandOptions options) : base(options)
@@ -26,6 +28,9 @@ namespace Orang.CommandLine
 
             if (ConsoleOut.Verbosity >= Verbosity.Minimal)
                 _askMode = Options.AskMode;
+
+            if (Options.OutputPath != null)
+                _values = new TextWriterValueStorage(context.Output);
 
             base.ExecuteCore(context);
         }
@@ -119,7 +124,7 @@ namespace Orang.CommandLine
 
                 MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
 
-                using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, values: null, outputInfo, ask: _askMode == AskMode.Value))
+                using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _values, outputInfo, ask: _askMode == AskMode.Value))
                 {
                     WriteMatches(matchWriter, match, context);
                     telemetry.MatchCount += matchWriter.MatchCount;
@@ -163,7 +168,7 @@ namespace Orang.CommandLine
 
             int EnumerateValues()
             {
-                using (var matchWriter = new EmptyMatchWriter(null, writerOptions))
+                using (var matchWriter = new EmptyMatchWriter(null, writerOptions, _values))
                 {
                     WriteMatches(matchWriter, match, context);
 

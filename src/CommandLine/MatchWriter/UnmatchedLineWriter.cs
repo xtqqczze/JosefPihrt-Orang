@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Orang.CommandLine
@@ -14,13 +13,13 @@ namespace Orang.CommandLine
         public UnmatchedLineWriter(
             string input,
             MatchWriterOptions options = null,
-            List<string> values = null) : base(input, options)
+            IValueStorage values = null) : base(input, options)
         {
             Values = values;
             MatchingLineCount = 0;
         }
 
-        public List<string> Values { get; }
+        public IValueStorage Values { get; }
 
         protected override ValueWriter ValueWriter => throw new NotSupportedException();
 
