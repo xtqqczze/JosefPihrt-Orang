@@ -11,14 +11,14 @@ namespace Orang.CommandLine
         public ValueMatchWriter(
             string input,
             MatchWriterOptions options = null,
-            IValueStorage values = null,
+            IResultStorage storage = null,
             MatchOutputInfo outputInfo = null) : base(input, options)
         {
-            Values = values;
+            ResultStorage = storage;
             OutputInfo = outputInfo;
         }
 
-        public IValueStorage Values { get; }
+        public IResultStorage ResultStorage { get; }
 
         public MatchOutputInfo OutputInfo { get; }
 
@@ -39,12 +39,11 @@ namespace Orang.CommandLine
 
         protected override void WriteStartMatches()
         {
-            MatchCount = 0;
         }
 
         protected override void WriteStartMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
+            ResultStorage?.Add(capture.Value);
 
             if (MatchCount == 0
                 || Options.Separator == "\n"

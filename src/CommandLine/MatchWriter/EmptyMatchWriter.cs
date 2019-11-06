@@ -10,18 +10,18 @@ namespace Orang.CommandLine
         public EmptyMatchWriter(
             string input,
             MatchWriterOptions options,
-            IValueStorage values = null) : base(input, options)
+            IResultStorage resultStorage = null) : base(input, options)
         {
-            Values = values;
+            ResultStorage = resultStorage;
         }
 
         protected override ValueWriter ValueWriter => throw new NotSupportedException();
 
-        public IValueStorage Values { get; }
+        public IResultStorage ResultStorage { get; }
 
         protected override void WriteMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
+            ResultStorage?.Add(capture.Value);
         }
 
         protected override void WriteStartMatches()

@@ -2,8 +2,10 @@
 
 namespace Orang.CommandLine
 {
-    internal interface IValueStorage
+    internal enum MaxReason
     {
-        void Add(string value);
+        None = 0,
+        CountEqualsMax = 1,
+        CountExceedsMax = 2,
     }
 }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -23,7 +22,7 @@ namespace Orang.CommandLine
 
         public MatchWriterOptions Options { get; }
 
-        public int MatchCount { get; protected set; }
+        public int MatchCount { get; private set; }
 
         public int MatchingLineCount { get; protected set; }
 
@@ -43,7 +42,7 @@ namespace Orang.CommandLine
             ContentDisplayStyle contentDisplayStyle,
             string input,
             MatchWriterOptions options,
-            IValueStorage values,
+            IResultStorage storage,
             MatchOutputInfo outputInfo,
             bool ask = false)
         {
@@ -53,9 +52,9 @@ namespace Orang.CommandLine
                 {
                     case ContentDisplayStyle.Value:
                     case ContentDisplayStyle.ValueDetail:
-                        return new AskValueMatchWriter(input, options, values, outputInfo);
+                        return new AskValueMatchWriter(input, options, storage, outputInfo);
                     case ContentDisplayStyle.Line:
-                        return new AskLineMatchWriter(input, options, values);
+                        return new AskLineMatchWriter(input, options, storage);
                     case ContentDisplayStyle.UnmatchedLines:
                     case ContentDisplayStyle.AllLines:
                         throw new InvalidOperationException();
@@ -69,13 +68,13 @@ namespace Orang.CommandLine
                 {
                     case ContentDisplayStyle.Value:
                     case ContentDisplayStyle.ValueDetail:
-                        return new ValueMatchWriter(input, options, values, outputInfo);
+                        return new ValueMatchWriter(input, options, storage, outputInfo);
                     case ContentDisplayStyle.Line:
-                        return new LineMatchWriter(input, options, values);
+                        return new LineMatchWriter(input, options, storage);
                     case ContentDisplayStyle.UnmatchedLines:
-                        return new UnmatchedLineWriter(input, options, values);
+                        return new UnmatchedLineWriter(input, options, storage);
                     case ContentDisplayStyle.AllLines:
-                        return new AllLinesMatchWriter(input, options, values);
+                        return new AllLinesMatchWriter(input, options, storage);
                     default:
                         throw new InvalidOperationException($"Unknown enum value '{contentDisplayStyle}'.");
                 }
@@ -188,18 +187,20 @@ namespace Orang.CommandLine
             Logger.WriteLine(Verbosity.Normal);
         }
 
-        public virtual WriteResult WriteMatches(Match match, int count = 0, in CancellationToken cancellationToken = default)
+        public virtual MaxReason WriteMatches(Match match, int count = 0, in CancellationToken cancellationToken = default)
         {
+            MatchCount = 0;
+
             WriteStartMatches();
 
-            WriteResult result = WriteMatchesImpl(match, count, cancellationToken);
+            MaxReason maxReason = WriteMatchesImpl(match, count, cancellationToken);
 
             WriteEndMatches();
 
-            return result;
+            return maxReason;
         }
 
-        private WriteResult WriteMatchesImpl(Match match, int count, in CancellationToken cancellationToken)
+        private MaxReason WriteMatchesImpl(Match match, int count, in CancellationToken cancellationToken)
         {
             int groupNumber = Options.GroupNumber;
 
@@ -212,10 +213,14 @@ namespace Orang.CommandLine
                     WriteMatch(match);
                     MatchCount++;
 
-                    if (MatchCount == count)
-                        return WriteResult.MaxReached;
-
                     match = match.NextMatch();
+
+                    if (MatchCount == count)
+                    {
+                        return (match.Success)
+                            ? MaxReason.CountExceedsMax
+                            : MaxReason.CountEqualsMax;
+                    }
 
                     if (match.Success)
                     {
@@ -240,10 +245,14 @@ namespace Orang.CommandLine
                         WriteMatch(group);
                         MatchCount++;
 
-                        if (MatchCount == count)
-                            return WriteResult.MaxReached;
-
                         group = NextGroup();
+
+                        if (MatchCount == count)
+                        {
+                            return (group != null)
+                                ? MaxReason.CountExceedsMax
+                                : MaxReason.CountEqualsMax;
+                        }
 
                         if (group != null)
                         {
@@ -257,7 +266,7 @@ namespace Orang.CommandLine
                 }
             }
 
-            return WriteResult.None;
+            return MaxReason.None;
 
             Group NextGroup()
             {

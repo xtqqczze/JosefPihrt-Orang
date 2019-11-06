@@ -2,9 +2,10 @@
 
 namespace Orang.CommandLine
 {
-    internal enum WriteResult
+    internal interface IResultStorage
     {
-        None,
-        MaxReached,
+        void Add(string value);
+
+        void Add(string value, int start, int length);
     }
 }

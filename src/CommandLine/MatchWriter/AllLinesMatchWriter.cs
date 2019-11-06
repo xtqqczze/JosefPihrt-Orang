@@ -12,12 +12,12 @@ namespace Orang.CommandLine
         public AllLinesMatchWriter(
             string input,
             MatchWriterOptions options = null,
-            IValueStorage values = null) : base(input, options)
+            IResultStorage storage = null) : base(input, options)
         {
-            Values = values;
+            ResultStorage = storage;
         }
 
-        public IValueStorage Values { get; }
+        public IResultStorage ResultStorage { get; }
 
         protected override ValueWriter ValueWriter
         {
@@ -41,19 +41,18 @@ namespace Orang.CommandLine
 
         protected override void WriteStartMatches()
         {
-            MatchCount = 0;
             _lastPos = 0;
 
             Write(Options.Indent);
 
             if (Options.IncludeLineNumber)
                 WriteLineNumber(1);
+
+            ResultStorage?.Add(Input);
         }
 
         protected override void WriteStartMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
-
             int index = capture.Index;
 
             ValueWriter.Write(Input, _lastPos, index - _lastPos, symbols: null);

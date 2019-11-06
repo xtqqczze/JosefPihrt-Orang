@@ -9,7 +9,7 @@ namespace Orang.CommandLine
         public AskLineMatchWriter(
             string input,
             MatchWriterOptions options = null,
-            IValueStorage values = null) : base(input, options, values)
+            IResultStorage storage = null) : base(input, options, storage)
         {
             Ask = true;
         }
@@ -18,7 +18,7 @@ namespace Orang.CommandLine
 
         protected override void WriteStartMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
+            ResultStorage?.Add(capture.Value);
 
             Write(Options.Indent);
 

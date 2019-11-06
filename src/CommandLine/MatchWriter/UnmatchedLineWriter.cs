@@ -13,13 +13,13 @@ namespace Orang.CommandLine
         public UnmatchedLineWriter(
             string input,
             MatchWriterOptions options = null,
-            IValueStorage values = null) : base(input, options)
+            IResultStorage storage = null) : base(input, options)
         {
-            Values = values;
+            ResultStorage = storage;
             MatchingLineCount = 0;
         }
 
-        public IValueStorage Values { get; }
+        public IResultStorage ResultStorage { get; }
 
         protected override ValueWriter ValueWriter => throw new NotSupportedException();
 
@@ -29,15 +29,12 @@ namespace Orang.CommandLine
 
         protected override void WriteStartMatches()
         {
-            MatchCount = 0;
             _lastEndIndex = 0;
             _lineNumber = 1;
         }
 
         protected override void WriteMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
-
             int index = capture.Index;
 
             if (index >= _lastEndIndex)
@@ -113,6 +110,40 @@ namespace Orang.CommandLine
             WriteLine();
             _lineNumber++;
             MatchingLineCount++;
+
+            if (ResultStorage != null)
+            {
+                int lastPos = _lastEndIndex;
+
+                for (int i = _lastEndIndex; i < index; i++)
+                {
+                    switch (Input[i])
+                    {
+                        case '\r':
+                            {
+                                ResultStorage.Add(Input, lastPos, i - lastPos);
+
+                                if (i < Input.Length - 1
+                                    && Input[i + 1] == '\n')
+                                {
+                                    i++;
+                                }
+
+                                lastPos = i + 1;
+                                break;
+                            }
+                        case '\n':
+                            {
+                                ResultStorage.Add(Input, lastPos, i - lastPos);
+
+                                lastPos = i + 1;
+                                break;
+                            }
+                    }
+                }
+
+                ResultStorage.Add(Input, lastPos, index - lastPos);
+            }
         }
 
         private void WriteValue(int startIndex, int length)

@@ -8,9 +8,10 @@ Searches the input string for occurrences of the regular expression\.
 orang match [<PATH>]
  -c|--content    <REGEX>
 [-y|--display]   <DISPLAY_OPTIONS>
-[-h|--highlight] <HIGHLIGHT>
+[-h|--help]
+[-t|--highlight] <HIGHLIGHT>
 [   --input]     <INPUT>
-[   --max-count] <NUMBER>
+[-m|--max-count] <NUMBER>
 [   --modify]    <MODIFY_OPTIONS>
 [-o|--output]    <PATH>
 [-v|--verbosity] <VERBOSITY>
@@ -33,7 +34,11 @@ Regular expression for the input string\. Syntax is \<PATTERN> \[\<PATTERN\_OPTI
 
 Display of the results\. Allowed values are \[c\]ontent=\<CONTENT\_DISPLAY> and \[p\]ath=\<PATH\_DISPLAY>\.
 
-**`[-h|--highlight] <HIGHLIGHT>`**
+**`[-h|--help]`**
+
+Show command line help\.
+
+**`[-t|--highlight] <HIGHLIGHT>`**
 
 Parts of the output to highlight\. Allowed values are \[n\]one, \[m\]atch, \[e\]mpty\-\[m\]atch, \[e\]mpty\-\[s\]plit, \[e\]mpty, \[b\]oundary, \[t\]ab, \[c\]arriage\-\[r\]eturn, \[l\]ine\[f\]eed, \[n\]ew\-\[l\]ine and space\.
 
@@ -41,7 +46,7 @@ Parts of the output to highlight\. Allowed values are \[n\]one, \[m\]atch, \[e\]
 
 Text to search\.
 
-**`[--max-count] <NUMBER>`**
+**`[-m|--max-count] <NUMBER>`**
 
 Maximum number of matches returned\.
 

@@ -4,14 +4,15 @@ using System.Collections.Generic;
 
 namespace Orang.CommandLine
 {
-    internal class ListValueStorage : IValueStorage
+    internal class ListResultStorage : IResultStorage
     {
-        public ListValueStorage()
+
+        public ListResultStorage()
+            : this(new List<string>())
         {
-            Values = new List<string>();
         }
 
-        public ListValueStorage(List<string> list)
+        public ListResultStorage(List<string> list)
         {
             Values = list;
         }
@@ -21,6 +22,11 @@ namespace Orang.CommandLine
         public void Add(string value)
         {
             Values.Add(value);
+        }
+
+        public void Add(string value, int start, int length)
+        {
+            Values.Add(value.Substring(start, length));
         }
     }
 }

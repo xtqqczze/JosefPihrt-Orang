@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.RegularExpressions;
 
 namespace Orang.CommandLine
@@ -15,13 +16,13 @@ namespace Orang.CommandLine
         public LineMatchWriter(
             string input,
             MatchWriterOptions options = null,
-            IValueStorage values = null) : base(input, options)
+            IResultStorage storage = null) : base(input, options)
         {
-            Values = values;
+            ResultStorage = storage;
             MatchingLineCount = 0;
         }
 
-        public IValueStorage Values { get; }
+        public IResultStorage ResultStorage { get; }
 
         protected override ValueWriter ValueWriter
         {
@@ -35,7 +36,6 @@ namespace Orang.CommandLine
 
         protected override void WriteStartMatches()
         {
-            MatchCount = 0;
             _lastEndIndex = -1;
             _solIndex = 0;
             _eolIndex = -1;
@@ -44,8 +44,6 @@ namespace Orang.CommandLine
 
         protected override void WriteStartMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
-
             int index = capture.Index;
 
             if (Options.IncludeLineNumber)
@@ -95,7 +93,28 @@ namespace Orang.CommandLine
             _eolIndex = TextHelpers.FindEndOfLine(Input, index + capture.Length);
 
             if (!isSameLine)
+            {
                 WriteStartLine(_solIndex, index);
+
+                if (ResultStorage != null)
+                {
+                    int endIndex = _eolIndex;
+
+                    if (endIndex > 0
+                        && Input[endIndex - 1] == '\n')
+                    {
+                        endIndex--;
+
+                        if (endIndex > 0
+                            && Input[endIndex - 1] == '\r')
+                        {
+                            endIndex--;
+                        }
+                    }
+
+                    ResultStorage.Add(Input, _solIndex, endIndex - _solIndex);
+                }
+            }
         }
 
         protected override void WriteEndMatch(Capture capture)

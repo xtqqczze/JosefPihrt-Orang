@@ -15,9 +15,10 @@ orang rename [<PATH>]
 [   --encoding]           <ENCODING>
 [   --evaluator]          <EVALUATOR>
 [-e|--extension]          <EXTENSION_FILTER>
-[-h|--highlight]          <HIGHLIGHT>
+[-h|--help]
+[-t|--highlight]          <HIGHLIGHT>
 [-i|--include-directory]  <REGEX>
-[   --max-count]          <NUMBER>
+[-m|--max-count]          <NUMBER>
  -n|--name                <REGEX>
 [   --no-recurse]
 [-o|--output]             <PATH>
@@ -71,7 +72,11 @@ Path to the evaluator method to compute replacements\. The format is "LibraryPat
 
 A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are \[c\]ulture\-\[i\]nvariant, \[f\]rom\-file, \[i\]gnore\-case, \[li\]st\-\[s\]eparator, \[l\]iteral, \[neg\]ative and timeout=\<NUM>\.
 
-**`[-h|--highlight] <HIGHLIGHT>`**
+**`[-h|--help]`**
+
+Show command line help\.
+
+**`[-t|--highlight] <HIGHLIGHT>`**
 
 Parts of the output to highlight\. Allowed values are \[n\]one, \[m\]atch, \[r\]eplacement, \[e\]mpty\-\[s\]plit and \[e\]mpty\.
 
@@ -79,7 +84,7 @@ Parts of the output to highlight\. Allowed values are \[n\]one, \[m\]atch, \[r\]
 
 Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
-**`[--max-count] <NUMBER>`**
+**`[-m|--max-count] <NUMBER>`**
 
 Stop deleting after specified number is reached\.
 

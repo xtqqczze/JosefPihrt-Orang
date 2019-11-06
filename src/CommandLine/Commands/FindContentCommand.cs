@@ -13,8 +13,8 @@ namespace Orang.CommandLine
     internal class FindContentCommand : CommonFindContentCommand<FindCommandOptions>
     {
         private AskMode _askMode;
-        private IValueStorage _values;
-        private IValueStorage _fileValues;
+        private IResultStorage _values;
+        private IResultStorage _fileValues;
         private List<string> _fileValueList;
         private OutputSymbols _symbols;
 
@@ -39,11 +39,11 @@ namespace Orang.CommandLine
 
             if (aggregate)
             {
-                _values = new ListValueStorage();
+                _values = new ListResultStorage();
             }
             else if (Options.OutputPath != null)
             {
-                _values = new TextWriterValueStorage(context.Output);
+                _values = new TextWriterResultStorage(context.Output);
             }
 
             base.ExecuteCore(context);
@@ -135,7 +135,10 @@ namespace Orang.CommandLine
 
             telemetry.MatchingFileCount++;
 
-            if (ShouldLog(Verbosity.Normal))
+            var maxReason = MaxReason.None;
+
+            if (ShouldLog(Verbosity.Normal)
+                || _values != null)
             {
                 WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
 
@@ -165,7 +168,7 @@ namespace Orang.CommandLine
 
                     using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _values, outputInfo, ask: _askMode == AskMode.Value))
                     {
-                        WriteMatches(matchWriter, match, context);
+                        maxReason = WriteMatches(matchWriter, match, context);
                         telemetry.MatchCount += matchWriter.MatchCount;
 
                         if (matchWriter.MatchingLineCount >= 0)
@@ -211,6 +214,7 @@ namespace Orang.CommandLine
                 {
                     Write(" ", Colors.Message_OK, Verbosity.Minimal);
                     WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
+                    WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK, Verbosity.Minimal);
                     WriteLine(Verbosity.Minimal);
                 }
 
@@ -231,12 +235,12 @@ namespace Orang.CommandLine
                     }
 
                     if (_fileValues == null)
-                        _fileValues = new ListValueStorage(_fileValueList);
+                        _fileValues = new ListResultStorage(_fileValueList);
                 }
 
                 using (var matchWriter = new EmptyMatchWriter(null, writerOptions, (Options.ModifyOptions.HasAnyFunction) ? _fileValues : _values))
                 {
-                    WriteMatches(matchWriter, match, context);
+                    maxReason = WriteMatches(matchWriter, match, context);
 
                     if (matchWriter.MatchingLineCount >= 0
                         && !Options.ModifyOptions.HasAnyFunction)
@@ -256,7 +260,7 @@ namespace Orang.CommandLine
         {
             int count = 0;
 
-            List<string> allValues = ((ListValueStorage)_values).Values;
+            List<string> allValues = ((ListResultStorage)_values).Values;
 
             using (IEnumerator<string> en = allValues
                 .Modify(Options.ModifyOptions, filter: ModifyFunctions.Enumerable)

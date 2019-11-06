@@ -37,13 +37,19 @@ namespace Orang.CommandLine
             if (input != null)
             {
                 int count = 0;
+                var maxReason = MaxReason.None;
                 Match match = Options.ContentFilter.Regex.Match(input);
 
                 if (match.Success)
                 {
                     if (!ShouldLog(Verbosity.Normal))
                     {
-                        count = match.CountMatches();
+                        using (var matchWriter = new EmptyMatchWriter(null, FileWriterOptions))
+                        {
+                            maxReason = WriteMatches(matchWriter, match, context);
+
+                            count = matchWriter.MatchCount;
+                        }
                     }
                     else
                     {
@@ -51,7 +57,7 @@ namespace Orang.CommandLine
 
                         using (MatchWriter matchWriter = MatchWriter.CreateReplace(Options.ContentDisplayStyle, input, MatchEvaluator, FileWriterOptions, outputInfo: outputInfo))
                         {
-                            WriteMatches(matchWriter, match, context);
+                            maxReason = WriteMatches(matchWriter, match, context);
                             count = matchWriter.MatchCount;
                         }
                     }
@@ -59,6 +65,7 @@ namespace Orang.CommandLine
 
                 WriteLine();
                 WriteCount("Replacements", count, Colors.Message_OK, Verbosity.Minimal);
+                WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK, Verbosity.Minimal);
                 WriteLine(Verbosity.Minimal);
             }
             else
@@ -175,6 +182,7 @@ namespace Orang.CommandLine
             MatchWriter matchWriter = null;
             TextWriter textWriter = null;
 
+            var maxReason = MaxReason.None;
             bool consoleNewlineWritten = Options.OmitPath;
             bool logNewLineWritten = Options.OmitPath;
 
@@ -197,7 +205,7 @@ namespace Orang.CommandLine
                 {
                     if (Options.SaveMode == SaveMode.DryRun)
                     {
-                        fileMatchCount = match.CountMatches();
+                        matchWriter = new EmptyMatchWriter(null, FileWriterOptions);
                     }
                     else
                     {
@@ -226,34 +234,40 @@ namespace Orang.CommandLine
                         }
                     }
 
-                    matchWriter = CreateWriter();
+                    MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
+
+                    if (Options.SaveMode == SaveMode.ValueByValue)
+                    {
+                        matchWriter = AskReplacementWriter.Create(Options.ContentDisplayStyle, input, MatchEvaluator, new Lazy<TextWriter>(() => new StreamWriter(filePath, false, encoding)), writerOptions, outputInfo);
+                    }
+                    else
+                    {
+                        matchWriter = MatchWriter.CreateReplace(Options.ContentDisplayStyle, input, MatchEvaluator, writerOptions, textWriter, outputInfo);
+                    }
                 }
 
-                if (matchWriter != null)
+                maxReason = WriteMatches(matchWriter, match, context);
+                fileMatchCount = matchWriter.MatchCount;
+                fileReplacementCount = (matchWriter is AskReplacementWriter askReplacementWriter) ? askReplacementWriter.ReplacementCount : fileMatchCount;
+
+                if (matchWriter.MatchingLineCount >= 0)
                 {
-                    WriteMatches(matchWriter, match, context);
-                    fileMatchCount = matchWriter.MatchCount;
-                    fileReplacementCount = (matchWriter is AskReplacementWriter askReplacementWriter) ? askReplacementWriter.ReplacementCount : fileMatchCount;
+                    if (telemetry.MatchingLineCount == -1)
+                        telemetry.MatchingLineCount = 0;
 
-                    if (matchWriter.MatchingLineCount >= 0)
-                    {
-                        if (telemetry.MatchingLineCount == -1)
-                            telemetry.MatchingLineCount = 0;
+                    telemetry.MatchingLineCount += matchWriter.MatchingLineCount;
+                }
 
-                        telemetry.MatchingLineCount += matchWriter.MatchingLineCount;
-                    }
+                if (!consoleNewlineWritten
+                    && ConsoleOut.Verbosity >= Verbosity.Normal)
+                {
+                    consoleNewlineWritten = fileMatchCount > 0;
+                }
 
-                    if (!consoleNewlineWritten
-                        && ConsoleOut.Verbosity >= Verbosity.Normal)
-                    {
-                        consoleNewlineWritten = fileMatchCount > 0;
-                    }
-
-                    if (!logNewLineWritten
-                        && Out?.Verbosity >= Verbosity.Normal)
-                    {
-                        logNewLineWritten = fileMatchCount > 0;
-                    }
+                if (!logNewLineWritten
+                    && Out?.Verbosity >= Verbosity.Normal)
+                {
+                    logNewLineWritten = fileMatchCount > 0;
                 }
 
                 if (Options.SaveMode != SaveMode.ValueByValue
@@ -261,13 +275,17 @@ namespace Orang.CommandLine
                 {
                     if (ConsoleOut.Verbosity == Verbosity.Minimal)
                     {
-                        ConsoleOut.WriteLine($" {fileMatchCount.ToString("n0")}", Colors.Message_OK);
+                        ConsoleOut.Write($" {fileMatchCount.ToString("n0")}", Colors.Message_OK);
+                        ConsoleOut.WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK);
+                        ConsoleOut.WriteLine();
                         consoleNewlineWritten = true;
                     }
 
                     if (Out?.Verbosity == Verbosity.Minimal)
                     {
-                        Out.WriteLine($" {fileMatchCount.ToString("n0")}", Colors.Message_OK);
+                        Out.Write($" {fileMatchCount.ToString("n0")}");
+                        Out.WriteIf(maxReason == MaxReason.CountExceedsMax, "+");
+                        Out.WriteLine();
                         logNewLineWritten = true;
                     }
                 }
@@ -314,20 +332,6 @@ namespace Orang.CommandLine
             finally
             {
                 matchWriter?.Dispose();
-            }
-
-            MatchWriter CreateWriter()
-            {
-                MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
-
-                if (Options.SaveMode == SaveMode.ValueByValue)
-                {
-                    return AskReplacementWriter.Create(Options.ContentDisplayStyle, input, MatchEvaluator, new Lazy<TextWriter>(() => new StreamWriter(filePath, false, encoding)), writerOptions, outputInfo);
-                }
-                else
-                {
-                    return MatchWriter.CreateReplace(Options.ContentDisplayStyle, input, MatchEvaluator, writerOptions, textWriter, outputInfo);
-                }
             }
         }
 

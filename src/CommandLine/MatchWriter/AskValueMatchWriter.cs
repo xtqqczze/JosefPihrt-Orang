@@ -9,22 +9,17 @@ namespace Orang.CommandLine
         public AskValueMatchWriter(
             string input,
             MatchWriterOptions options = null,
-            IValueStorage values = null,
-            MatchOutputInfo outputInfo = null) : base(input, options, values, outputInfo)
+            IResultStorage storage = null,
+            MatchOutputInfo outputInfo = null) : base(input, options, storage, outputInfo)
         {
             Ask = true;
         }
 
         public bool Ask { get; set; }
 
-        protected override void WriteStartMatches()
-        {
-            MatchCount = 0;
-        }
-
         protected override void WriteStartMatch(Capture capture)
         {
-            Values?.Add(capture.Value);
+            ResultStorage?.Add(capture.Value);
 
             Write(Options.Indent);
 
