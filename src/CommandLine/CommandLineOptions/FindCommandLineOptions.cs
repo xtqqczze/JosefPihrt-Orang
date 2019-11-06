@@ -95,8 +95,6 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, pathDisplayStyle: pathDisplayStyle, lineOptions: LineDisplayOptions);
-
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;
 

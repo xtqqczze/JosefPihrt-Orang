@@ -136,7 +136,6 @@ namespace Orang.CommandLine
 
         public static OptionValueProvider ModifyFlagsProvider { get; } = new OptionValueProvider(MetaValues.ModifyOptions,
             OptionValues.Method,
-            OptionValues.Output,
             SimpleOptionValue.Create(ModifyFlags.Aggregate, description: "Display list of all values at the end of search."),
             SimpleOptionValue.Create(ModifyFlags.CultureInvariant, shortValue: "ci", helpValue: "[c]ulture-[i]nvariant", description: "Ignore cultural differences between languages."),
             SimpleOptionValue.Create(ModifyFlags.Distinct, description: "Return distinct values."),
