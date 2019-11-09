@@ -15,6 +15,7 @@ namespace Orang.CommandLine
     {
         private AskMode _askMode;
         private IResultStorage _storage;
+        private List<int> _storageIndexes;
         private IResultStorage _fileStorage;
         private List<string> _fileValues;
         private OutputSymbols _symbols;
@@ -45,6 +46,12 @@ namespace Orang.CommandLine
             else if (Options.OutputPath != null)
             {
                 _storage = new TextWriterResultStorage(context.Output);
+            }
+
+            if (_storage != null
+                && (Options.ModifyOptions.Functions & ModifyFunctions.Intersect) != 0)
+            {
+                _storageIndexes = new List<int>();
             }
 
             base.ExecuteCore(context);
@@ -149,6 +156,7 @@ namespace Orang.CommandLine
 
             telemetry.MatchingFileCount++;
 
+            int fileMatchCount = 0;
             var maxReason = MaxReason.None;
 
             if (ShouldLog(Verbosity.Normal)
@@ -172,9 +180,12 @@ namespace Orang.CommandLine
                         Write(writerOptions.Indent, Verbosity.Normal);
                         valueWriter.Write(value, Symbols, colors, boundaryColors);
                         WriteLine(Verbosity.Normal);
-                        telemetry.MatchCount++;
+
                         _storage?.Add(value);
+                        fileMatchCount++;
                     }
+
+                    _storageIndexes?.Add(_storage.Count);
                 }
                 else
                 {
@@ -183,7 +194,7 @@ namespace Orang.CommandLine
                     using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _storage, outputInfo, ask: _askMode == AskMode.Value))
                     {
                         maxReason = WriteMatches(matchWriter, match, context);
-                        telemetry.MatchCount += matchWriter.MatchCount;
+                        fileMatchCount += matchWriter.MatchCount;
 
                         if (matchWriter.MatchingLineCount >= 0)
                         {
@@ -211,7 +222,7 @@ namespace Orang.CommandLine
             }
             else
             {
-                int fileMatchCount = EnumerateValues();
+                fileMatchCount = EnumerateValues();
 
                 if (Options.ModifyOptions.HasAnyFunction)
                 {
@@ -222,18 +233,21 @@ namespace Orang.CommandLine
                         fileMatchCount++;
                         _storage?.Add(value);
                     }
-                }
 
-                if (!Options.OmitPath)
-                {
-                    Write(" ", Colors.Message_OK, Verbosity.Minimal);
-                    WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
-                    WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK, Verbosity.Minimal);
-                    WriteLine(Verbosity.Minimal);
+                    _storageIndexes?.Add(_storage.Count);
                 }
-
-                telemetry.MatchCount += fileMatchCount;
             }
+
+            if (!Options.OmitPath
+                && !ShouldLog(Verbosity.Normal))
+            {
+                Write(" ", Colors.Message_OK, Verbosity.Minimal);
+                WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
+                WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK, Verbosity.Minimal);
+                WriteLine(Verbosity.Minimal);
+            }
+
+            telemetry.MatchCount += fileMatchCount;
 
             int EnumerateValues()
             {
@@ -276,6 +290,9 @@ namespace Orang.CommandLine
 
             List<string> allValues = ((ListResultStorage)_storage).Values;
 
+            if (_storageIndexes?.Count > 1)
+                allValues = Intersect();
+
             using (IEnumerator<string> en = allValues
                 .Modify(Options.ModifyOptions, filter: ModifyFunctions.Enumerable)
                 .GetEnumerator())
@@ -301,6 +318,28 @@ namespace Orang.CommandLine
                     WriteLine(Verbosity.Minimal);
                     WriteCount("Values", count, verbosity: Verbosity.Minimal);
                     WriteLine(Verbosity.Minimal);
+                }
+            }
+
+            List<string> Intersect()
+            {
+                var list = new List<string>(GetValuesInRange(0, _storageIndexes[0]));
+
+                for (int i = 1; i < _storageIndexes.Count; i++)
+                {
+                    IEnumerable<string> second = GetValuesInRange(_storageIndexes[i - 1], _storageIndexes[i]);
+
+                    list = list.Intersect(second).ToList();
+                }
+
+                return list;
+            }
+
+            IEnumerable<string> GetValuesInRange(int start, int endIndex)
+            {
+                for (int i = start; i < endIndex; i++)
+                {
+                    yield return allValues[i];
                 }
             }
         }

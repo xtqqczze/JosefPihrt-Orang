@@ -11,12 +11,13 @@ namespace Orang
         Distinct = 1,
         Sort = 1 << 1,
         SortDescending = 1 << 2,
+        Intersect = 1 << 3,
         Enumerable = Distinct | Sort | SortDescending,
-        RemoveEmpty = 1 << 3,
-        RemoveWhiteSpace = 1 << 4,
-        TrimStart = 1 << 5,
-        TrimEnd = 1 << 6,
-        ToLower = 1 << 7,
-        ToUpper = 1 << 8,
+        RemoveEmpty = 1 << 4,
+        RemoveWhiteSpace = 1 << 5,
+        TrimStart = 1 << 6,
+        TrimEnd = 1 << 7,
+        ToLower = 1 << 8,
+        ToUpper = 1 << 9
     }
 }

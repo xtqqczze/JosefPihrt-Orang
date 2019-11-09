@@ -9,6 +9,8 @@ namespace Orang.CommandLine
     {
         private readonly TextWriter _writer;
 
+        public int Count { get; private set; }
+
         public TextWriterResultStorage(TextWriter writer)
         {
             _writer = writer;
@@ -17,11 +19,13 @@ namespace Orang.CommandLine
         public void Add(string value)
         {
             _writer.WriteLine(value);
+            Count++;
         }
 
         public void Add(string value, int start, int length)
         {
             _writer.WriteLine(value.AsSpan(start, length));
+            Count++;
         }
     }
 }

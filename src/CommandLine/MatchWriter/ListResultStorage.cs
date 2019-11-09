@@ -6,7 +6,6 @@ namespace Orang.CommandLine
 {
     internal class ListResultStorage : IResultStorage
     {
-
         public ListResultStorage()
             : this(new List<string>())
         {
@@ -18,6 +17,8 @@ namespace Orang.CommandLine
         }
 
         public List<string> Values { get; }
+
+        public int Count => Values.Count;
 
         public void Add(string value)
         {

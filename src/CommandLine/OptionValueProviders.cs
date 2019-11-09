@@ -139,6 +139,7 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(ModifyFlags.Aggregate, description: "Display list of all values at the end of search."),
             SimpleOptionValue.Create(ModifyFlags.CultureInvariant, shortValue: "ci", helpValue: "[c]ulture-[i]nvariant", description: "Ignore cultural differences between languages."),
             SimpleOptionValue.Create(ModifyFlags.Distinct, description: "Return distinct values."),
+            SimpleOptionValue.Create(ModifyFlags.Intersect, shortValue: "", description: ""),
             SimpleOptionValue.Create(ModifyFlags.IgnoreCase, description: "Use case-insensitive matching."),
             SimpleOptionValue.Create(ModifyFlags.RemoveEmpty, shortValue: "re", helpValue: "[r]emove-[e]mpty", description: "Remove values that are empty strings."),
             SimpleOptionValue.Create(ModifyFlags.RemoveWhiteSpace, shortValue: "rw", helpValue: "[r]emove-[w]hitespace", description: "Remove values that are empty or consist of white-space."),

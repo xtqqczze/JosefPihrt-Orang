@@ -71,6 +71,9 @@ namespace Orang.CommandLine
             if ((modifyFlags & ModifyFlags.SortDescending) != 0)
                 functions |= ModifyFunctions.SortDescending;
 
+            if ((modifyFlags & ModifyFlags.Intersect) != 0)
+                functions |= ModifyFunctions.Intersect;
+
             if ((modifyFlags & ModifyFlags.RemoveEmpty) != 0)
                 functions |= ModifyFunctions.RemoveEmpty;
 
