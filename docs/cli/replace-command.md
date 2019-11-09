@@ -23,6 +23,7 @@ orang replace [<PATH>]
 [-m|--max-count]          <MAX_OPTIONS>
 [-n|--name]               <REGEX>
 [   --no-recurse]
+[   --paths-from]         <FILE_PATH>
 [   --progress]
 [-r|--replacement]        <REPLACEMENT>
 [-v|--verbosity]          <VERBOSITY>
@@ -43,11 +44,11 @@ Ask for a permission to update each file or value\. Allowed values are \[f\]ile 
 
 **`[-a|--attributes] <ATTRIBUTES>`**
 
-File attributes that are required\. Allowed values are archive, compressed, \[d\]irectory, \[e\]mpty, encrypted, \[f\]ile, \[h\]idden, normal, offline, \[r\]ead\-only, \[s\]ystem and temporary\.
+File attributes that are required\. Allowed values are archive, compressed, \[d\]irectory, \[e\]mpty, encrypted, \[f\]ile, \[h\]idden, normal, offline, \[r\]ead\-only, \[r\]eparse\-\[p\]oint, \[s\]ystem and temporary\.
 
 **`[--attributes-to-skip] <ATTRIBUTES>`**
 
-File attributes that should be skipped\. Allowed values are archive, compressed, \[e\]mpty, encrypted, \[h\]idden, normal, offline, \[r\]ead\-only, \[s\]ystem and temporary\.
+File attributes that should be skipped\. Allowed values are archive, compressed, \[e\]mpty, encrypted, \[h\]idden, normal, offline, \[r\]ead\-only, \[r\]eparse\-\[p\]oint, \[s\]ystem and temporary\.
 
 **`-c|--content <REGEX>`**
 
@@ -104,6 +105,10 @@ Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN
 **`[--no-recurse]`**
 
 Do not search subdirectories\.
+
+**`[--paths-from] <FILE_PATH>`**
+
+Read the list of paths to search from a file\. Paths should be separated by newlines\.
 
 **`[--progress]`**
 

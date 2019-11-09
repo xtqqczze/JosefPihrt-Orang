@@ -125,6 +125,9 @@ namespace Orang.CommandLine
 
                     ReplaceMatches(result.Path, encoding, input, match, indent, DirectoryWriterOptions, context);
 
+                    if (context.State == SearchState.Canceled)
+                        break;
+
                     if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
                         context.State = SearchState.MaxReached;
 
@@ -191,19 +194,22 @@ namespace Orang.CommandLine
                 int fileMatchCount = 0;
                 int fileReplacementCount = 0;
 
-                if (Options.SaveMode == SaveMode.FileByFile)
+                if (!Options.DryRun)
                 {
-                    textWriter = new StringWriter();
-                }
-                else if (Options.SaveMode == SaveMode.NoAsk)
-                {
-                    textWriter = new StreamWriter(filePath, false, encoding);
+                    if (Options.AskMode == AskMode.File)
+                    {
+                        textWriter = new StringWriter();
+                    }
+                    else if (Options.AskMode == AskMode.None)
+                    {
+                        textWriter = new StreamWriter(filePath, false, encoding);
+                    }
                 }
 
-                if (Options.SaveMode != SaveMode.ValueByValue
+                if (Options.AskMode != AskMode.Value
                     && !ShouldLog(Verbosity.Normal))
                 {
-                    if (Options.SaveMode == SaveMode.DryRun)
+                    if (Options.DryRun)
                     {
                         matchWriter = new EmptyMatchWriter(null, FileWriterOptions);
                     }
@@ -216,7 +222,7 @@ namespace Orang.CommandLine
                 {
                     if (!Options.OmitPath)
                     {
-                        if (Options.SaveMode == SaveMode.ValueByValue)
+                        if (Options.AskMode == AskMode.Value)
                         {
                             ConsoleOut.WriteLine();
                             consoleNewlineWritten = true;
@@ -236,9 +242,13 @@ namespace Orang.CommandLine
 
                     MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
 
-                    if (Options.SaveMode == SaveMode.ValueByValue)
+                    if (Options.AskMode == AskMode.Value)
                     {
-                        matchWriter = AskReplacementWriter.Create(Options.ContentDisplayStyle, input, MatchEvaluator, new Lazy<TextWriter>(() => new StreamWriter(filePath, false, encoding)), writerOptions, outputInfo);
+                        Lazy<TextWriter> lazyWriter = (Options.DryRun)
+                            ? null
+                            : new Lazy<TextWriter>(() => new StreamWriter(filePath, false, encoding));
+
+                        matchWriter = AskReplacementWriter.Create(Options.ContentDisplayStyle, input, MatchEvaluator, lazyWriter, writerOptions, outputInfo);
                     }
                     else
                     {
@@ -270,7 +280,7 @@ namespace Orang.CommandLine
                     logNewLineWritten = fileMatchCount > 0;
                 }
 
-                if (Options.SaveMode != SaveMode.ValueByValue
+                if (Options.AskMode != AskMode.Value
                     && !Options.OmitPath)
                 {
                     if (ConsoleOut.Verbosity == Verbosity.Minimal)
@@ -292,21 +302,46 @@ namespace Orang.CommandLine
 
                 telemetry.MatchCount += fileMatchCount;
 
-                if (Options.SaveMode == SaveMode.FileByFile)
+                if (Options.AskMode == AskMode.File)
                 {
-                    consoleNewlineWritten = true;
-
-                    if (ConsoleHelpers.Question("Replace content?", indent))
-                    {
-                        File.WriteAllText(filePath, textWriter.ToString(), encoding);
-                    }
-                    else
+                    if (context.State == SearchState.Canceled)
                     {
                         fileReplacementCount = 0;
                     }
+                    else
+                    {
+                        consoleNewlineWritten = true;
+
+                        try
+                        {
+                            if (Options.DryRun)
+                            {
+                                if (ConsoleHelpers.Question("Continue without asking?", indent))
+                                    Options.AskMode = AskMode.None;
+                            }
+                            else if (ConsoleHelpers.Question("Replace content?", indent))
+                            {
+                                File.WriteAllText(filePath, textWriter.ToString(), encoding);
+                            }
+                            else
+                            {
+                                fileReplacementCount = 0;
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            context.State = SearchState.Canceled;
+                            fileReplacementCount = 0;
+                        }
+                    }
+                }
+                else if (Options.AskMode == AskMode.Value)
+                {
+                    if (((AskReplacementWriter)matchWriter).ContinueWithoutAsking)
+                        Options.AskMode = AskMode.None;
                 }
 
-                if (Options.SaveMode != SaveMode.DryRun)
+                if (!Options.DryRun)
                 {
                     telemetry.ProcessedMatchCount += fileReplacementCount;
 

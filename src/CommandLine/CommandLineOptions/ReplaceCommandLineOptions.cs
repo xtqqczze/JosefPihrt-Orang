@@ -95,7 +95,7 @@ namespace Orang.CommandLine
                 optionName: OptionNames.Display,
                 contentDisplayStyle: out ContentDisplayStyle? contentDisplayStyle2,
                 pathDisplayStyle: out PathDisplayStyle? pathDisplayStyle2,
-                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutUnmatchedLines,
                 pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider))
             {
                 return false;
@@ -128,25 +128,9 @@ namespace Orang.CommandLine
             options.ContentFilter = contentFilter;
             options.Replacement = replacement ?? "";
             options.MatchEvaluator = matchEvaluator;
-
             options.Input = Input;
-
-            if (DryRun)
-            {
-                options.SaveMode = SaveMode.DryRun;
-            }
-            else if (askMode == AskMode.Value)
-            {
-                options.SaveMode = SaveMode.ValueByValue;
-            }
-            else if (askMode == AskMode.File)
-            {
-                options.SaveMode = SaveMode.FileByFile;
-            }
-            else
-            {
-                options.SaveMode = SaveMode.NoAsk;
-            }
+            options.DryRun = DryRun;
+            options.AskMode = askMode;
 
             return true;
         }

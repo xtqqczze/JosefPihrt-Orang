@@ -193,9 +193,20 @@ namespace Orang.CommandLine
 
             WriteStartMatches();
 
-            MaxReason maxReason = WriteMatchesImpl(match, count, cancellationToken);
+            MaxReason maxReason;
 
-            WriteEndMatches();
+            try
+            {
+                maxReason = WriteMatchesImpl(match, count, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            finally
+            {
+                WriteEndMatches();
+            }
 
             return maxReason;
         }
@@ -349,6 +360,44 @@ namespace Orang.CommandLine
                 Write(Input, index, endIndex - index);
 
             WriteLine();
+        }
+
+        protected int FindStartOfLine(Capture capture)
+        {
+            return FindStartOfLine(capture.Index);
+        }
+
+        protected int FindStartOfLine(int index)
+        {
+            while (index > 0
+                && Input[index - 1] != '\n')
+            {
+                index--;
+            }
+
+            return index;
+        }
+
+        protected int FindEndOfLine(Capture capture)
+        {
+            int index = capture.Index;
+
+            if (index > 0
+                && capture.Length > 0
+                && Input[index - 1] == '\n')
+            {
+                return index;
+            }
+
+            while (index < Input.Length)
+            {
+                if (Input[index] == '\n')
+                    return ++index;
+
+                index++;
+            }
+
+            return index;
         }
     }
 }

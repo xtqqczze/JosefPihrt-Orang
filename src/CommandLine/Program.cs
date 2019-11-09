@@ -27,14 +27,13 @@ namespace Orang.CommandLine
                 {
                     if (IsHelpOption(args[0]))
                     {
-                        Console.WriteLine(HelpProvider.GetHelpText());
+                        Console.Write(HelpProvider.GetHelpText());
 #if DEBUG
                         if (Debugger.IsAttached)
                             Console.ReadKey();
 #endif
                         return 0;
                     }
-
                 }
                 else if (args.Length == 2)
                 {
@@ -45,7 +44,7 @@ namespace Orang.CommandLine
 
                         if (command != null)
                         {
-                            Console.WriteLine(HelpProvider.GetHelpText(command));
+                            Console.Write(HelpProvider.GetHelpText(command));
 #if DEBUG
                             if (Debugger.IsAttached)
                                 Console.ReadKey();
@@ -55,7 +54,6 @@ namespace Orang.CommandLine
                     }
                 }
             }
-
 
             try
             {

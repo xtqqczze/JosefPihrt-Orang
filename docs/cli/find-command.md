@@ -21,7 +21,8 @@ orang find [<PATH>]
 [   --modify]             <MODIFY_OPTIONS>
 [-n|--name]               <REGEX>
 [   --no-recurse]
-[-o|--output]             <PATH>
+[-o|--output]             <FILE_PATH>
+[   --paths-from]         <FILE_PATH>
 [   --progress]
 [-v|--verbosity]          <VERBOSITY>
 [   --file-log]           <FILE_LOG>
@@ -41,11 +42,11 @@ Ask for continuation after each file or value\. Allowed values are \[f\]ile and 
 
 **`[-a|--attributes] <ATTRIBUTES>`**
 
-File attributes that are required\. Allowed values are archive, compressed, \[d\]irectory, \[e\]mpty, encrypted, \[f\]ile, \[h\]idden, normal, offline, \[r\]ead\-only, \[s\]ystem and temporary\.
+File attributes that are required\. Allowed values are archive, compressed, \[d\]irectory, \[e\]mpty, encrypted, \[f\]ile, \[h\]idden, normal, offline, \[r\]ead\-only, \[r\]eparse\-\[p\]oint, \[s\]ystem and temporary\.
 
 **`[--attributes-to-skip] <ATTRIBUTES>`**
 
-File attributes that should be skipped\. Allowed values are archive, compressed, \[e\]mpty, encrypted, \[h\]idden, normal, offline, \[r\]ead\-only, \[s\]ystem and temporary\.
+File attributes that should be skipped\. Allowed values are archive, compressed, \[e\]mpty, encrypted, \[h\]idden, normal, offline, \[r\]ead\-only, \[r\]eparse\-\[p\]oint, \[s\]ystem and temporary\.
 
 **`[-c|--content] <REGEX>`**
 
@@ -95,9 +96,13 @@ Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN
 
 Do not search subdirectories\.
 
-**`[-o|--output] <PATH>`**
+**`[-o|--output] <FILE_PATH>`**
 
 Path to a file that should store results\.
+
+**`[--paths-from] <FILE_PATH>`**
+
+Read the list of paths to search from a file\. Paths should be separated by newlines\.
 
 **`[--progress]`**
 
