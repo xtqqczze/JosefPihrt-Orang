@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
 using static Orang.Logger;
@@ -25,20 +26,71 @@ namespace Orang.CommandLine
             base.ExecuteCore(context);
         }
 
+        protected override void ExecuteFile(string filePath, SearchContext context)
+        {
+            SearchTelemetry telemetry = context.Telemetry;
+            telemetry.FileCount++;
+
+            const string indent = null;
+
+            FileSystemFinderResult? maybeResult = MatchFile(filePath);
+
+            if (maybeResult == null)
+                return;
+
+            FileSystemFinderResult result = maybeResult.Value;
+
+            WritePath(result, null, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent: indent, Verbosity.Minimal);
+            WriteLine(Verbosity.Minimal);
+
+            if (_ask)
+            {
+                try
+                {
+                    if (ConsoleHelpers.Question("Continue without asking?", indent))
+                        _ask = false;
+                }
+                catch (OperationCanceledException)
+                {
+                    context.State = SearchState.Canceled;
+                }
+            }
+
+            telemetry.MatchingFileCount++;
+
+            context.Output?.WriteLine(filePath);
+
+            if (Options.MaxMatchingFiles == telemetry.MatchingFileCount + telemetry.MatchingDirectoryCount)
+            {
+                context.State = SearchState.MaxReached;
+            }
+        }
+
         protected override void ExecuteDirectory(string directoryPath, SearchContext context, FileSystemFinderProgressReporter progress)
         {
             SearchTelemetry telemetry = context.Telemetry;
+            string basePath = (Options.PathDisplayStyle == PathDisplayStyle.Full) ? null : directoryPath;
+            string indent = (Options.PathDisplayStyle == PathDisplayStyle.Relative) ? Options.Indent : "";
 
-            string basePath = (Options.Format.Includes(MiscellaneousDisplayOptions.IncludeFullPath)) ? null : directoryPath;
-
-            foreach (FileSystemFinderResult result in FileSystemHelpers.Find(directoryPath, Options, progress, context.CancellationToken))
+            foreach (FileSystemFinderResult result in Find(directoryPath, progress, context.CancellationToken))
             {
                 EndProgress(progress);
-                WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent: Options.Indent, Verbosity.Minimal);
+                WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent: indent, Verbosity.Minimal);
                 WriteLine(Verbosity.Minimal);
 
-                if (ConsoleHelpers.QuestionIf(_ask, "Continue without asking?", Options.Indent))
-                    _ask = false;
+                if (_ask)
+                {
+                    try
+                    {
+                        if (ConsoleHelpers.Question("Continue without asking?", indent))
+                            _ask = false;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        context.State = SearchState.Canceled;
+                        break;
+                    }
+                }
 
                 if (result.IsDirectory)
                 {
@@ -48,6 +100,8 @@ namespace Orang.CommandLine
                 {
                     telemetry.MatchingFileCount++;
                 }
+
+                context.Output?.WriteLine(result.Path);
 
                 if (Options.MaxMatchingFiles == telemetry.MatchingFileCount + telemetry.MatchingDirectoryCount)
                 {

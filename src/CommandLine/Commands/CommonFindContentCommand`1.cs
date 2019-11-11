@@ -9,11 +9,61 @@ namespace Orang.CommandLine
 {
     internal abstract class CommonFindContentCommand<TOptions> : CommonFindCommand<TOptions> where TOptions : CommonFindContentCommandOptions
     {
+        private MatchWriterOptions _fileWriterOptions;
+        private MatchWriterOptions _directoryWriterOptions;
+
         protected CommonFindContentCommand(TOptions options) : base(options)
         {
         }
 
-        public void WriteMatches(MatchWriter writer, Match match, SearchContext context)
+        protected MatchWriterOptions FileWriterOptions
+        {
+            get
+            {
+                if (_fileWriterOptions == null)
+                {
+                    string indent = (Options.OmitPath) ? "" : Options.Indent;
+
+                    _fileWriterOptions = CreateMatchWriteOptions(indent);
+                }
+
+                return _fileWriterOptions;
+            }
+        }
+
+        protected MatchWriterOptions DirectoryWriterOptions
+        {
+            get
+            {
+                if (_directoryWriterOptions == null)
+                {
+                    string indent = GetIndent();
+
+                    _directoryWriterOptions = CreateMatchWriteOptions(indent);
+                }
+
+                return _directoryWriterOptions;
+
+                string GetIndent()
+                {
+                    switch (Options.PathDisplayStyle)
+                    {
+                        case PathDisplayStyle.Full:
+                            return Options.Indent;
+                        case PathDisplayStyle.Relative:
+                            return Options.DoubleIndent;
+                        case PathDisplayStyle.Omit:
+                            return "";
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
+            }
+        }
+
+        protected abstract MatchWriterOptions CreateMatchWriteOptions(string indent);
+
+        public MaxReason WriteMatches(MatchWriter writer, Match match, SearchContext context)
         {
             int maxMatchesInFile = Options.MaxMatchesInFile;
             int maxMatches = Options.MaxMatches;
@@ -40,14 +90,25 @@ namespace Orang.CommandLine
 
             Debug.Assert(count >= 0, count.ToString());
 
-            WriteResult result = writer.WriteMatches(match, count, context.CancellationToken);
+            var maxReason = MaxReason.None;
 
-            if (result == WriteResult.MaxReached
-                && maxMatches > 0
-                && (maxMatchesInFile == 0 || maxMatches <= maxMatchesInFile))
+            try
             {
-                context.State = SearchState.MaxReached;
+                maxReason = writer.WriteMatches(match, count, context.CancellationToken);
+
+                if ((maxReason == MaxReason.CountEqualsMax || maxReason == MaxReason.CountExceedsMax)
+                    && maxMatches > 0
+                    && (maxMatchesInFile == 0 || maxMatches <= maxMatchesInFile))
+                {
+                    context.State = SearchState.MaxReached;
+                }
             }
+            catch (OperationCanceledException)
+            {
+                context.State = SearchState.Canceled;
+            }
+
+            return maxReason;
         }
     }
 }

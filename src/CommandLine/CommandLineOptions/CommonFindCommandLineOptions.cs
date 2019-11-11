@@ -32,9 +32,14 @@ namespace Orang.CommandLine
         [OptionValueProvider(OptionValueProviderNames.FileSystemAttributesToSkip)]
         public IEnumerable<string> AttributesToSkip { get; set; }
 
+        [Option(shortName: OptionShortNames.Display, longName: OptionNames.Display,
+            HelpText = "Display of the results.",
+            MetaValue = MetaValues.DisplayOptions)]
+        public IEnumerable<string> Display { get; set; }
+
         [Option(longName: OptionNames.Encoding,
             HelpText = "Encoding to use when a file does not contain byte order mark. Default encoding is UTF-8.",
-            MetaValue = "<ENCODING>")]
+            MetaValue = MetaValues.Encoding)]
         public string Encoding { get; set; }
 
         [Option(shortName: OptionShortNames.Extension, longName: OptionNames.Extension,
@@ -50,6 +55,11 @@ namespace Orang.CommandLine
         [Option(longName: OptionNames.NoRecurse,
             HelpText = "Do not search subdirectories.")]
         public bool NoRecurse { get; set; }
+
+        [Option(longName: OptionNames.PathsFrom,
+            HelpText = "Read the list of paths to search from a file. Paths should be separated by newlines.",
+            MetaValue = MetaValues.FilePath)]
+        public string PathsFrom { get; set; }
 
         [Option(longName: OptionNames.Progress,
             HelpText = "Display dot (.) for every tenth searched directory.")]
@@ -73,7 +83,7 @@ namespace Orang.CommandLine
             if (!TryParseAsEnumFlags(AttributesToSkip, OptionNames.AttributesToSkip, out FileSystemAttributes attributesToSkip, provider: OptionValueProviders.FileSystemAttributesToSkipProvider))
                 return false;
 
-            if (!TryParseEncoding(Encoding, out Encoding defaultEncoding))
+            if (!TryParseEncoding(Encoding, out Encoding defaultEncoding, EncodingHelpers.UTF8NoBom))
                 return false;
 
             Filter directoryFilter = null;
@@ -129,10 +139,32 @@ namespace Orang.CommandLine
 
         protected virtual bool TryParsePaths(out ImmutableArray<string> paths)
         {
-            if (Path.Any())
-                return TryEnsureFullPath(Path, out paths);
+            paths = ImmutableArray<string>.Empty;
 
-            paths = ImmutableArray.Create(Environment.CurrentDirectory);
+            if (Path.Any()
+                && !TryEnsureFullPath(Path, out paths))
+            {
+                return false;
+            }
+
+            ImmutableArray<string> pathsFromFile = ImmutableArray<string>.Empty;
+
+            if (PathsFrom != null)
+            {
+                if (!FileSystemHelpers.TryReadAllText(PathsFrom, out string content))
+                    return false;
+
+                IEnumerable<string> lines = TextHelpers.ReadLines(content).Where(f => !string.IsNullOrWhiteSpace(f));
+
+                if (!TryEnsureFullPath(lines, out pathsFromFile))
+                    return false;
+
+                paths = paths.AddRange(pathsFromFile);
+            }
+
+            if (paths.IsEmpty)
+                paths = ImmutableArray.Create(Environment.CurrentDirectory);
+
             return true;
         }
 

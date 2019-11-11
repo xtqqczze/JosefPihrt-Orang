@@ -14,8 +14,8 @@ namespace Orang.CommandLine
         public const string Attributes = "attributes";
         public const string AttributesToSkip = "attributes-to-skip";
         public const string Content = "content";
-        public const string ContentDisplay = "content-display";
         public const string ContentOnly = "content-only";
+        public const string Display = "display";
         public const string DryRun = "dry-run";
         public const string Encoding = "encoding";
         public const string Evaluator = "evaluator";
@@ -23,6 +23,7 @@ namespace Orang.CommandLine
         public const string FileLog = "file-log";
         public const string Filter = "filter";
         public const string Format = "format";
+        public const string Help = "help";
         public const string Highlight = "highlight";
         public const string CharGroup = "char-group";
         public const string IncludeDirectory = "include-directory";
@@ -35,6 +36,7 @@ namespace Orang.CommandLine
         public const string NoRecurse = "no-recurse";
         public const string Options = "options";
         public const string Output = "output";
+        public const string PathsFrom = "paths-from";
         public const string Progress = "progress";
         public const string Replacement = "replacement";
         public const string Section = "section";

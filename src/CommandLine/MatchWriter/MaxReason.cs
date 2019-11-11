@@ -2,11 +2,10 @@
 
 namespace Orang.CommandLine
 {
-    internal enum SaveMode
+    internal enum MaxReason
     {
-        NoAsk = 0,
-        FileByFile = 1,
-        ValueByValue = 2,
-        DryRun = 3,
+        None = 0,
+        CountEqualsMax = 1,
+        CountExceedsMax = 2,
     }
 }

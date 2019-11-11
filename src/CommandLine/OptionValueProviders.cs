@@ -102,7 +102,7 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(FileSystemAttributes.NotContentIndexed, shortValue: "", hidden: true),
             SimpleOptionValue.Create(FileSystemAttributes.Offline, shortValue: ""),
             SimpleOptionValue.Create(FileSystemAttributes.ReadOnly),
-            SimpleOptionValue.Create(FileSystemAttributes.ReparsePoint, shortValue: "", hidden: true),
+            SimpleOptionValue.Create(FileSystemAttributes.ReparsePoint, shortValue: "rp", helpValue: "[r]eparse-[p]oint"),
             SimpleOptionValue.Create(FileSystemAttributes.SparseFile, shortValue: "", hidden: true),
             SimpleOptionValue.Create(FileSystemAttributes.System),
             SimpleOptionValue.Create(FileSystemAttributes.Temporary, shortValue: "")
@@ -271,9 +271,30 @@ namespace Orang.CommandLine
         );
 
         public static OptionValueProvider MaxOptionsProvider { get; } = new OptionValueProvider(MetaValues.MaxOptions,
+            SimpleOptionValue.Create("MatchesInFile", "<NUM>", shortValue: "", description: "Stop searching in each file after <NUM> matches."),
             OptionValues.MaxMatches,
-            OptionValues.MaxMatchesInFile,
             OptionValues.MaxMatchingFiles
+        );
+
+        public static OptionValueProvider PathDisplayStyleProvider { get; } = new OptionValueProvider(MetaValues.PathDisplay,
+            SimpleOptionValue.Create(PathDisplayStyle.Full, description: "Display full path."),
+            SimpleOptionValue.Create(PathDisplayStyle.Relative, description: "Display path relatively to the base directory."),
+            SimpleOptionValue.Create(PathDisplayStyle.Omit, description: "Do not display path.")
+        );
+
+        public static OptionValueProvider PathDisplayStyleProvider_WithoutOmit { get; } = new OptionValueProvider(OptionValueProviderNames.PathDisplayStyle_WithoutOmit,
+            PathDisplayStyleProvider.Values.Where(f => f.Name != nameof(PathDisplayStyle.Omit))
+        );
+
+        public static OptionValueProvider DisplayProvider { get; } = new OptionValueProvider(MetaValues.DisplayOptions,
+            OptionValues.Display_Content,
+            OptionValues.Display_Path
+        );
+
+        public static OptionValueProvider OutputOptionsProvider { get; } = new OptionValueProvider(MetaValues.OutputOptions,
+            OptionValues.OutputOptions_Content,
+            OptionValues.OutputOptions_Path,
+            OptionValues.Encoding
         );
 
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName

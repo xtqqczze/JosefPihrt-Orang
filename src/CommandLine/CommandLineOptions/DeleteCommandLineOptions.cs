@@ -38,7 +38,7 @@ namespace Orang.CommandLine
             HelpText = "Delete byte order mark (BOM) when deleting file's content.")]
         public bool IncludingBom { get; set; }
 
-        [Option(longName: OptionNames.MaxCount,
+        [Option(shortName: OptionShortNames.MaxCount, longName: OptionNames.MaxCount,
             HelpText = "Stop renaming after specified number is reached.",
             MetaValue = MetaValues.Number)]
         public int MaxCount { get; set; }
@@ -48,6 +48,11 @@ namespace Orang.CommandLine
             HelpText = "Regular expression for file or directory name. Syntax is <PATTERN> [<PATTERN_OPTIONS>].",
             MetaValue = MetaValues.Regex)]
         public IEnumerable<string> Name { get; set; }
+
+        [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
+            HelpText = "Path to a file that should store results. Syntax is <PATH> [<OUTPUT_OPTIONS>].",
+            MetaValue = MetaValues.OutputOptions)]
+        public IEnumerable<string> Output { get; set; }
 
         public bool TryParse(ref DeleteCommandOptions options)
         {
@@ -72,7 +77,23 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None);
+            if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
+                return false;
+
+            if (!TryParseDisplay(
+                values: Display,
+                optionName: OptionNames.Display,
+                contentDisplayStyle: out ContentDisplayStyle _,
+                pathDisplayStyle: out PathDisplayStyle pathDisplayStyle,
+                defaultContentDisplayStyle: 0,
+                defaultPathDisplayStyle: PathDisplayStyle.Relative,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
+                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider_WithoutOmit))
+            {
+                return false;
+            }
+
+            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None, pathDisplayStyle);
             options.Ask = Ask;
             options.DryRun = DryRun;
             options.HighlightOptions = highlightOptions;
@@ -82,6 +103,7 @@ namespace Orang.CommandLine
             options.ContentOnly = ContentOnly;
             options.IncludingBom = IncludingBom;
             options.MaxMatchingFiles = MaxCount;
+            options.Output = outputOptions;
 
             return true;
         }

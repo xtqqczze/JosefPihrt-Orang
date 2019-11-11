@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.RegularExpressions;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
@@ -10,21 +11,14 @@ namespace Orang.CommandLine
     internal class FindContentCommand : CommonFindContentCommand<FindCommandOptions>
     {
         private AskMode _askMode;
+        private IResultStorage _storage;
         private OutputSymbols _symbols;
-        private MatchWriterOptions _fileWriterOptions;
-        private MatchWriterOptions _directoryWriterOptions;
 
         public FindContentCommand(FindCommandOptions options) : base(options)
         {
         }
 
-        protected override bool CanExecuteFile => true;
-
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
-
-        private MatchWriterOptions FileWriterOptions => _fileWriterOptions ?? (_fileWriterOptions = CreateMatchWriteOptions(Options.Indent));
-
-        private MatchWriterOptions DirectoryWriterOptions => _directoryWriterOptions ?? (_directoryWriterOptions = CreateMatchWriteOptions(Options.DoubleIndent));
 
         protected override void ExecuteCore(SearchContext context)
         {
@@ -32,6 +26,12 @@ namespace Orang.CommandLine
 
             if (ConsoleOut.Verbosity >= Verbosity.Minimal)
                 _askMode = Options.AskMode;
+
+            if (Options.OutputPath != null
+                && Options.Output.IncludeContent)
+            {
+                _storage = new TextWriterResultStorage(context.Output);
+            }
 
             base.ExecuteCore(context);
         }
@@ -48,11 +48,15 @@ namespace Orang.CommandLine
 
                 if (Options.ContentFilter.IsMatch(match))
                 {
-                    WritePath(filePath, colors: Colors.Matched_Path, verbosity: Verbosity.Minimal);
+                    if (!Options.OmitPath)
+                        WritePath(filePath, colors: Colors.Matched_Path, verbosity: Verbosity.Minimal);
+
                     WriteMatches(input, match, FileWriterOptions, context);
 
                     if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
                         context.State = SearchState.MaxReached;
+
+                    context.Output?.WriteLineIf(Options.Output.IncludePath, filePath);
                 }
             }
         }
@@ -60,12 +64,12 @@ namespace Orang.CommandLine
         protected override void ExecuteDirectory(string directoryPath, SearchContext context, FileSystemFinderProgressReporter progress)
         {
             Regex regex = Options.ContentFilter.Regex;
+            string basePath = (Options.PathDisplayStyle == PathDisplayStyle.Full) ? null : directoryPath;
+            string indent = (Options.PathDisplayStyle == PathDisplayStyle.Relative) ? Options.Indent : "";
 
-            string basePath = (Options.Format.Includes(MiscellaneousDisplayOptions.IncludeFullPath)) ? null : directoryPath;
-
-            foreach (FileSystemFinderResult result in FileSystemHelpers.Find(directoryPath, Options, progress, context.CancellationToken))
+            foreach (FileSystemFinderResult result in Find(directoryPath, progress, context.CancellationToken))
             {
-                string input = ReadFile(result.Path, directoryPath, Options.DefaultEncoding, progress, Options.Indent);
+                string input = ReadFile(result.Path, basePath, Options.DefaultEncoding, progress, indent);
 
                 if (input == null)
                     continue;
@@ -75,15 +79,24 @@ namespace Orang.CommandLine
                 if (Options.ContentFilter.IsMatch(match))
                 {
                     EndProgress(progress);
-                    WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default, indent: Options.Indent, verbosity: Verbosity.Minimal);
+
+                    if (!Options.OmitPath)
+                        WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default, indent: indent, verbosity: Verbosity.Minimal);
+
+                    context.Output?.WriteLineIf(Options.Output.IncludePath, result.Path);
 
                     if (Options.ContentFilter.IsNegative)
                     {
-                        WriteLine(Verbosity.Minimal);
+                        context.Telemetry.MatchingFileCount++;
+
+                        WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
                     }
                     else
                     {
                         WriteMatches(input, match, DirectoryWriterOptions, context);
+
+                        if (context.State == SearchState.Canceled)
+                            break;
                     }
 
                     if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
@@ -92,10 +105,18 @@ namespace Orang.CommandLine
                     if (context.State == SearchState.MaxReached)
                         break;
 
-                    if (_askMode == AskMode.File
-                        && ConsoleHelpers.Question("Continue without asking?", Options.Indent))
+                    if (_askMode == AskMode.File)
                     {
-                        _askMode = AskMode.None;
+                        try
+                        {
+                            if (ConsoleHelpers.Question("Continue without asking?", indent))
+                                _askMode = AskMode.None;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            context.State = SearchState.Canceled;
+                            break;
+                        }
                     }
                 }
             }
@@ -115,16 +136,34 @@ namespace Orang.CommandLine
 
             telemetry.MatchingFileCount++;
 
-            if (ShouldLog(Verbosity.Normal))
+            int fileMatchCount = 0;
+            var maxReason = MaxReason.None;
+
+            if (_storage != null
+                || Options.AskMode == AskMode.Value
+                || ShouldLog(Verbosity.Normal))
             {
-                WriteLine(Verbosity.Minimal);
+                if (!Options.OmitPath)
+                {
+                    if (Options.AskMode == AskMode.Value)
+                    {
+                        ConsoleOut.WriteLine();
+                    }
+                    else if (ConsoleOut.Verbosity >= Verbosity.Normal)
+                    {
+                        ConsoleOut.WriteLine(Verbosity.Normal);
+                    }
+
+                    if (Out?.Verbosity >= Verbosity.Normal)
+                        Out.WriteLine(Verbosity.Normal);
+                }
 
                 MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
 
-                using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, values: null, outputInfo, ask: _askMode == AskMode.Value))
+                using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _storage, outputInfo, ask: _askMode == AskMode.Value))
                 {
-                    WriteMatches(matchWriter, match, context);
-                    telemetry.MatchCount += matchWriter.MatchCount;
+                    maxReason = WriteMatches(matchWriter, match, context);
+                    fileMatchCount += matchWriter.MatchCount;
 
                     if (matchWriter.MatchingLineCount >= 0)
                     {
@@ -151,20 +190,34 @@ namespace Orang.CommandLine
             }
             else
             {
-                int fileMatchCount = EnumerateValues();
-
-                Write(" ", Colors.Message_OK, Verbosity.Minimal);
-                WriteCount("", fileMatchCount, Colors.Message_OK, Verbosity.Minimal);
-                WriteLine(Verbosity.Minimal);
-
-                telemetry.MatchCount += fileMatchCount;
+                fileMatchCount = EnumerateValues();
             }
+
+            if (Options.AskMode != AskMode.Value
+                && !Options.OmitPath)
+            {
+                if (ConsoleOut.Verbosity == Verbosity.Minimal)
+                {
+                    ConsoleOut.Write($" {fileMatchCount.ToString("n0")}", Colors.Message_OK);
+                    ConsoleOut.WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK);
+                    ConsoleOut.WriteLine();
+                }
+
+                if (Out?.Verbosity == Verbosity.Minimal)
+                {
+                    Out.Write($" {fileMatchCount.ToString("n0")}");
+                    Out.WriteIf(maxReason == MaxReason.CountExceedsMax, "+");
+                    Out.WriteLine();
+                }
+            }
+
+            telemetry.MatchCount += fileMatchCount;
 
             int EnumerateValues()
             {
                 using (var matchWriter = new EmptyMatchWriter(null, writerOptions))
                 {
-                    WriteMatches(matchWriter, match, context);
+                    maxReason = WriteMatches(matchWriter, match, context);
 
                     if (matchWriter.MatchingLineCount >= 0)
                     {
@@ -188,24 +241,21 @@ namespace Orang.CommandLine
 
             WriteLine(Verbosity.Minimal);
             WriteCount("Matches", telemetry.MatchCount, Colors.Message_OK, Verbosity.Minimal);
+            Write("  ", Colors.Message_OK, Verbosity.Minimal);
 
-            if (telemetry.MatchCount > 0)
+            if (telemetry.MatchingLineCount > 0)
             {
+                WriteCount("Matching lines", telemetry.MatchingLineCount, Colors.Message_OK, Verbosity.Minimal);
                 Write("  ", Colors.Message_OK, Verbosity.Minimal);
-
-                if (telemetry.MatchingLineCount > 0)
-                {
-                    WriteCount("Matching lines", telemetry.MatchingLineCount, Colors.Message_OK, Verbosity.Minimal);
-                    Write("  ", Colors.Message_OK, Verbosity.Minimal);
-                }
-
-                WriteCount("Matching files", telemetry.MatchingFileCount, Colors.Message_OK, Verbosity.Minimal);
             }
+
+            if (telemetry.MatchingFileCount > 0)
+                WriteCount("Matching files", telemetry.MatchingFileCount, Colors.Message_OK, Verbosity.Minimal);
 
             WriteLine(Verbosity.Minimal);
         }
 
-        private MatchWriterOptions CreateMatchWriteOptions(string indent)
+        protected override MatchWriterOptions CreateMatchWriteOptions(string indent)
         {
             int groupNumber = Options.ContentFilter.GroupNumber;
 

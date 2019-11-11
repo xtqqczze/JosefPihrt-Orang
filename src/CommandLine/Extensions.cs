@@ -2,12 +2,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Orang
 {
     internal static class Extensions
     {
+        public static void WriteLineIf(this TextWriter writer, bool condition, string value)
+        {
+            if (condition)
+                writer.WriteLine(value);
+        }
+
         public static IEnumerable<RegexOptions> GetFlags(this RegexOptions options)
         {
             return GetFlags();
@@ -41,19 +48,6 @@ namespace Orang
                 if ((options & RegexOptions.CultureInvariant) != 0)
                     yield return RegexOptions.CultureInvariant;
             }
-        }
-
-        public static int CountMatches(this Match match)
-        {
-            int count = 0;
-
-            while (match.Success)
-            {
-                count++;
-                match = match.NextMatch();
-            }
-
-            return count;
         }
 
         public static int GetDigitCount(this int value)

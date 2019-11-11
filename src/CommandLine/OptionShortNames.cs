@@ -6,14 +6,16 @@ namespace Orang.CommandLine
     {
         public const char Attributes = 'a';
         public const char Content = 'c';
-        public const char ContentDisplay = 'y';
+        public const char Display = 'y';
         public const char DryRun = 'd';
         public const char Extension = 'e';
         public const char Filter = 'f';
-        public const char Highlight = 'h';
+        public const char Help = 'h';
+        public const char Highlight = 't';
         public const char IncludeDirectory = 'i';
         public const char Input = 'i';
         public const char LineNumber = 'l';
+        public const char MaxCount = 'm';
         public const char Name = 'n';
         public const char Options = 'o';
         public const char Output = 'o';

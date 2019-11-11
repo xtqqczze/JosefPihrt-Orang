@@ -38,7 +38,7 @@ namespace Orang.CommandLine
         [OptionValueProvider(OptionValueProviderNames.RenameHighlightOptions)]
         public IEnumerable<string> Highlight { get; set; }
 
-        [Option(longName: OptionNames.MaxCount,
+        [Option(shortName: OptionShortNames.MaxCount, longName: OptionNames.MaxCount,
             HelpText = "Stop deleting after specified number is reached.",
             MetaValue = MetaValues.Number)]
         public int MaxCount { get; set; }
@@ -49,6 +49,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Regex)]
         [OptionValueProvider(OptionValueProviderNames.PatternOptionsWithoutGroupAndNegative)]
         public IEnumerable<string> Name { get; set; }
+
+        [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
+            HelpText = "Path to a file that should store results. Syntax is <PATH> [<OUTPUT_OPTIONS>].",
+            MetaValue = MetaValues.OutputOptions)]
+        public IEnumerable<string> Output { get; set; }
 
         [Option(shortName: OptionShortNames.Replacement, longName: OptionNames.Replacement,
             HelpText = "Replacement pattern. Syntax is <REPLACEMENT> [<REPLACEMENT_OPTIONS>].",
@@ -96,7 +101,23 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None);
+            if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
+                return false;
+
+            if (!TryParseDisplay(
+                values: Display,
+                optionName: OptionNames.Display,
+                contentDisplayStyle: out ContentDisplayStyle _,
+                pathDisplayStyle: out PathDisplayStyle pathDisplayStyle,
+                defaultContentDisplayStyle: 0,
+                defaultPathDisplayStyle: PathDisplayStyle.Relative,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
+                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider_WithoutOmit))
+            {
+                return false;
+            }
+
+            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None, pathDisplayStyle);
             options.HighlightOptions = highlightOptions;
             options.SearchTarget = GetSearchTarget();
             options.Replacement = replacement ?? "";
@@ -106,6 +127,7 @@ namespace Orang.CommandLine
             options.ContentFilter = contentFilter;
             options.MatchEvaluator = matchEvaluator;
             options.MaxMatchingFiles = MaxCount;
+            options.Output = outputOptions;
 
             return true;
         }

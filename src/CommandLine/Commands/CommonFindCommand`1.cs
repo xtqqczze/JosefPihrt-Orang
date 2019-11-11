@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -18,10 +19,9 @@ namespace Orang.CommandLine
         }
 
         private ProgressReporterMode? _reporterMode;
+        private FileSystemFinderOptions _finderOptions;
 
         public TOptions Options { get; }
-
-        protected virtual bool CanExecuteFile => false;
 
         private ProgressReporterMode ReporterMode
         {
@@ -47,15 +47,55 @@ namespace Orang.CommandLine
             }
         }
 
+        protected FileSystemFinderOptions FinderOptions
+        {
+            get
+            {
+                return _finderOptions ?? (_finderOptions = new FileSystemFinderOptions(
+                    searchTarget: Options.SearchTarget,
+                    recurseSubdirectories: Options.RecurseSubdirectories,
+                    attributes: Options.Attributes,
+                    attributesToSkip: Options.AttributesToSkip,
+                    empty: Options.Empty,
+                    canEnumerate: CanEnumerate));
+            }
+        }
+
+        public virtual bool CanEnumerate => true;
+
         protected abstract void WriteSummary(SearchTelemetry telemetry);
 
         protected sealed override CommandResult ExecuteCore(CancellationToken cancellationToken = default)
         {
-            var context = new SearchContext(cancellationToken: cancellationToken);
+            SearchContext context = null;
+            StreamWriter writer = null;
 
-            ExecuteCore(context);
+            try
+            {
+                string path = Options.OutputPath;
 
-            return (context.Telemetry.MatchingFileCount > 0) ? CommandResult.Success : CommandResult.NoSuccess;
+                if (path != null)
+                {
+                    WriteLine($"Opening '{path}'", Verbosity.Diagnostic);
+
+                    writer = new StreamWriter(path, false, Options.Output.Encoding);
+                }
+
+                context = new SearchContext(output: writer, cancellationToken: cancellationToken);
+
+                ExecuteCore(context);
+            }
+            catch (Exception ex) when (ex is IOException
+                || ex is UnauthorizedAccessException)
+            {
+                WriteWarning(ex);
+            }
+            finally
+            {
+                writer?.Dispose();
+            }
+
+            return (context?.Telemetry.MatchingFileCount > 0) ? CommandResult.Success : CommandResult.NoSuccess;
         }
 
         protected virtual void ExecuteCore(SearchContext context)
@@ -93,7 +133,8 @@ namespace Orang.CommandLine
             {
                 var progress = new FileSystemFinderProgressReporter(path, mode: ReporterMode, Options);
 
-                WriteLine($"Searching in {path}", Colors.Path_Progress, Verbosity.Minimal);
+                if (Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                    WriteLine($"Searching in {path}", Colors.Path_Progress, Verbosity.Minimal);
 
                 try
                 {
@@ -110,10 +151,10 @@ namespace Orang.CommandLine
                     progress.ProgressReported = false;
                 }
 
-                WriteLine($"Done searching in {path}", Colors.Path_Progress, Verbosity.Minimal);
+                if (Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                    WriteLine($"Done searching in {path}", Colors.Path_Progress, Verbosity.Minimal);
             }
-            else if (CanExecuteFile
-                && File.Exists(path))
+            else if (File.Exists(path))
             {
                 try
                 {
@@ -126,9 +167,7 @@ namespace Orang.CommandLine
             }
             else
             {
-                string message = (CanExecuteFile)
-                    ? $"File or directory not found: {path}"
-                    : $"Directory not found: {path}";
+                string message = $"File or directory not found: {path}";
 
                 WriteLine(message, Colors.Message_Warning, Verbosity.Minimal);
             }
@@ -139,11 +178,9 @@ namespace Orang.CommandLine
             SearchContext context,
             FileSystemFinderProgressReporter progress);
 
-        protected virtual void ExecuteFile(
+        protected abstract void ExecuteFile(
             string filePath,
-            SearchContext context)
-        {
-        }
+            SearchContext context);
 
         protected void EndProgress(FileSystemFinderProgressReporter progress)
         {
@@ -177,6 +214,47 @@ namespace Orang.CommandLine
                 LogHelpers.WriteFileError(ex, filePath, basePath, indent: indent);
                 return null;
             }
+        }
+
+        protected IEnumerable<FileSystemFinderResult> Find(
+            string directoryPath,
+            FileSystemFinderProgressReporter progress,
+            in CancellationToken cancellationToken = default)
+        {
+            return Find(
+                directoryPath: directoryPath,
+                progress: progress,
+                notifyDirectoryChanged: default(INotifyDirectoryChanged),
+                cancellationToken: cancellationToken);
+        }
+
+        protected IEnumerable<FileSystemFinderResult> Find(
+            string directoryPath,
+            FileSystemFinderProgressReporter progress,
+            INotifyDirectoryChanged notifyDirectoryChanged,
+            in CancellationToken cancellationToken = default)
+        {
+            return FileSystemFinder.Find(
+                directoryPath: directoryPath,
+                nameFilter: Options.NameFilter,
+                extensionFilter: Options.ExtensionFilter,
+                directoryFilter: Options.DirectoryFilter,
+                options: FinderOptions,
+                progress: progress,
+                notifyDirectoryChanged: notifyDirectoryChanged,
+                cancellationToken: cancellationToken);
+        }
+
+        protected FileSystemFinderResult? MatchFile(
+            string filePath,
+            FileSystemFinderProgressReporter progress = null)
+        {
+            return FileSystemFinder.MatchFile(
+                filePath,
+                nameFilter: Options.NameFilter,
+                extensionFilter: Options.ExtensionFilter,
+                options: FinderOptions,
+                progress: progress);
         }
     }
 }

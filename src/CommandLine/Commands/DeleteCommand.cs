@@ -17,13 +17,77 @@ namespace Orang.CommandLine
 
         public event EventHandler<DirectoryChangedEventArgs> DirectoryChanged;
 
+        protected override void ExecuteFile(string filePath, SearchContext context)
+        {
+            SearchTelemetry telemetry = context.Telemetry;
+            telemetry.FileCount++;
+
+            const string indent = null;
+
+            FileSystemFinderResult? maybeResult = MatchFile(filePath);
+
+            if (maybeResult == null)
+                return;
+
+            FileSystemFinderResult result = maybeResult.Value;
+
+            if (Options.ContentFilter != null)
+            {
+                string input = ReadFile(filePath, null, Options.DefaultEncoding, null, indent);
+
+                if (input == null)
+                    return;
+
+                if (!Options.ContentFilter.IsMatch(input))
+                    return;
+            }
+
+            telemetry.MatchingFileCount++;
+
+            WritePath(result, null, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent);
+            WriteLine();
+
+            bool success = false;
+
+            if (!Options.DryRun
+                && (!Options.Ask || AskToDelete(context, indent)))
+            {
+                try
+                {
+                    FileSystemHelpers.DeleteFile(
+                        filePath,
+                        contentOnly: Options.ContentOnly,
+                        includingBom: Options.IncludingBom);
+
+                    telemetry.ProcessedFileCount++;
+                    success = true;
+                }
+                catch (Exception ex) when (ex is IOException
+                    || ex is UnauthorizedAccessException)
+                {
+                    WriteFileError(ex, indent: indent);
+                }
+            }
+
+            if (Options.DryRun
+                || success)
+            {
+                context.Output?.WriteLine(filePath);
+            }
+
+            if (Options.MaxMatchingFiles == telemetry.MatchingFileCount + telemetry.MatchingDirectoryCount)
+            {
+                context.State = SearchState.MaxReached;
+            }
+        }
+
         protected override void ExecuteDirectory(string directoryPath, SearchContext context, FileSystemFinderProgressReporter progress)
         {
             SearchTelemetry telemetry = context.Telemetry;
+            string basePath = (Options.PathDisplayStyle == PathDisplayStyle.Full) ? null : directoryPath;
+            string indent = (Options.PathDisplayStyle == PathDisplayStyle.Relative) ? Options.Indent : "";
 
-            string basePath = (Options.Format.Includes(MiscellaneousDisplayOptions.IncludeFullPath)) ? null : directoryPath;
-
-            foreach (FileSystemFinderResult result in FileSystemHelpers.Find(directoryPath, Options, progress, notifyDirectoryChanged: this, canEnumerate: true, context.CancellationToken))
+            foreach (FileSystemFinderResult result in Find(directoryPath, progress, notifyDirectoryChanged: this, context.CancellationToken))
             {
                 string path = result.Path;
 
@@ -37,7 +101,7 @@ namespace Orang.CommandLine
                 {
                     if (Options.ContentFilter != null)
                     {
-                        string input = ReadFile(result.Path, path, Options.DefaultEncoding, progress, Options.Indent);
+                        string input = ReadFile(path, basePath, Options.DefaultEncoding, progress, indent);
 
                         if (input == null)
                             continue;
@@ -51,52 +115,55 @@ namespace Orang.CommandLine
 
                 EndProgress(progress);
 
-                WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, Options.Indent);
+                WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent);
                 WriteLine();
 
-                bool isCanceled = false;
+                bool success = false;
 
-                if (!Options.DryRun)
+                if (!Options.DryRun
+                    && (!Options.Ask || AskToDelete(context, indent)))
                 {
-                    string question = (Options.ContentOnly) ? "Delete content?" : "Delete?";
-
-                    if (!ConsoleHelpers.QuestionIf(Options.Ask, question, Options.Indent))
+                    try
                     {
-                        isCanceled = true;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            FileSystemHelpers.Delete(
-                                result,
-                                contentOnly: Options.ContentOnly,
-                                includingBom: Options.IncludingBom,
-                                filesOnly: Options.FilesOnly,
-                                directoriesOnly: Options.DirectoriesOnly);
+                        FileSystemHelpers.Delete(
+                            result,
+                            contentOnly: Options.ContentOnly,
+                            includingBom: Options.IncludingBom,
+                            filesOnly: Options.FilesOnly,
+                            directoriesOnly: Options.DirectoriesOnly);
 
-                            if (result.IsDirectory)
-                            {
-                                telemetry.ProcessedDirectoryCount++;
-                            }
-                            else
-                            {
-                                telemetry.ProcessedFileCount++;
-                            }
-                        }
-                        catch (Exception ex) when (ex is IOException
-                            || ex is UnauthorizedAccessException)
+                        if (result.IsDirectory)
                         {
-                            WriteFileError(ex, indent: Options.Indent);
+                            telemetry.ProcessedDirectoryCount++;
                         }
+                        else
+                        {
+                            telemetry.ProcessedFileCount++;
+                        }
+
+                        success = true;
                     }
+                    catch (Exception ex) when (ex is IOException
+                        || ex is UnauthorizedAccessException)
+                    {
+                        WriteFileError(ex, indent: indent);
+                    }
+                }
+
+                if (Options.DryRun
+                    || success)
+                {
+                    context.Output?.WriteLine(path);
                 }
 
                 if (result.IsDirectory
-                    && !isCanceled)
+                    && success)
                 {
                     OnDirectoryChanged(new DirectoryChangedEventArgs(path, null));
                 }
+
+                if (context.State == SearchState.Canceled)
+                    break;
 
                 if (Options.MaxMatchingFiles == telemetry.MatchingFileCount + telemetry.MatchingDirectoryCount)
                 {
@@ -108,6 +175,21 @@ namespace Orang.CommandLine
             telemetry.SearchedDirectoryCount = progress.SearchedDirectoryCount;
             telemetry.FileCount = progress.FileCount;
             telemetry.DirectoryCount = progress.DirectoryCount;
+        }
+
+        private bool AskToDelete(SearchContext context, string indent = null)
+        {
+            try
+            {
+                return ConsoleHelpers.Question(
+                    (Options.ContentOnly) ? "Delete content?" : "Delete?",
+                    indent);
+            }
+            catch (OperationCanceledException)
+            {
+                context.State = SearchState.Canceled;
+                return false;
+            }
         }
 
         protected virtual void OnDirectoryChanged(DirectoryChangedEventArgs e)
