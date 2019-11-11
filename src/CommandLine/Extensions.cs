@@ -125,19 +125,6 @@ namespace Orang
             return values;
         }
 
-        public static int CountMatches(this Match match)
-        {
-            int count = 0;
-
-            while (match.Success)
-            {
-                count++;
-                match = match.NextMatch();
-            }
-
-            return count;
-        }
-
         public static int GetDigitCount(this int value)
         {
             if (value < 0)
