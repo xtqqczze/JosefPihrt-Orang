@@ -14,7 +14,7 @@ orang split [<PATH>]
 [-m|--max-count] <NUMBER>
 [   --modify]    <MODIFY_OPTIONS>
 [   --no-groups]
-[-o|--output]    <PATH>
+[-o|--output]    <OUTPUT_OPTIONS>
 [-v|--verbosity] <VERBOSITY>
 [   --file-log]  <FILE_LOG>
 ```
@@ -59,9 +59,9 @@ Allowed values are \[m\]ethod=\<METHOD>, \[a\]ggregate, \[c\]ulture\-\[i\]nvaria
 
 Do not include groups in the results\.
 
-**`[-o|--output] <PATH>`**
+**`[-o|--output] <OUTPUT_OPTIONS>`**
 
-Path to a file that should store results\.
+Path to a file that should store results\. Syntax is \<PATH> \[\<OUTPUT\_OPTIONS>\]\. Allowed values are \[c\]ontent, \[p\]ath and \[e\]ncoding=\<ENCODING>\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

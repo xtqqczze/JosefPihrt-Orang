@@ -35,15 +35,17 @@ namespace Orang.CommandLine
             if (ConsoleOut.Verbosity >= Verbosity.Minimal)
                 _askMode = Options.AskMode;
 
-            bool aggregate = Options.ModifyOptions.Aggregate
-                && (Options.ModifyOptions.Modify != null
-                    || (Options.ModifyOptions.Functions & ModifyFunctions.Enumerable) != 0);
+            bool aggregate = (Options.ModifyOptions.Functions & ModifyFunctions.Intersect) != 0
+                || (Options.ModifyOptions.Aggregate
+                    && (Options.ModifyOptions.Modify != null
+                        || (Options.ModifyOptions.Functions & ModifyFunctions.Enumerable) != 0));
 
             if (aggregate)
             {
                 _storage = new ListResultStorage();
             }
-            else if (Options.OutputPath != null)
+            else if (Options.OutputPath != null
+                && Options.Output.IncludeContent)
             {
                 _storage = new TextWriterResultStorage(context.Output);
             }
@@ -79,6 +81,8 @@ namespace Orang.CommandLine
 
                     if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
                         context.State = SearchState.MaxReached;
+
+                    context.Output?.WriteLineIf(Options.Output.IncludePath, filePath);
                 }
             }
         }
@@ -104,6 +108,8 @@ namespace Orang.CommandLine
 
                     if (!Options.OmitPath)
                         WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default, indent: indent, verbosity: Verbosity.Minimal);
+
+                    context.Output?.WriteLineIf(Options.Output.IncludePath, result.Path);
 
                     if (Options.ContentFilter.IsNegative)
                     {

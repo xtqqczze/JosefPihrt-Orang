@@ -29,9 +29,9 @@ namespace Orang.CommandLine
         public IEnumerable<string> Highlight { get; set; }
 
         [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
-            HelpText = "Path to a file that should store results.",
-            MetaValue = MetaValues.FilePath)]
-        public string Output { get; set; }
+            HelpText = "Path to a file that should store results. Syntax is <PATH> [<OUTPUT_OPTIONS>].",
+            MetaValue = MetaValues.OutputOptions)]
+        public IEnumerable<string> Output { get; set; }
 
         [Option(longName: OptionNames.Modify,
             HelpText = "",
@@ -88,12 +88,8 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            string outputPath = null;
-            if (Output != null
-                && !TryEnsureFullPath(Output, out outputPath))
-            {
+            if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
                 return false;
-            }
 
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;
@@ -108,7 +104,7 @@ namespace Orang.CommandLine
             options.HighlightOptions = highlightOptions;
             options.SearchTarget = GetSearchTarget();
             options.ContentFilter = contentFilter;
-            options.OutputPath = outputPath;
+            options.Output = outputOptions;
 
             return true;
         }
