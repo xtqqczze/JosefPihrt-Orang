@@ -91,6 +91,22 @@ namespace Orang.CommandLine
             if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
                 return false;
 
+            if (!TryParseMaxCount(MaxCount, out int maxCount, out int maxMatches, out int maxMatchingFiles))
+                return false;
+
+            int maxMatchesInFile;
+
+            if (contentFilter != null)
+            {
+                maxMatchesInFile = maxCount;
+            }
+            else
+            {
+                maxMatchesInFile = 0;
+                maxMatches = 0;
+                maxMatchingFiles = (maxCount > 0) ? maxCount : maxMatchingFiles;
+            }
+
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
                 return false;
 
@@ -105,6 +121,9 @@ namespace Orang.CommandLine
             options.SearchTarget = GetSearchTarget();
             options.ContentFilter = contentFilter;
             options.Output = outputOptions;
+            options.MaxMatchesInFile = maxMatchesInFile;
+            options.MaxMatches = maxMatches;
+            options.MaxMatchingFiles = maxMatchingFiles;
 
             return true;
         }
