@@ -10,14 +10,16 @@ namespace Orang.CommandLine
 
         public OutputDisplayFormat(
             ContentDisplayStyle contentDisplayStyle,
-            PathDisplayStyle pathDisplayStyle = PathDisplayStyle.Relative,
+            PathDisplayStyle pathDisplayStyle = PathDisplayStyle.Full,
             LineDisplayOptions lineOptions = LineDisplayOptions.None,
+            bool includeSummary = false,
             string indent = null,
             string separator = null)
         {
             ContentDisplayStyle = contentDisplayStyle;
             PathDisplayStyle = pathDisplayStyle;
             LineOptions = lineOptions;
+            IncludeSummary = includeSummary;
             Indent = indent ?? DefaultIndent;
             Separator = separator ?? Environment.NewLine;
         }
@@ -27,6 +29,8 @@ namespace Orang.CommandLine
         public PathDisplayStyle PathDisplayStyle { get; }
 
         public LineDisplayOptions LineOptions { get; }
+
+        public bool IncludeSummary { get; }
 
         public string Indent { get; }
 

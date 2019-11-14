@@ -18,34 +18,55 @@ namespace Orang.CommandLine
             Options = options;
         }
 
-        private ProgressReporterMode? _reporterMode;
+        private ProgressReportMode? _consoleReportMode;
+        private ProgressReportMode? _fileLogReportMode;
         private FileSystemFinderOptions _finderOptions;
 
         public TOptions Options { get; }
 
         protected virtual bool OmitSummary => false;
 
-        private ProgressReporterMode ReporterMode
+        private ProgressReportMode ConsoleReportMode
         {
             get
             {
-                if (_reporterMode == null)
+                if (_consoleReportMode == null)
                 {
-                    if (ShouldLog(Verbosity.Detailed))
+                    if (ConsoleOut.ShouldWrite(Verbosity.Detailed))
                     {
-                        _reporterMode = ProgressReporterMode.Path;
+                        _consoleReportMode = ProgressReportMode.Path;
                     }
                     else if (Options.Progress)
                     {
-                        _reporterMode = ProgressReporterMode.Dot;
+                        _consoleReportMode = ProgressReportMode.Dot;
                     }
                     else
                     {
-                        _reporterMode = ProgressReporterMode.None;
+                        _consoleReportMode = ProgressReportMode.None;
                     }
                 }
 
-                return _reporterMode.Value;
+                return _consoleReportMode.Value;
+            }
+        }
+
+        private ProgressReportMode FileLogReportMode
+        {
+            get
+            {
+                if (_fileLogReportMode == null)
+                {
+                    if (Out?.ShouldWrite(Verbosity.Detailed) == true)
+                    {
+                        _fileLogReportMode = ProgressReportMode.Path;
+                    }
+                    else
+                    {
+                        _fileLogReportMode = ProgressReportMode.None;
+                    }
+                }
+
+                return _fileLogReportMode.Value;
             }
         }
 
@@ -125,17 +146,22 @@ namespace Orang.CommandLine
 
             stopwatch.Stop();
 
-            context.Telemetry.Elapsed = stopwatch.Elapsed;
+            if (Options.IncludeSummary)
+            {
+                SearchTelemetry telemetry = context.Telemetry;
+                telemetry.Elapsed = stopwatch.Elapsed;
+                WriteSummary(telemetry);
+            }
         }
 
         private void ExecuteCore(string path, SearchContext context)
         {
             if (Directory.Exists(path))
             {
-                var progress = new FileSystemFinderProgressReporter(path, mode: ReporterMode, Options);
+                var progress = new FileSystemFinderProgressReporter(path, ConsoleReportMode, FileLogReportMode, Options);
 
                 if (Options.PathDisplayStyle == PathDisplayStyle.Relative)
-                    WriteLine($"Searching in {path}", Colors.Path_Progress, Verbosity.Minimal);
+                    WriteLine(path, Verbosity.Minimal);
 
                 try
                 {
@@ -155,9 +181,6 @@ namespace Orang.CommandLine
                     ConsoleOut.WriteLine();
                     progress.ProgressReported = false;
                 }
-
-                if (Options.PathDisplayStyle == PathDisplayStyle.Relative)
-                    WriteLine($"Done searching in {path}", Colors.Path_Progress, Verbosity.Minimal);
             }
             else if (File.Exists(path))
             {
@@ -216,7 +239,7 @@ namespace Orang.CommandLine
                 || ex is UnauthorizedAccessException)
             {
                 EndProgress(progress);
-                LogHelpers.WriteFileError(ex, filePath, basePath, indent: indent);
+                LogHelpers.WriteFileError(ex, filePath, basePath, relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative, indent: indent);
                 return null;
             }
         }

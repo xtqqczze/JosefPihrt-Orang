@@ -73,8 +73,9 @@ namespace Orang.CommandLine
                 optionName: OptionNames.Display,
                 contentDisplayStyle: out ContentDisplayStyle contentDisplayStyle,
                 pathDisplayStyle: out PathDisplayStyle pathDisplayStyle,
+                includeSummary: out bool includeSummary,
                 defaultContentDisplayStyle: (askMode == AskMode.Value) ? ContentDisplayStyle.Value : ContentDisplayStyle.Line,
-                defaultPathDisplayStyle: PathDisplayStyle.Relative,
+                defaultPathDisplayStyle: PathDisplayStyle.Full,
                 contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
                 pathDisplayStyleProvider: (contentFilter != null) ? OptionValueProviders.PathDisplayStyleProvider : OptionValueProviders.PathDisplayStyleProvider_WithoutOmit))
             {
@@ -114,7 +115,7 @@ namespace Orang.CommandLine
             if (modifyOptions.HasAnyFunction)
                 contentDisplayStyle = ContentDisplayStyle.Value;
 
-            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, pathDisplayStyle: pathDisplayStyle, lineOptions: LineDisplayOptions);
+            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, pathDisplayStyle: pathDisplayStyle, lineOptions: LineDisplayOptions, includeSummary: includeSummary);
             options.ModifyOptions = modifyOptions;
             options.AskMode = askMode;
             options.HighlightOptions = highlightOptions;

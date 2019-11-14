@@ -28,8 +28,10 @@ namespace Orang.CommandLine
             if (count > 0)
                 WriteLine();
 
-            WriteGroups(matchData.GroupDefinitions);
-            WriteLine(Verbosity.Minimal);
+            if (Options.IncludeSummary)
+            {
+                WriteGroups(matchData.GroupDefinitions);
+                WriteLine(Verbosity.Minimal);
 
             if (Options.ContentDisplayStyle == ContentDisplayStyle.Value
                 && Options.ModifyOptions.HasAnyFunction)
@@ -45,9 +47,10 @@ namespace Orang.CommandLine
                     Write("  ", Colors.Message_OK, Verbosity.Minimal);
                     WriteCount("Captures", count, Colors.Message_OK, Verbosity.Minimal);
                 }
-            }
+                }
 
-            WriteLine(Verbosity.Minimal);
+                WriteLine(Verbosity.Minimal);
+            }
 
             return (count > 0) ? CommandResult.Success : CommandResult.NoSuccess;
         }
