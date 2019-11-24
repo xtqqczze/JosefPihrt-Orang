@@ -22,14 +22,13 @@ namespace Orang.CommandLine
         public const string Extension = "extension";
         public const string FileLog = "file-log";
         public const string Filter = "filter";
-        public const string Format = "format";
         public const string Help = "help";
         public const string Highlight = "highlight";
         public const string CharGroup = "char-group";
         public const string IncludeDirectory = "include-directory";
         public const string IncludingBom = "including-bom";
         public const string Input = "input";
-        public const string LineNumber = "line-number";
+        public const string Manual = "manual";
         public const string MaxCount = "max-count";
         public const string Name = "name";
         public const string NoGroups = "no-groups";
@@ -38,8 +37,10 @@ namespace Orang.CommandLine
         public const string Output = "output";
         public const string PathsFrom = "paths-from";
         public const string Progress = "progress";
+        public const string Properties = "properties";
         public const string Replacement = "replacement";
         public const string Section = "section";
+        public const string Sort = "sort";
         public const string Timeout = "timeout";
         public const string Values = "values";
         public const string Verbosity = "verbosity";

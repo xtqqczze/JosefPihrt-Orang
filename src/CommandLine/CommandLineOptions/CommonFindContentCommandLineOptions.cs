@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using static Orang.CommandLine.ParseHelpers;
+using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
     internal abstract class CommonFindContentCommandLineOptions : CommonFindCommandLineOptions
     {
-        [Option(shortName: OptionShortNames.LineNumber, longName: OptionNames.LineNumber,
-            HelpText = "Include line number.")]
-        public bool LineNumber { get; set; }
+        [Option(longName: OptionNames.Ask,
+            HelpText = "Ask for permission after each file or value.",
+            MetaValue = MetaValues.AskMode)]
+        public string Ask { get; set; }
 
         [Option(shortName: OptionShortNames.MaxCount, longName: OptionNames.MaxCount,
             HelpText = "Stop searching after specified number is reached.",
@@ -23,8 +25,6 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Regex)]
         public IEnumerable<string> Name { get; set; }
 
-        internal LineDisplayOptions LineDisplayOptions => (LineNumber) ? LineDisplayOptions.IncludeLineNumber : LineDisplayOptions.None;
-
         public bool TryParse(ref CommonFindContentCommandOptions options)
         {
             var baseOptions = (CommonFindCommandOptions)options;
@@ -34,13 +34,13 @@ namespace Orang.CommandLine
 
             options = (CommonFindContentCommandOptions)baseOptions;
 
-            int maxMatches = 0;
-            int maxMatchesInFile = 0;
-            int maxMatchingFiles = 0;
+            if (!TryParseAsEnum(Ask, OptionNames.Ask, out AskMode askMode, defaultValue: AskMode.None, OptionValueProviders.AskModeProvider))
+                return false;
 
-            if (MaxCount.Any()
-                && !TryParseMaxCount(MaxCount, out maxMatches, out maxMatchesInFile, out maxMatchingFiles))
+            if (askMode == AskMode.Value
+                && ConsoleOut.Verbosity < Orang.Verbosity.Normal)
             {
+                WriteError($"Option '{OptionNames.GetHelpText(OptionNames.Ask)}' cannot have value '{OptionValueProviders.AskModeProvider.GetValue(nameof(AskMode.Value)).HelpValue}' when '{OptionNames.GetHelpText(OptionNames.Verbosity)}' is set to '{OptionValueProviders.VerbosityProvider.GetValue(ConsoleOut.Verbosity.ToString()).HelpValue}'.");
                 return false;
             }
 
@@ -52,10 +52,8 @@ namespace Orang.CommandLine
                 return false;
             }
 
+            options.AskMode = askMode;
             options.NameFilter = nameFilter;
-            options.MaxMatches = maxMatches;
-            options.MaxMatchesInFile = maxMatchesInFile;
-            options.MaxMatchingFiles = maxMatchingFiles;
 
             return true;
         }

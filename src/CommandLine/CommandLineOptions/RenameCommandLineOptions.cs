@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using CommandLine;
@@ -11,6 +12,10 @@ using static Orang.Logger;
 namespace Orang.CommandLine
 {
     [Verb("rename", HelpText = "Renames files and directories.")]
+    [OptionValueProvider(nameof(Content), OptionValueProviderNames.PatternOptionsWithoutPart)]
+    [OptionValueProvider(nameof(Display), OptionValueProviderNames.Display_NonContent)]
+    [OptionValueProvider(nameof(Highlight), OptionValueProviderNames.RenameHighlightOptions)]
+    [OptionValueProvider(nameof(Name), OptionValueProviderNames.PatternOptionsWithoutGroupAndNegative)]
     internal class RenameCommandLineOptions : CommonFindCommandLineOptions
     {
         [Option(longName: OptionNames.Ask,
@@ -20,7 +25,6 @@ namespace Orang.CommandLine
         [Option(shortName: OptionShortNames.Content, longName: OptionNames.Content,
             HelpText = "Regular expression for files' content. Syntax is <PATTERN> [<PATTERN_OPTIONS>].",
             MetaValue = MetaValues.Regex)]
-        [OptionValueProvider(OptionValueProviderNames.PatternOptionsWithoutPart)]
         public IEnumerable<string> Content { get; set; }
 
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
@@ -32,12 +36,6 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Evaluator)]
         public string Evaluator { get; set; }
 
-        [Option(shortName: OptionShortNames.Highlight, longName: OptionNames.Highlight,
-            HelpText = "Parts of the output to highlight.",
-            MetaValue = MetaValues.Highlight)]
-        [OptionValueProvider(OptionValueProviderNames.RenameHighlightOptions)]
-        public IEnumerable<string> Highlight { get; set; }
-
         [Option(shortName: OptionShortNames.MaxCount, longName: OptionNames.MaxCount,
             HelpText = "Stop deleting after specified number is reached.",
             MetaValue = MetaValues.Number)]
@@ -47,7 +45,6 @@ namespace Orang.CommandLine
             Required = true,
             HelpText = "Regular expression for file or directory name. Syntax is <PATTERN> [<PATTERN_OPTIONS>].",
             MetaValue = MetaValues.Regex)]
-        [OptionValueProvider(OptionValueProviderNames.PatternOptionsWithoutGroupAndNegative)]
         public IEnumerable<string> Name { get; set; }
 
         [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
@@ -107,17 +104,35 @@ namespace Orang.CommandLine
             if (!TryParseDisplay(
                 values: Display,
                 optionName: OptionNames.Display,
-                contentDisplayStyle: out ContentDisplayStyle _,
-                pathDisplayStyle: out PathDisplayStyle pathDisplayStyle,
-                defaultContentDisplayStyle: 0,
-                defaultPathDisplayStyle: PathDisplayStyle.Relative,
+                contentDisplayStyle: out ContentDisplayStyle? _,
+                pathDisplayStyle: out PathDisplayStyle? pathDisplayStyle,
+                lineDisplayOptions: out LineDisplayOptions lineDisplayOptions,
+                displayParts: out DisplayParts displayParts,
+                fileProperties: out ImmutableArray<FileProperty> fileProperties,
+                indent: out string indent,
+                separator: out string separator,
                 contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
-                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider_WithoutOmit))
+                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider))
             {
                 return false;
             }
 
-            options.Format = new OutputDisplayFormat(ContentDisplayStyle.None, pathDisplayStyle);
+            if (pathDisplayStyle == PathDisplayStyle.Relative
+                && options.Paths.Length > 1
+                && options.SortOptions != null)
+            {
+                pathDisplayStyle = PathDisplayStyle.Full;
+            }
+
+            options.Format = new OutputDisplayFormat(
+                contentDisplayStyle: ContentDisplayStyle.None,
+                pathDisplayStyle: pathDisplayStyle ?? PathDisplayStyle.Full,
+                lineOptions: lineDisplayOptions,
+                displayParts: displayParts,
+                fileProperties: fileProperties,
+                indent: indent,
+                separator: separator);
+
             options.HighlightOptions = highlightOptions;
             options.SearchTarget = GetSearchTarget();
             options.Replacement = replacement ?? "";

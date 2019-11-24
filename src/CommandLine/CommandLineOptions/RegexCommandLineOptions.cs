@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using CommandLine;
 using static Orang.CommandLine.ParseHelpers;
@@ -9,17 +10,13 @@ using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
+    [OptionValueProvider(nameof(Display), OptionValueProviderNames.Display_MatchAndSplit)]
     internal abstract class RegexCommandLineOptions : CommonRegexCommandLineOptions
     {
         [Value(index: 0,
             HelpText = "Path to a file that should be analyzed.",
             MetaName = ArgumentMetaNames.Path)]
         public string Path { get; set; }
-
-        [Option(shortName: OptionShortNames.Display, longName: OptionNames.Display,
-            HelpText = "Display of the results.",
-            MetaValue = MetaValues.DisplayOptions)]
-        public IEnumerable<string> Display { get; set; }
 
         [Option(longName: OptionNames.Input,
             HelpText = "Text to search.",
@@ -62,10 +59,15 @@ namespace Orang.CommandLine
                     return false;
                 }
             }
-            else if (input == null)
+            else if (string.IsNullOrEmpty(input))
             {
-                WriteError("Specify either path to a file or text input.");
-                return false;
+                input = ConsoleHelpers.ReadRedirectedInput();
+
+                if (input == null)
+                {
+                    WriteError("Input is missing.");
+                    return false;
+                }
             }
 
             if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
@@ -74,17 +76,28 @@ namespace Orang.CommandLine
             if (!TryParseDisplay(
                 values: Display,
                 optionName: OptionNames.Display,
-                contentDisplayStyle: out ContentDisplayStyle contentDisplayStyle,
-                pathDisplayStyle: out PathDisplayStyle _,
-                defaultContentDisplayStyle: ContentDisplayStyle.Value,
-                defaultPathDisplayStyle: 0,
-                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines,
+                contentDisplayStyle: out ContentDisplayStyle? contentDisplayStyle,
+                pathDisplayStyle: out PathDisplayStyle? _,
+                lineDisplayOptions: out LineDisplayOptions lineDisplayOptions,
+                displayParts: out DisplayParts displayParts,
+                fileProperties: out ImmutableArray<FileProperty> fileProperties,
+                indent: out string indent,
+                separator: out string separator,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLinesAndOmit,
                 pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider))
             {
                 return false;
             }
 
-            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle);
+            options.Format = new OutputDisplayFormat(
+                contentDisplayStyle: contentDisplayStyle ?? ContentDisplayStyle.Value,
+                pathDisplayStyle: PathDisplayStyle.Full,
+                lineOptions: lineDisplayOptions,
+                displayParts: displayParts,
+                fileProperties: fileProperties,
+                indent: indent,
+                separator: separator ?? Environment.NewLine);
+
             options.Input = input;
             options.Output = outputOptions;
 

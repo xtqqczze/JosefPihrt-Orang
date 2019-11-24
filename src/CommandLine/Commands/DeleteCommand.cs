@@ -19,21 +19,45 @@ namespace Orang.CommandLine
 
         protected override void ExecuteFile(string filePath, SearchContext context)
         {
-            SearchTelemetry telemetry = context.Telemetry;
-            telemetry.FileCount++;
-
-            const string indent = null;
+            context.Telemetry.FileCount++;
 
             FileSystemFinderResult? maybeResult = MatchFile(filePath);
 
-            if (maybeResult == null)
-                return;
+            if (maybeResult != null)
+                ProcessResult(maybeResult.Value, context);
+        }
 
-            FileSystemFinderResult result = maybeResult.Value;
-
-            if (Options.ContentFilter != null)
+        protected override void ExecuteDirectory(string directoryPath, SearchContext context)
+        {
+            foreach (FileSystemFinderResult result in Find(directoryPath, context, notifyDirectoryChanged: this))
             {
-                string input = ReadFile(filePath, null, Options.DefaultEncoding, null, indent);
+                Debug.Assert(result.Path.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase), $"{directoryPath}\r\n{result.Path}");
+
+                ProcessResult(result, context, directoryPath);
+
+                if (context.State == SearchState.Canceled)
+                    break;
+
+                if (context.State == SearchState.MaxReached)
+                    break;
+            }
+        }
+
+        private void ProcessResult(
+            FileSystemFinderResult result,
+            SearchContext context,
+            string baseDirectoryPath = null)
+        {
+            Debug.Assert(baseDirectoryPath == null || result.Path.StartsWith(baseDirectoryPath, StringComparison.OrdinalIgnoreCase), $"{baseDirectoryPath}\r\n{result.Path}");
+
+            if (!result.IsDirectory
+                && Options.ContentFilter != null)
+            {
+                string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                    ? Options.Indent
+                    : "";
+
+                string input = ReadFile(result.Path, baseDirectoryPath, Options.DefaultEncoding, context, indent);
 
                 if (input == null)
                     return;
@@ -42,24 +66,63 @@ namespace Orang.CommandLine
                     return;
             }
 
-            telemetry.MatchingFileCount++;
+            ExecuteOrAddResult(result, context, baseDirectoryPath);
+        }
 
-            WritePath(result, null, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent);
-            WriteLine();
+        protected override void ExecuteResult(SearchResult result, SearchContext context, ColumnWidths columnWidths)
+        {
+            ExecuteResult(result.Result, context, result.BaseDirectoryPath, columnWidths);
+        }
+
+        protected override void ExecuteResult(
+            FileSystemFinderResult result,
+            SearchContext context,
+            string baseDirectoryPath = null,
+            ColumnWidths columnWidths = null)
+        {
+            string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                ? Options.Indent
+                : "";
+
+            if (!Options.OmitPath)
+            {
+                WritePath(
+                    result,
+                    baseDirectoryPath,
+                    relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
+                    colors: Colors.Matched_Path,
+                    matchColors: (Options.HighlightMatch) ? Colors.Match : default,
+                    indent: indent,
+                    fileProperties: Options.Format.FileProperties,
+                    columnWidths: columnWidths,
+                    verbosity: Verbosity.Minimal);
+
+                WriteLine(Verbosity.Minimal);
+            }
 
             bool success = false;
 
             if (!Options.DryRun
-                && (!Options.Ask || AskToDelete(context, indent)))
+                && (!Options.Ask || AskToDelete()))
             {
                 try
                 {
-                    FileSystemHelpers.DeleteFile(
-                        filePath,
+                    FileSystemHelpers.Delete(
+                        result,
                         contentOnly: Options.ContentOnly,
-                        includingBom: Options.IncludingBom);
+                        includingBom: Options.IncludingBom,
+                        filesOnly: Options.FilesOnly,
+                        directoriesOnly: Options.DirectoriesOnly);
 
-                    telemetry.ProcessedFileCount++;
+                    if (result.IsDirectory)
+                    {
+                        context.Telemetry.ProcessedDirectoryCount++;
+                    }
+                    else
+                    {
+                        context.Telemetry.ProcessedFileCount++;
+                    }
+
                     success = true;
                 }
                 catch (Exception ex) when (ex is IOException
@@ -72,123 +135,28 @@ namespace Orang.CommandLine
             if (Options.DryRun
                 || success)
             {
-                context.Output?.WriteLine(filePath);
+                context.Output?.WriteLine(result.Path);
             }
 
-            if (Options.MaxMatchingFiles == telemetry.MatchingFileCount + telemetry.MatchingDirectoryCount)
+            if (result.IsDirectory
+                && success)
             {
-                context.State = SearchState.MaxReached;
-            }
-        }
-
-        protected override void ExecuteDirectory(string directoryPath, SearchContext context, FileSystemFinderProgressReporter progress)
-        {
-            SearchTelemetry telemetry = context.Telemetry;
-            string basePath = (Options.PathDisplayStyle == PathDisplayStyle.Full) ? null : directoryPath;
-            string indent = (Options.PathDisplayStyle == PathDisplayStyle.Relative) ? Options.Indent : "";
-
-            foreach (FileSystemFinderResult result in Find(directoryPath, progress, notifyDirectoryChanged: this, context.CancellationToken))
-            {
-                string path = result.Path;
-
-                Debug.Assert(path.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase), $"{directoryPath}\r\n{path}");
-
-                if (result.IsDirectory)
-                {
-                    telemetry.MatchingDirectoryCount++;
-                }
-                else
-                {
-                    if (Options.ContentFilter != null)
-                    {
-                        string input = ReadFile(path, basePath, Options.DefaultEncoding, progress, indent);
-
-                        if (input == null)
-                            continue;
-
-                        if (!Options.ContentFilter.IsMatch(input))
-                            continue;
-                    }
-
-                    telemetry.MatchingFileCount++;
-                }
-
-                EndProgress(progress);
-
-                WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match : default, indent);
-                WriteLine();
-
-                bool success = false;
-
-                if (!Options.DryRun
-                    && (!Options.Ask || AskToDelete(context, indent)))
-                {
-                    try
-                    {
-                        FileSystemHelpers.Delete(
-                            result,
-                            contentOnly: Options.ContentOnly,
-                            includingBom: Options.IncludingBom,
-                            filesOnly: Options.FilesOnly,
-                            directoriesOnly: Options.DirectoriesOnly);
-
-                        if (result.IsDirectory)
-                        {
-                            telemetry.ProcessedDirectoryCount++;
-                        }
-                        else
-                        {
-                            telemetry.ProcessedFileCount++;
-                        }
-
-                        success = true;
-                    }
-                    catch (Exception ex) when (ex is IOException
-                        || ex is UnauthorizedAccessException)
-                    {
-                        WriteFileError(ex, indent: indent);
-                    }
-                }
-
-                if (Options.DryRun
-                    || success)
-                {
-                    context.Output?.WriteLine(path);
-                }
-
-                if (result.IsDirectory
-                    && success)
-                {
-                    OnDirectoryChanged(new DirectoryChangedEventArgs(path, null));
-                }
-
-                if (context.State == SearchState.Canceled)
-                    break;
-
-                if (Options.MaxMatchingFiles == telemetry.MatchingFileCount + telemetry.MatchingDirectoryCount)
-                {
-                    context.State = SearchState.MaxReached;
-                    break;
-                }
+                OnDirectoryChanged(new DirectoryChangedEventArgs(result.Path, null));
             }
 
-            telemetry.SearchedDirectoryCount = progress.SearchedDirectoryCount;
-            telemetry.FileCount = progress.FileCount;
-            telemetry.DirectoryCount = progress.DirectoryCount;
-        }
-
-        private bool AskToDelete(SearchContext context, string indent = null)
-        {
-            try
+            bool AskToDelete()
             {
-                return ConsoleHelpers.Question(
-                    (Options.ContentOnly) ? "Delete content?" : "Delete?",
-                    indent);
-            }
-            catch (OperationCanceledException)
-            {
-                context.State = SearchState.Canceled;
-                return false;
+                try
+                {
+                    return ConsoleHelpers.Question(
+                        (Options.ContentOnly) ? "Delete content?" : "Delete?",
+                        indent);
+                }
+                catch (OperationCanceledException)
+                {
+                    context.State = SearchState.Canceled;
+                    return false;
+                }
             }
         }
 
@@ -197,9 +165,9 @@ namespace Orang.CommandLine
             DirectoryChanged?.Invoke(this, e);
         }
 
-        protected override void WriteSummary(SearchTelemetry telemetry)
+        protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)
         {
-            WriteSearchedFilesAndDirectories(telemetry, Options.SearchTarget);
+            WriteSearchedFilesAndDirectories(telemetry, Options.SearchTarget, verbosity);
 
             string filesTitle = (Options.ContentOnly)
                 ? "Deleted files content"
@@ -209,7 +177,7 @@ namespace Orang.CommandLine
                 ? "Deleted directories content"
                 : "Deleted directories";
 
-            WriteProcessedFilesAndDirectories(telemetry, Options.SearchTarget, filesTitle, directoriesTitle);
+            WriteProcessedFilesAndDirectories(telemetry, Options.SearchTarget, filesTitle, directoriesTitle, verbosity);
         }
     }
 }

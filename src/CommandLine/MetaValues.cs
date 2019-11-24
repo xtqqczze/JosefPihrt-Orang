@@ -12,6 +12,7 @@ namespace Orang.CommandLine
         public const string Evaluator = "<EVALUATOR>";
         public const string ExtensionFilter = "<EXTENSION_FILTER>";
         public const string ExtensionOptions = "<EXTENSION_OPTIONS>";
+        public const string FileProperties = "<FILE_PROPERTIES>";
         public const string FilePath = "<FILE_PATH>";
         public const string Highlight = "<HIGHLIGHT>";
         public const string Input = "<INPUT>";
@@ -20,6 +21,7 @@ namespace Orang.CommandLine
         public const string NamePart = "<NAME_PART>";
         public const string Number = "<NUMBER>";
         public const string OutputOptions = "<OUTPUT_OPTIONS>";
+        public const string SortOptions = "<SORT_OPTIONS>";
         public const string PathDisplay = "<PATH_DISPLAY>";
         public const string PatternOptions = "<PATTERN_OPTIONS>";
         public const string Regex = "<REGEX>";

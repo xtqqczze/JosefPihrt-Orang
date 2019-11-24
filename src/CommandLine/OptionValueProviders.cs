@@ -24,6 +24,7 @@ namespace Orang.CommandLine
             OptionValues.PatternOptions_IgnoreCase,
             OptionValues.PatternOptions_IgnorePatternWhitespace,
             OptionValues.PatternOptions_List,
+            OptionValues.Length,
             OptionValues.ListSeparator,
             OptionValues.PatternOptions_Literal,
             OptionValues.PatternOptions_Multiline,
@@ -261,7 +262,7 @@ namespace Orang.CommandLine
             ContentDisplayStyleProvider.Values.Where(f => f.Name != nameof(ContentDisplayStyle.UnmatchedLines))
         );
 
-        public static OptionValueProvider ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines { get; } = new OptionValueProvider(OptionValueProviderNames.ContentDisplayStyle_WithoutLineAndUnmatchedLines,
+        public static OptionValueProvider ContentDisplayStyleProvider_WithoutLineAndUnmatchedLinesAndOmit { get; } = new OptionValueProvider(OptionValueProviderNames.ContentDisplayStyle_WithoutLineAndUnmatchedLines,
             ContentDisplayStyleProvider.Values.Where(f => f.Name != nameof(ContentDisplayStyle.Line) && f.Name != nameof(ContentDisplayStyle.UnmatchedLines))
         );
 
@@ -271,7 +272,7 @@ namespace Orang.CommandLine
         );
 
         public static OptionValueProvider MaxOptionsProvider { get; } = new OptionValueProvider(MetaValues.MaxOptions,
-            SimpleOptionValue.Create("MatchesInFile", "<NUM>", shortValue: "", description: "Stop searching in each file after <NUM> matches."),
+            SimpleOptionValue.Create("MatchesInFile", "<NUM>", shortValue: "", description: "Stop searching after <NUM> matches (or matches in file when searching in file's content)."),
             OptionValues.MaxMatches,
             OptionValues.MaxMatchingFiles
         );
@@ -282,19 +283,57 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(PathDisplayStyle.Omit, description: "Do not display path.")
         );
 
-        public static OptionValueProvider PathDisplayStyleProvider_WithoutOmit { get; } = new OptionValueProvider(OptionValueProviderNames.PathDisplayStyle_WithoutOmit,
-            PathDisplayStyleProvider.Values.Where(f => f.Name != nameof(PathDisplayStyle.Omit))
-        );
-
         public static OptionValueProvider DisplayProvider { get; } = new OptionValueProvider(MetaValues.DisplayOptions,
             OptionValues.Display_Content,
-            OptionValues.Display_Path
+            OptionValues.Display_Count,
+            OptionValues.Display_CreationTime,
+            OptionValues.Display_Indent,
+            OptionValues.Display_LineNumber,
+            OptionValues.Display_ModifiedTime,
+            OptionValues.Display_Path,
+            OptionValues.Display_Size,
+            OptionValues.Display_Separator,
+            OptionValues.Display_Summary,
+            OptionValues.Display_TrimLine
+        );
+
+        public static OptionValueProvider DisplayProvider_MatchAndSplit { get; } = new OptionValueProvider(OptionValueProviderNames.Display_MatchAndSplit,
+            OptionValues.Display_Content,
+            OptionValues.Display_Indent,
+            OptionValues.Display_Separator,
+            OptionValues.Display_Summary
+        );
+
+        public static OptionValueProvider DisplayProvider_NonContent { get; } = new OptionValueProvider(OptionValueProviderNames.Display_NonContent,
+            OptionValues.Display_CreationTime,
+            OptionValues.Display_Indent,
+            OptionValues.Display_ModifiedTime,
+            OptionValues.Display_Path,
+            OptionValues.Display_Size,
+            OptionValues.Display_Separator,
+            OptionValues.Display_Summary
         );
 
         public static OptionValueProvider OutputOptionsProvider { get; } = new OptionValueProvider(MetaValues.OutputOptions,
             OptionValues.OutputOptions_Content,
             OptionValues.OutputOptions_Path,
             OptionValues.Encoding
+        );
+
+        public static OptionValueProvider SortFlagsProvider { get; } = new OptionValueProvider(MetaValues.SortOptions,
+            SimpleOptionValue.Create(SortFlags.Ascending, description: "Sort items in ascending order."),
+            SimpleOptionValue.Create(SortFlags.CreationTime, description: "Sort items by creation time."),
+            SimpleOptionValue.Create(SortFlags.Descending, description: "Sort items in descending order."),
+            OptionValues.Max,
+            SimpleOptionValue.Create(SortFlags.ModifiedTime, description: "Sort items by last modified time."),
+            SimpleOptionValue.Create(SortFlags.Name, description: "Sort items by full name."),
+            SimpleOptionValue.Create(SortFlags.Size, description: "Sort items by size.")
+        );
+
+        public static OptionValueProvider FilePropertiesProvider { get; } = new OptionValueProvider(MetaValues.FileProperties,
+            OptionValues.FileProperty_CreationTime,
+            OptionValues.FileProperty_ModifiedTime,
+            OptionValues.FileProperty_Size
         );
 
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName

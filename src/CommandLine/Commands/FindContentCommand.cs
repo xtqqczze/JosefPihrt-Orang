@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
@@ -40,222 +42,187 @@ namespace Orang.CommandLine
         {
             context.Telemetry.FileCount++;
 
-            string input = ReadFile(filePath, null, Options.DefaultEncoding);
+            FileSystemFinderResult? maybeResult = MatchFile(filePath);
 
-            if (input != null)
+            if (maybeResult != null)
+                ProcessResult(maybeResult.Value, context, FileWriterOptions);
+        }
+
+        protected override void ExecuteDirectory(string directoryPath, SearchContext context)
+        {
+            foreach (FileSystemFinderResult result in Find(directoryPath, context))
             {
-                Match match = Options.ContentFilter.Regex.Match(input);
+                ProcessResult(result, context, DirectoryWriterOptions, directoryPath);
 
-                if (Options.ContentFilter.IsMatch(match))
-                {
-                    if (!Options.OmitPath)
-                        WritePath(filePath, colors: Colors.Matched_Path, verbosity: Verbosity.Minimal);
+                if (context.State == SearchState.Canceled)
+                    break;
 
-                    WriteMatches(input, match, FileWriterOptions, context);
-
-                    if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
-                        context.State = SearchState.MaxReached;
-
-                    context.Output?.WriteLineIf(Options.Output.IncludePath, filePath);
-                }
+                if (context.State == SearchState.MaxReached)
+                    break;
             }
         }
 
-        protected override void ExecuteDirectory(string directoryPath, SearchContext context, FileSystemFinderProgressReporter progress)
+        private void ProcessResult(
+            FileSystemFinderResult result,
+            SearchContext context,
+            ContentWriterOptions writerOptions,
+            string baseDirectoryPath = null)
         {
-            Regex regex = Options.ContentFilter.Regex;
-            string basePath = (Options.PathDisplayStyle == PathDisplayStyle.Full) ? null : directoryPath;
-            string indent = (Options.PathDisplayStyle == PathDisplayStyle.Relative) ? Options.Indent : "";
+            string input = ReadFile(result.Path, baseDirectoryPath, Options.DefaultEncoding, context);
 
-            foreach (FileSystemFinderResult result in Find(directoryPath, progress, context.CancellationToken))
+            if (input == null)
+                return;
+
+            Match match = Options.ContentFilter.Match(input, context.CancellationToken);
+
+            if (match == null)
+                return;
+
+            ExecuteOrAddResult(result, context, writerOptions, match, input, default(Encoding), baseDirectoryPath);
+        }
+
+        protected override void ExecuteResult(
+            FileSystemFinderResult result,
+            SearchContext context,
+            ContentWriterOptions writerOptions,
+            Match match,
+            string input,
+            Encoding encoding,
+            string baseDirectoryPath = null,
+            ColumnWidths columnWidths = null)
+        {
+            string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                ? Options.Indent
+                : "";
+
+            if (!Options.OmitPath)
             {
-                string input = ReadFile(result.Path, basePath, Options.DefaultEncoding, progress, indent);
-
-                if (input == null)
-                    continue;
-
-                Match match = regex.Match(input);
-
-                if (Options.ContentFilter.IsMatch(match))
-                {
-                    EndProgress(progress);
-
-                    if (!Options.OmitPath)
-                        WritePath(result, basePath, colors: Colors.Matched_Path, matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default, indent: indent, verbosity: Verbosity.Minimal);
-
-                    context.Output?.WriteLineIf(Options.Output.IncludePath, result.Path);
-
-                    if (Options.ContentFilter.IsNegative)
-                    {
-                        context.Telemetry.MatchingFileCount++;
-
-                        WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
-                    }
-                    else
-                    {
-                        WriteMatches(input, match, DirectoryWriterOptions, context);
-
-                        if (context.State == SearchState.Canceled)
-                            break;
-                    }
-
-                    if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
-                        context.State = SearchState.MaxReached;
-
-                    if (context.State == SearchState.MaxReached)
-                        break;
-
-                    if (_askMode == AskMode.File)
-                    {
-                        try
-                        {
-                            if (ConsoleHelpers.Question("Continue without asking?", indent))
-                                _askMode = AskMode.None;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            context.State = SearchState.Canceled;
-                            break;
-                        }
-                    }
-                }
+                WritePath(
+                    result,
+                    baseDirectoryPath,
+                    relativePath: baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative,
+                    colors: Colors.Matched_Path,
+                    matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default,
+                    indent: indent,
+                    fileProperties: Options.Format.FileProperties,
+                    columnWidths: columnWidths,
+                    verbosity: Verbosity.Minimal);
             }
 
-            context.Telemetry.SearchedDirectoryCount = progress.SearchedDirectoryCount;
-            context.Telemetry.DirectoryCount = progress.DirectoryCount;
-            context.Telemetry.FileCount = progress.FileCount;
+            context.Output?.WriteLineIf(Options.Output.IncludePath, result.Path);
+
+            if (Options.ContentFilter.IsNegative)
+            {
+                WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
+            }
+            else
+            {
+                WriteMatches(input, match, writerOptions, context);
+            }
+
+            if (_askMode == AskMode.File)
+            {
+                try
+                {
+                    if (ConsoleHelpers.Question("Continue without asking?", indent))
+                        _askMode = AskMode.None;
+                }
+                catch (OperationCanceledException)
+                {
+                    context.State = SearchState.Canceled;
+                }
+            }
         }
 
         private void WriteMatches(
             string input,
             Match match,
-            MatchWriterOptions writerOptions,
+            ContentWriterOptions writerOptions,
             SearchContext context)
         {
             SearchTelemetry telemetry = context.Telemetry;
 
-            telemetry.MatchingFileCount++;
+            ContentWriter contentWriter = null;
+            List<Group> groups = null;
 
-            int fileMatchCount = 0;
-            var maxReason = MaxReason.None;
-
-            if (_storage != null
-                || Options.AskMode == AskMode.Value
-                || ShouldLog(Verbosity.Normal))
+            try
             {
-                if (!Options.OmitPath)
-                {
-                    if (Options.AskMode == AskMode.Value)
-                    {
-                        ConsoleOut.WriteLine();
-                    }
-                    else if (ConsoleOut.Verbosity >= Verbosity.Normal)
-                    {
-                        ConsoleOut.WriteLine(Verbosity.Normal);
-                    }
+                groups = ListCache<Group>.GetInstance();
 
-                    if (Out?.Verbosity >= Verbosity.Normal)
-                        Out.WriteLine(Verbosity.Normal);
+                GetGroups(match, writerOptions.GroupNumber, context, isPathWritten: !Options.OmitPath, predicate: Options.ContentFilter.Predicate, groups: groups);
+
+                if (_storage != null
+                    || Options.AskMode == AskMode.Value
+                    || ShouldLog(Verbosity.Normal))
+                {
+                    MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
+
+                    contentWriter = ContentWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _storage, outputInfo, ask: _askMode == AskMode.Value);
+                }
+                else
+                {
+                    contentWriter = new EmptyContentWriter(null, writerOptions);
                 }
 
-                MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
+                WriteMatches(contentWriter, groups, context);
 
-                using (MatchWriter matchWriter = MatchWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _storage, outputInfo, ask: _askMode == AskMode.Value))
+                telemetry.MatchCount += contentWriter.MatchCount;
+
+                if (contentWriter.MatchingLineCount >= 0)
                 {
-                    maxReason = WriteMatches(matchWriter, match, context);
-                    fileMatchCount += matchWriter.MatchCount;
+                    if (telemetry.MatchingLineCount == -1)
+                        telemetry.MatchingLineCount = 0;
 
-                    if (matchWriter.MatchingLineCount >= 0)
+                    telemetry.MatchingLineCount += contentWriter.MatchingLineCount;
+                }
+
+                if (_askMode == AskMode.Value)
+                {
+                    if (contentWriter is AskValueContentWriter askValueContentWriter)
                     {
-                        if (telemetry.MatchingLineCount == -1)
-                            telemetry.MatchingLineCount = 0;
-
-                        telemetry.MatchingLineCount += matchWriter.MatchingLineCount;
+                        if (!askValueContentWriter.Ask)
+                            _askMode = AskMode.None;
                     }
-
-                    if (_askMode == AskMode.Value)
+                    else if (contentWriter is AskLineContentWriter askLineContentWriter)
                     {
-                        if (matchWriter is AskValueMatchWriter askValueMatchWriter)
-                        {
-                            if (!askValueMatchWriter.Ask)
-                                _askMode = AskMode.None;
-                        }
-                        else if (matchWriter is AskLineMatchWriter askLineMatchWriter)
-                        {
-                            if (!askLineMatchWriter.Ask)
-                                _askMode = AskMode.None;
-                        }
+                        if (!askLineContentWriter.Ask)
+                            _askMode = AskMode.None;
                     }
                 }
             }
-            else
+            finally
             {
-                fileMatchCount = EnumerateValues();
-            }
+                contentWriter?.Dispose();
 
-            if (Options.AskMode != AskMode.Value
-                && !Options.OmitPath)
-            {
-                if (ConsoleOut.Verbosity == Verbosity.Minimal)
-                {
-                    ConsoleOut.Write($" {fileMatchCount.ToString("n0")}", Colors.Message_OK);
-                    ConsoleOut.WriteIf(maxReason == MaxReason.CountExceedsMax, "+", Colors.Message_OK);
-                    ConsoleOut.WriteLine();
-                }
-
-                if (Out?.Verbosity == Verbosity.Minimal)
-                {
-                    Out.Write($" {fileMatchCount.ToString("n0")}");
-                    Out.WriteIf(maxReason == MaxReason.CountExceedsMax, "+");
-                    Out.WriteLine();
-                }
-            }
-
-            telemetry.MatchCount += fileMatchCount;
-
-            int EnumerateValues()
-            {
-                using (var matchWriter = new EmptyMatchWriter(null, writerOptions))
-                {
-                    maxReason = WriteMatches(matchWriter, match, context);
-
-                    if (matchWriter.MatchingLineCount >= 0)
-                    {
-                        if (telemetry.MatchingLineCount == -1)
-                            telemetry.MatchingLineCount = 0;
-
-                        telemetry.MatchingLineCount += matchWriter.MatchingLineCount;
-                    }
-
-                    return matchWriter.MatchCount;
-                }
+                if (groups != null)
+                    ListCache<Group>.Free(groups);
             }
         }
 
-        protected override void WriteSummary(SearchTelemetry telemetry)
+        protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)
         {
-            WriteSearchedFilesAndDirectories(telemetry, Options.SearchTarget);
+            WriteSearchedFilesAndDirectories(telemetry, Options.SearchTarget, verbosity);
 
-            if (!ShouldLog(Verbosity.Minimal))
+            if (!ShouldLog(verbosity))
                 return;
 
-            WriteLine(Verbosity.Minimal);
-            WriteCount("Matches", telemetry.MatchCount, Colors.Message_OK, Verbosity.Minimal);
-            Write("  ", Colors.Message_OK, Verbosity.Minimal);
+            WriteLine(verbosity);
+            WriteCount("Matches", telemetry.MatchCount, Colors.Message_OK, verbosity);
+            Write("  ", Colors.Message_OK, verbosity);
 
             if (telemetry.MatchingLineCount > 0)
             {
-                WriteCount("Matching lines", telemetry.MatchingLineCount, Colors.Message_OK, Verbosity.Minimal);
-                Write("  ", Colors.Message_OK, Verbosity.Minimal);
+                WriteCount("Matching lines", telemetry.MatchingLineCount, Colors.Message_OK, verbosity);
+                Write("  ", Colors.Message_OK, verbosity);
             }
 
             if (telemetry.MatchingFileCount > 0)
-                WriteCount("Matching files", telemetry.MatchingFileCount, Colors.Message_OK, Verbosity.Minimal);
+                WriteCount("Matching files", telemetry.MatchingFileCount, Colors.Message_OK, verbosity);
 
-            WriteLine(Verbosity.Minimal);
+            WriteLine(verbosity);
         }
 
-        protected override MatchWriterOptions CreateMatchWriteOptions(string indent)
+        protected override ContentWriterOptions CreateMatchWriteOptions(string indent)
         {
             int groupNumber = Options.ContentFilter.GroupNumber;
 
@@ -263,7 +230,7 @@ namespace Orang.CommandLine
                 ? new GroupDefinition(groupNumber, Options.ContentFilter.GroupName)
                 : default(GroupDefinition?);
 
-            return new MatchWriterOptions(
+            return new ContentWriterOptions(
                 format: Options.Format,
                 groupDefinition,
                 symbols: Symbols,

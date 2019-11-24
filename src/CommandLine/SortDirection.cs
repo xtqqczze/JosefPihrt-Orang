@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Orang.FileSystem
+namespace Orang.CommandLine
 {
-    internal enum ProgressReporterMode
+    public enum SortDirection
     {
-        None = 0,
-        Path = 1,
-        Dot = 2,
+        Ascending = 0,
+        Descending = 1
     }
 }

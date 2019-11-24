@@ -25,6 +25,8 @@ orang delete [<PATH>]
 [-o|--output]             <OUTPUT_OPTIONS>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
+[-p|--properties]         <FILE_PROPERTIES>
+[-s|--sort]               <SORT_OPTIONS>
 [-v|--verbosity]          <VERBOSITY>
 [   --file-log]           <FILE_LOG>
 ```
@@ -51,7 +53,7 @@ File attributes that should be skipped\. Allowed values are archive, compressed,
 
 **`[-c|--content] <REGEX>`**
 
-Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
+Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, length=\<NUM>, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
 **`[--content-only]`**
 
@@ -59,7 +61,7 @@ Delete content of a file or directory but not the file or directory itself\.
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
-Display of the results\. Allowed values are \[c\]ontent=\<CONTENT\_DISPLAY> and \[p\]ath=\<PATH\_DISPLAY>\.
+Display of the results\. Allowed values are \[c\]reation\-\[t\]ime, indent=\<INDENT>, \[m\]odified\-time, \[p\]ath=\<PATH\_DISPLAY>, \[s\]ize, separator=\<SEPARATOR> and summary\.
 
 **`[-d|--dry-run]`**
 
@@ -83,7 +85,7 @@ Parts of the output to highlight\. Allowed values are \[n\]one, \[m\]atch, \[e\]
 
 **`[-i|--include-directory] <REGEX>`**
 
-Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
+Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, length=\<NUM>, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
 **`[--including-bom]`**
 
@@ -95,7 +97,7 @@ Stop renaming after specified number is reached\.
 
 **`-n|--name <REGEX>`**
 
-Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
+Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, length=\<NUM>, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
 **`[--no-recurse]`**
 
@@ -111,7 +113,15 @@ Read the list of paths to search from a file\. Paths should be separated by newl
 
 **`[--progress]`**
 
-Display dot \(\.\) for every tenth searched directory\.
+Display dot \(\.\) for every hundredth searched file or directory\.
+
+**`[-p|--properties] <FILE_PROPERTIES>`**
+
+A filter for file properties\. Allowed values are \[c\]reation\-time=\<DATE>, \[m\]odified\-time=\<DATE> and \[s\]ize=\<NUM>\.
+
+**`[-s|--sort] <SORT_OPTIONS>`**
+
+Sort matched files and directories\. Allowed values are \[a\]scending, \[c\]reation\-time, \[d\]escending, max=\<NUM>, \[m\]odified\-time, \[n\]ame and \[s\]ize\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 
