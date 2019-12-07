@@ -9,18 +9,16 @@ namespace Orang.FileSystem
     internal class FileSystemFinderProgressReporter : IProgress<FileSystemFinderProgress>
     {
         public FileSystemFinderProgressReporter(
-            string baseDirectoryPath,
             ProgressReportMode consoleReportMode,
             ProgressReportMode fileLogReportMode,
             CommonFindCommandOptions options)
         {
-            BaseDirectoryPath = baseDirectoryPath;
             ConsoleReportMode = consoleReportMode;
             FileLogReportMode = fileLogReportMode;
             Options = options;
         }
 
-        public string BaseDirectoryPath { get; }
+        public string BaseDirectoryPath { get; set; }
 
         public ProgressReportMode ConsoleReportMode { get; }
 
@@ -49,24 +47,13 @@ namespace Orang.FileSystem
                     {
                         SearchedDirectoryCount++;
 
-                        if (ConsoleReportMode == ProgressReportMode.Dot)
+                        if (ConsoleReportMode == ProgressReportMode.Path)
                         {
-                            if (SearchedDirectoryCount % 10 == 0)
-                            {
-                                ConsoleOut.Write(".", Colors.Path_Progress);
-                                ProgressReported = true;
-                            }
-
-                            if (FileLogReportMode == ProgressReportMode.Path)
-                                WritePath(value);
-                        }
-                        else if (ConsoleReportMode == ProgressReportMode.Path)
-                        {
-                            WritePath(value, verbosity: Verbosity.Detailed);
+                            WritePath(value, verbosity: Verbosity.Diagnostic);
                         }
                         else if (FileLogReportMode == ProgressReportMode.Path)
                         {
-                            WritePath(value);
+                            WritePath(value, indent: null);
                         }
 
                         break;
@@ -74,13 +61,13 @@ namespace Orang.FileSystem
                 case ProgressKind.Directory:
                     {
                         DirectoryCount++;
-                        WritePath(value, indent: Options.Indent, verbosity: Verbosity.Diagnostic);
+                        WritePath(value);
                         break;
                     }
                 case ProgressKind.File:
                     {
                         FileCount++;
-                        WritePath(value, indent: Options.Indent, verbosity: Verbosity.Diagnostic);
+                        WritePath(value);
                         break;
                     }
                 default:
@@ -92,8 +79,37 @@ namespace Orang.FileSystem
 
         private void WritePath(in FileSystemFinderProgress value)
         {
-            Out.WritePath(value.Path, BaseDirectoryPath, relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative, verbosity: Verbosity.Detailed);
-            Out.WriteLine(Verbosity.Detailed);
+            if (ConsoleReportMode == ProgressReportMode.Dot)
+            {
+                if ((FileCount + DirectoryCount) % 100 == 0)
+                {
+                    ConsoleOut.Write(".", Colors.Path_Progress);
+                    ProgressReported = true;
+                }
+
+                if (FileLogReportMode == ProgressReportMode.Path)
+                    WritePath(value, indent: Options.Indent);
+            }
+            else if (ConsoleReportMode == ProgressReportMode.Path)
+            {
+                WritePath(value, indent: Options.Indent, verbosity: Verbosity.Diagnostic);
+            }
+            else if (FileLogReportMode == ProgressReportMode.Path)
+            {
+                WritePath(value, indent: Options.Indent);
+            }
+        }
+
+        private void WritePath(in FileSystemFinderProgress value, string indent)
+        {
+            Out.WritePath(
+                value.Path,
+                BaseDirectoryPath,
+                relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
+                indent: indent,
+                verbosity: Verbosity.Diagnostic);
+
+            Out.WriteLine(Verbosity.Diagnostic);
         }
 
         private void WritePath(in FileSystemFinderProgress value, string indent = null, Verbosity verbosity = Verbosity.Quiet)

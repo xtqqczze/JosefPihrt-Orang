@@ -18,6 +18,12 @@ Orang is distributed as a [.NET Core global tool](https://docs.microsoft.com/en-
 dotnet install tool -g orang.dotnet.cli
 ```
 
+To install non-alpha version run:
+
+```
+dotnet install tool -g orang.dotnet.cli --version 0.1.0-beta
+```
+
 To update Orang run:
 
 ```
@@ -50,6 +56,12 @@ For a full list of commands, parameters and parameter values run:
 
 ```
 orang help [command] [-v]
+```
+
+For a full manual run:
+
+```
+orang help -m [-v]
 ```
 
 For a full list of .NET regular expressions syntax run:

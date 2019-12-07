@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using CommandLine;
 using static Orang.CommandLine.ParseHelpers;
@@ -9,6 +10,7 @@ using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
+    [OptionValueProvider(nameof(Display), OptionValueProviderNames.Display_MatchAndSplit)]
     internal abstract class RegexCommandLineOptions : CommonRegexCommandLineOptions
     {
         [Value(index: 0,
@@ -62,7 +64,7 @@ namespace Orang.CommandLine
                     return false;
                 }
             }
-            else
+            else if (string.IsNullOrEmpty(input))
             {
                 input = ConsoleHelpers.ReadRedirectedInput();
 
@@ -79,12 +81,14 @@ namespace Orang.CommandLine
             if (!TryParseDisplay(
                 values: Display,
                 optionName: OptionNames.Display,
-                contentDisplayStyle: out ContentDisplayStyle contentDisplayStyle,
-                pathDisplayStyle: out PathDisplayStyle _,
-                includeSummary: out bool includeSummary,
-                defaultContentDisplayStyle: ContentDisplayStyle.Value,
-                defaultPathDisplayStyle: 0,
-                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLines,
+                contentDisplayStyle: out ContentDisplayStyle? contentDisplayStyle,
+                pathDisplayStyle: out PathDisplayStyle? _,
+                lineDisplayOptions: out LineDisplayOptions lineDisplayOptions,
+                displayParts: out DisplayParts displayParts,
+                fileProperties: out ImmutableArray<FileProperty> fileProperties,
+                indent: out string indent,
+                separator: out string separator,
+                contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider_WithoutLineAndUnmatchedLinesAndOmit,
                 pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider))
             {
                 return false;
@@ -97,7 +101,15 @@ namespace Orang.CommandLine
             if (modifyOptions.HasAnyFunction)
                 contentDisplayStyle = ContentDisplayStyle.Value;
 
-            options.Format = new OutputDisplayFormat(contentDisplayStyle: contentDisplayStyle, includeSummary: includeSummary);
+            options.Format = new OutputDisplayFormat(
+                contentDisplayStyle: contentDisplayStyle ?? ContentDisplayStyle.Value,
+                pathDisplayStyle: PathDisplayStyle.Full,
+                lineOptions: lineDisplayOptions,
+                displayParts: displayParts,
+                fileProperties: fileProperties,
+                indent: indent,
+                separator: separator ?? Environment.NewLine);
+
             options.ModifyOptions = modifyOptions;
             options.Input = input;
             options.Output = outputOptions;

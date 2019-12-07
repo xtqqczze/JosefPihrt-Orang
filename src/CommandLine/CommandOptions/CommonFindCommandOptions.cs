@@ -42,6 +42,10 @@ namespace Orang.CommandLine
 
         public int MaxMatchingFiles { get; internal set; }
 
+        public SortOptions SortOptions { get; internal set; }
+
+        public FilePropertyFilter FilePropertyFilter { get; internal set; }
+
         public ContentDisplayStyle ContentDisplayStyle => Format.ContentDisplayStyle;
 
         public PathDisplayStyle PathDisplayStyle => Format.PathDisplayStyle;

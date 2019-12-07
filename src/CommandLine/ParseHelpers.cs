@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Orang.Expressions;
 using Orang.FileSystem;
 using static Orang.Logger;
 
@@ -15,6 +16,163 @@ namespace Orang.CommandLine
 {
     internal static class ParseHelpers
     {
+        public static bool TryParseFileProperties(
+            IEnumerable<string> values,
+            string optionName,
+            out FilePropertyFilter filter)
+        {
+            filter = null;
+            Func<long, bool> sizePredicate = null;
+            Func<DateTime, bool> creationTimePredicate = null;
+            Func<DateTime, bool> modifiedTimePredicate = null;
+
+            foreach (string value in values)
+            {
+                try
+                {
+                    Expression expression = Expression.Parse(value);
+
+                    if (OptionValues.FileProperty_Size.IsKeyOrShortKey(expression.Identifier))
+                    {
+                        if (expression.Kind == ExpressionKind.DecrementExpression)
+                        {
+                            WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid expression '{value}'.");
+                            return false;
+                        }
+
+                        sizePredicate = PredicateHelpers.GetLongPredicate(expression);
+                    }
+                    else if (OptionValues.FileProperty_CreationTime.IsKeyOrShortKey(expression.Identifier))
+                    {
+                        creationTimePredicate = PredicateHelpers.GetDateTimePredicate(expression);
+                    }
+                    else if (OptionValues.FileProperty_ModifiedTime.IsKeyOrShortKey(expression.Identifier))
+                    {
+                        modifiedTimePredicate = PredicateHelpers.GetDateTimePredicate(expression);
+                    }
+                    else
+                    {
+                        WriteParseError(value, optionName, OptionValueProviders.FilePropertiesProvider);
+                        return false;
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid expression '{value}'.");
+                    return false;
+                }
+            }
+
+            filter = new FilePropertyFilter(
+                sizePredicate: sizePredicate,
+                creationTimePredicate: creationTimePredicate,
+                modifiedTimePredicate: modifiedTimePredicate);
+
+            return true;
+        }
+
+        public static bool TryParseSortOptions(
+            IEnumerable<string> values,
+            string optionName,
+            out SortOptions sortOptions)
+        {
+            sortOptions = null;
+            int maxCount = 0;
+
+            List<string> options = null;
+
+            if (!values.Any())
+                return true;
+
+            foreach (string value in values)
+            {
+                int index = value.IndexOf('=');
+
+                if (index >= 0)
+                {
+                    string key = value.Substring(0, index);
+                    string value2 = value.Substring(index + 1);
+
+                    if (OptionValues.Max.IsKeyOrShortKey(key))
+                    {
+                        if (!TryParseCount(value2, out maxCount, value))
+                            return false;
+                    }
+                    else
+                    {
+                        WriteParseError(value, optionName, OptionValueProviders.SortFlagsProvider);
+                        return false;
+                    }
+                }
+                else
+                {
+                    (options ?? (options = new List<string>())).Add(value);
+                }
+            }
+
+            if (!TryParseAsEnumValues(options, optionName, out ImmutableArray<SortFlags> flags, provider: OptionValueProviders.SortFlagsProvider))
+                return false;
+
+            SortDirection direction = (flags.Contains(SortFlags.Descending))
+                ? SortDirection.Descending
+                : SortDirection.Ascending;
+
+            List<SortDescriptor> descriptors = null;
+
+            foreach (SortFlags flag in flags)
+            {
+                switch (flag)
+                {
+                    case SortFlags.Name:
+                        {
+                            AddDescriptor(SortProperty.Name, direction);
+                            break;
+                        }
+                    case SortFlags.CreationTime:
+                        {
+                            AddDescriptor(SortProperty.CreationTime, direction);
+                            break;
+                        }
+                    case SortFlags.ModifiedTime:
+                        {
+                            AddDescriptor(SortProperty.ModifiedTime, direction);
+                            break;
+                        }
+                    case SortFlags.Size:
+                        {
+                            AddDescriptor(SortProperty.Size, direction);
+                            break;
+                        }
+                    case SortFlags.None:
+                    case SortFlags.Ascending:
+                    case SortFlags.Descending:
+                        {
+                            break;
+                        }
+                    default:
+                        {
+                            throw new InvalidOperationException($"Unknown enum value '{flag}'.");
+                        }
+                }
+            }
+
+            if (descriptors != null)
+            {
+                sortOptions = new SortOptions(descriptors.ToImmutableArray(), maxCount: maxCount);
+            }
+            else
+            {
+                sortOptions = new SortOptions(ImmutableArray.Create(new SortDescriptor(SortProperty.Name, SortDirection.Ascending)), maxCount: maxCount);
+            }
+
+            return true;
+
+            void AddDescriptor(SortProperty p, SortDirection d)
+            {
+                (descriptors ?? (descriptors = new List<SortDescriptor>())).Add(new SortDescriptor(p, d));
+            }
+        }
+
         public static bool TryParseOutputOptions(
             IEnumerable<string> values,
             string optionName,
@@ -47,7 +205,7 @@ namespace Orang.CommandLine
                     }
                     else
                     {
-                        OnError(value);
+                        WriteParseError(value, optionName, OptionValueProviders.OutputOptionsProvider);
                         return false;
                     }
                 }
@@ -61,7 +219,7 @@ namespace Orang.CommandLine
                 }
                 else
                 {
-                    OnError(value);
+                    WriteParseError(value, optionName, OptionValueProviders.OutputOptionsProvider);
                     return false;
                 }
             }
@@ -74,13 +232,6 @@ namespace Orang.CommandLine
 
             outputOptions = new OutputOptions(path, encoding ?? Encoding.UTF8, includeContent: includeContent, includePath: includePath);
             return true;
-
-            void OnError(string value)
-            {
-                string helpText = OptionValueProviders.OutputOptionsProvider.GetHelpText();
-
-                WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.");
-            }
         }
 
         public static bool TryParseModifyOptions(
@@ -180,45 +331,25 @@ namespace Orang.CommandLine
         public static bool TryParseDisplay(
             IEnumerable<string> values,
             string optionName,
-            out ContentDisplayStyle contentDisplayStyle,
-            out PathDisplayStyle pathDisplayStyle,
-            out bool includeSummary,
-            ContentDisplayStyle defaultContentDisplayStyle,
-            PathDisplayStyle defaultPathDisplayStyle,
-            OptionValueProvider contentDisplayStyleProvider = null,
-            OptionValueProvider pathDisplayStyleProvider = null)
-        {
-            if (!TryParseDisplay(
-                values: values,
-                optionName: optionName,
-                contentDisplayStyle: out ContentDisplayStyle? contentDisplayStyle2,
-                pathDisplayStyle: out PathDisplayStyle? pathDisplayStyle2,
-                includeSummary: out includeSummary,
-                contentDisplayStyleProvider: contentDisplayStyleProvider,
-                pathDisplayStyleProvider: pathDisplayStyleProvider))
-            {
-                contentDisplayStyle = 0;
-                pathDisplayStyle = 0;
-                return false;
-            }
-
-            contentDisplayStyle = contentDisplayStyle2 ?? defaultContentDisplayStyle;
-            pathDisplayStyle = pathDisplayStyle2 ?? defaultPathDisplayStyle;
-            return true;
-        }
-
-        public static bool TryParseDisplay(
-            IEnumerable<string> values,
-            string optionName,
             out ContentDisplayStyle? contentDisplayStyle,
             out PathDisplayStyle? pathDisplayStyle,
-            out bool includeSummary,
+            out LineDisplayOptions lineDisplayOptions,
+            out DisplayParts displayParts,
+            out ImmutableArray<FileProperty> fileProperties,
+            out string indent,
+            out string separator,
             OptionValueProvider contentDisplayStyleProvider = null,
             OptionValueProvider pathDisplayStyleProvider = null)
         {
             contentDisplayStyle = null;
             pathDisplayStyle = null;
-            includeSummary = false;
+            lineDisplayOptions = LineDisplayOptions.None;
+            displayParts = DisplayParts.None;
+            fileProperties = ImmutableArray<FileProperty>.Empty;
+            indent = null;
+            separator = null;
+
+            ImmutableArray<FileProperty>.Builder builder = null;
 
             foreach (string value in values)
             {
@@ -243,6 +374,14 @@ namespace Orang.CommandLine
 
                         pathDisplayStyle = pathDisplayStyle2;
                     }
+                    else if (OptionValues.Display_Indent.IsKeyOrShortKey(key))
+                    {
+                        indent = value2;
+                    }
+                    else if (OptionValues.Display_Separator.IsKeyOrShortKey(key))
+                    {
+                        separator = value2;
+                    }
                     else
                     {
                         ThrowException(value);
@@ -250,13 +389,48 @@ namespace Orang.CommandLine
                 }
                 else if (OptionValues.Display_Summary.IsValueOrShortValue(value))
                 {
-                    includeSummary = true;
+                    displayParts |= DisplayParts.Summary;
+                }
+                else if (OptionValues.Display_Count.IsValueOrShortValue(value))
+                {
+                    displayParts |= DisplayParts.Count;
+                }
+                else if (OptionValues.Display_CreationTime.IsValueOrShortValue(value))
+                {
+                    (builder ?? (builder = ImmutableArray.CreateBuilder<FileProperty>())).Add(FileProperty.CreationTime);
+                }
+                else if (OptionValues.Display_ModifiedTime.IsValueOrShortValue(value))
+                {
+                    (builder ?? (builder = ImmutableArray.CreateBuilder<FileProperty>())).Add(FileProperty.ModifiedTime);
+                }
+                else if (OptionValues.Display_Size.IsValueOrShortValue(value))
+                {
+                    (builder ?? (builder = ImmutableArray.CreateBuilder<FileProperty>())).Add(FileProperty.Size);
+                }
+                else if (OptionValues.Display_LineNumber.IsValueOrShortValue(value))
+                {
+                    lineDisplayOptions |= LineDisplayOptions.IncludeLineNumber;
+                }
+                else if (OptionValues.Display_TrimLine.IsValueOrShortValue(value))
+                {
+                    lineDisplayOptions |= LineDisplayOptions.TrimLine;
+                }
+                else if (OptionValues.Display_TrimLine.IsValueOrShortValue(value))
+                {
+                    lineDisplayOptions |= LineDisplayOptions.TrimLine;
+                }
+                else if (OptionValues.Display_TrimLine.IsValueOrShortValue(value))
+                {
+                    lineDisplayOptions |= LineDisplayOptions.TrimLine;
                 }
                 else
                 {
                     ThrowException(value);
                 }
             }
+
+            if (builder != null)
+                fileProperties = builder.ToImmutableArray();
 
             return true;
 
@@ -306,9 +480,7 @@ namespace Orang.CommandLine
                     }
                     else
                     {
-                        string helpText = OptionValueProviders.FileLogOptionsProvider.GetHelpText();
-
-                        WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.");
+                        WriteParseError(value, optionName, OptionValueProviders.FileLogOptionsProvider);
                         return false;
                     }
                 }
@@ -337,6 +509,7 @@ namespace Orang.CommandLine
             string groupName = null;
             NamePartKind namePart = defaultNamePart;
             string separator = null;
+            Func<Group, bool> predicate = null;
 
             List<string> options;
 
@@ -350,7 +523,7 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            return TryParseFilter(pattern, options, matchTimeout, groupName, namePart, optionName, separator, out filter, provider, includedPatternOptions);
+            return TryParseFilter(pattern, options, matchTimeout, groupName, namePart, optionName, separator, predicate, out filter, provider, includedPatternOptions);
 
             IEnumerable<string> EnumerateOptions()
             {
@@ -365,34 +538,9 @@ namespace Orang.CommandLine
                     {
                         string option = en.Current;
 
-                        int index = option.IndexOf('=');
-
-                        if (index >= 0)
+                        if (Expression.TryParse(option, out Expression expression))
                         {
-                            string key = option.Substring(0, index);
-                            string value = option.Substring(index + 1);
-
-                            if (OptionValues.Group.IsKeyOrShortKey(key))
-                            {
-                                groupName = value;
-                            }
-                            else if (OptionValues.ListSeparator.IsKeyOrShortKey(key))
-                            {
-                                separator = value;
-                            }
-                            else if (OptionValues.Part.IsKeyOrShortKey(key))
-                            {
-                                if (!TryParseAsEnum(value, out namePart, provider: OptionValueProviders.NamePartKindProvider))
-                                {
-                                    string helpText = OptionValueProviders.NamePartKindProvider?.GetHelpText() ?? OptionValue.GetDefaultHelpText<NamePartKind>();
-                                    throw new ArgumentException($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.", nameof(values));
-                                }
-                            }
-                            else if (OptionValues.Timeout.IsKeyOrShortKey(key))
-                            {
-                                matchTimeout = ParseMatchTimeout(value);
-                            }
-                            else
+                            if (!ParseExpression(expression))
                             {
                                 string helpText = (provider ?? OptionValueProviders.PatternOptionsProvider).GetHelpText();
 
@@ -406,6 +554,58 @@ namespace Orang.CommandLine
                     }
                 }
             }
+
+            bool ParseExpression(Expression expression)
+            {
+                string key = expression.Identifier;
+
+                if (expression.Kind == ExpressionKind.EqualsExpression)
+                {
+                    var equalsExpression = (BinaryExpression)expression;
+                    string value = equalsExpression.Value;
+
+                    if (OptionValues.Group.IsKeyOrShortKey(key))
+                    {
+                        groupName = value;
+                        return true;
+                    }
+                    else if (OptionValues.ListSeparator.IsKeyOrShortKey(key))
+                    {
+                        separator = value;
+                        return true;
+                    }
+                    else if (OptionValues.Part.IsKeyOrShortKey(key))
+                    {
+                        if (!TryParseAsEnum(value, out namePart, provider: OptionValueProviders.NamePartKindProvider))
+                        {
+                            string helpText = OptionValueProviders.NamePartKindProvider?.GetHelpText() ?? OptionValue.GetDefaultHelpText<NamePartKind>();
+                            throw new ArgumentException($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.", nameof(values));
+                        }
+
+                        return true;
+                    }
+                    else if (OptionValues.Timeout.IsKeyOrShortKey(key))
+                    {
+                        matchTimeout = ParseMatchTimeout(value);
+                        return true;
+                    }
+                }
+
+                if (expression.Kind != ExpressionKind.DecrementExpression
+                    && OptionValues.Length.IsKeyOrShortKey(key))
+                {
+                    try
+                    {
+                        predicate = PredicateHelpers.GetLengthPredicate(expression);
+                        return true;
+                    }
+                    catch (ArgumentException)
+                    {
+                    }
+                }
+
+                return false;
+            }
         }
 
         private static bool TryParseFilter(
@@ -416,6 +616,7 @@ namespace Orang.CommandLine
             NamePartKind namePart,
             string optionName,
             string separator,
+            Func<Group, bool> predicate,
             out Filter filter,
             OptionValueProvider provider = null,
             PatternOptions includedPatternOptions = PatternOptions.None)
@@ -501,7 +702,7 @@ namespace Orang.CommandLine
                 }
             }
 
-            filter = new Filter(regex, namePart, groupNumber: groupIndex, isNegative: (patternOptions & PatternOptions.Negative) != 0);
+            filter = new Filter(regex, namePart, groupNumber: groupIndex, isNegative: (patternOptions & PatternOptions.Negative) != 0, predicate);
             return true;
         }
 
@@ -678,9 +879,7 @@ namespace Orang.CommandLine
         {
             if (!TryParseAsEnum(value, out result, defaultValue, provider))
             {
-                string helpText = provider?.GetHelpText() ?? OptionValue.GetDefaultHelpText<TEnum>();
-
-                WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.");
+                WriteParseError(value, optionName, provider?.GetHelpText() ?? OptionValue.GetDefaultHelpText<TEnum>());
                 return false;
             }
 
@@ -774,8 +973,7 @@ namespace Orang.CommandLine
                     }
                     else
                     {
-                        string helpText = OptionValueProviders.MaxOptionsProvider.GetHelpText();
-                        WriteError($"Option '{OptionNames.GetHelpText(OptionNames.MaxCount)}' has invalid value '{value}'. Allowed values: {helpText}.");
+                        WriteParseError(value, OptionNames.MaxCount, OptionValueProviders.MaxOptionsProvider);
                         return false;
                     }
                 }
@@ -786,15 +984,15 @@ namespace Orang.CommandLine
             }
 
             return true;
+        }
 
-            bool TryParseCount(string value, out int count, string value2 = null)
-            {
-                if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out count))
-                    return true;
+        private static bool TryParseCount(string value, out int count, string value2 = null)
+        {
+            if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out count))
+                return true;
 
-                WriteError($"Option '{OptionNames.GetHelpText(OptionNames.MaxCount)}' has invalid value '{value2 ?? value}'.");
-                return false;
-            }
+            WriteError($"Option '{OptionNames.GetHelpText(OptionNames.MaxCount)}' has invalid value '{value2 ?? value}'.");
+            return false;
         }
 
         private static TimeSpan ParseMatchTimeout(string value)
@@ -845,6 +1043,18 @@ namespace Orang.CommandLine
                 result = null;
                 return false;
             }
+        }
+
+        private static void WriteParseError(string value, string optionName, OptionValueProvider provider)
+        {
+            string helpText = provider.GetHelpText();
+
+            WriteParseError(value, optionName, helpText);
+        }
+
+        private static void WriteParseError(string value, string optionName, string helpText)
+        {
+            WriteError($"Option '{OptionNames.GetHelpText(optionName)}' has invalid value '{value}'. Allowed values: {helpText}.");
         }
     }
 }

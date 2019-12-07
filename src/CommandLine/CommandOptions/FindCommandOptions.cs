@@ -8,8 +8,6 @@ namespace Orang.CommandLine
         {
         }
 
-        public AskMode AskMode { get; internal set; }
-
         public ModifyOptions ModifyOptions { get; internal set; }
     }
 }

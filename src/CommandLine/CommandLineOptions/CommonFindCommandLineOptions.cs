@@ -12,6 +12,7 @@ using static Orang.CommandLine.ParseHelpers;
 
 namespace Orang.CommandLine
 {
+    [OptionValueProvider(nameof(AttributesToSkip), OptionValueProviderNames.FileSystemAttributesToSkip)]
     internal abstract class CommonFindCommandLineOptions : CommonRegexCommandLineOptions
     {
         private FileSystemAttributes FileSystemAttributes { get; set; }
@@ -29,7 +30,6 @@ namespace Orang.CommandLine
         [Option(longName: OptionNames.AttributesToSkip,
             HelpText = "File attributes that should be skipped.",
             MetaValue = MetaValues.Attributes)]
-        [OptionValueProvider(OptionValueProviderNames.FileSystemAttributesToSkip)]
         public IEnumerable<string> AttributesToSkip { get; set; }
 
         [Option(longName: OptionNames.Encoding,
@@ -41,6 +41,11 @@ namespace Orang.CommandLine
             HelpText = "A filter for file extensions. Syntax is EXT1[,EXT2,...] [<EXTENSION_OPTIONS>].",
             MetaValue = MetaValues.ExtensionFilter)]
         public IEnumerable<string> Extension { get; set; }
+
+        [Option(shortName: OptionShortNames.Properties, longName: OptionNames.Properties,
+            HelpText = "A filter for file properties.",
+            MetaValue = MetaValues.FileProperties)]
+        public IEnumerable<string> FileProperties { get; set; }
 
         [Option(shortName: OptionShortNames.IncludeDirectory, longName: OptionNames.IncludeDirectory,
             HelpText = "Regular expression for a directory name. Syntax is <PATTERN> [<PATTERN_OPTIONS>].",
@@ -57,8 +62,13 @@ namespace Orang.CommandLine
         public string PathsFrom { get; set; }
 
         [Option(longName: OptionNames.Progress,
-            HelpText = "Display dot (.) for every tenth searched directory.")]
+            HelpText = "Display dot (.) for every hundredth searched file or directory.")]
         public bool Progress { get; set; }
+
+        [Option(shortName: OptionShortNames.Sort, longName: OptionNames.Sort,
+            HelpText = "Sort matched files and directories.",
+            MetaValue = MetaValues.SortOptions)]
+        public IEnumerable<string> Sort { get; set; }
 
         public bool TryParse(ref CommonFindCommandOptions options)
         {
@@ -81,6 +91,9 @@ namespace Orang.CommandLine
             if (!TryParseEncoding(Encoding, out Encoding defaultEncoding, EncodingHelpers.UTF8NoBom))
                 return false;
 
+            if (!TryParseSortOptions(Sort, OptionNames.Sort, out SortOptions sortOptions))
+                return false;
+
             Filter directoryFilter = null;
 
             if (IncludeDirectory.Any()
@@ -99,6 +112,14 @@ namespace Orang.CommandLine
                     provider: OptionValueProviders.ExtensionOptionsProvider,
                     defaultNamePart: NamePartKind.Extension,
                     includedPatternOptions: PatternOptions.List | PatternOptions.WholeInput))
+            {
+                return false;
+            }
+
+            if (!TryParseFileProperties(
+                FileProperties,
+                OptionNames.Properties,
+                out FilePropertyFilter filePropertyFilter))
             {
                 return false;
             }
@@ -126,6 +147,8 @@ namespace Orang.CommandLine
             options.RecurseSubdirectories = !NoRecurse;
             options.Progress = Progress;
             options.DefaultEncoding = defaultEncoding;
+            options.SortOptions = sortOptions;
+            options.FilePropertyFilter = filePropertyFilter;
 
             FileSystemAttributes = attributes;
 

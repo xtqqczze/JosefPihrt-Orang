@@ -28,18 +28,21 @@ namespace Orang.CommandLine
 
             WriteLine();
 
-            if (Options.IncludeSummary)
+            if (ShouldLog(Verbosity.Detailed)
+                || Options.IncludeSummary)
             {
-                WriteGroups(splitData.GroupDefinitions);
-                WriteLine(Verbosity.Minimal);
+                Verbosity verbosity = (Options.IncludeSummary) ? Verbosity.Minimal : Verbosity.Detailed;
+
+                WriteGroups(splitData.GroupDefinitions, verbosity: verbosity);
+                WriteLine(verbosity);
 
                 WriteCount(
                     (Options.ContentDisplayStyle == ContentDisplayStyle.Value && Options.ModifyOptions.HasAnyFunction) ? "Values" : "Splits",
                     count,
                     Colors.Message_OK,
-                    Verbosity.Minimal);
+                    verbosity);
 
-                WriteLine(Verbosity.Minimal);
+                WriteLine(verbosity);
             }
 
             return (count > 0) ? CommandResult.Success : CommandResult.NoSuccess;

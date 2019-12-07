@@ -14,12 +14,14 @@ namespace Orang.CommandLine
         public const char Highlight = 't';
         public const char IncludeDirectory = 'i';
         public const char Input = 'i';
-        public const char LineNumber = 'l';
+        public const char Manual = 'm';
         public const char MaxCount = 'm';
         public const char Name = 'n';
         public const char Output = 'o';
+        public const char Properties = 'p';
         public const char Replacement = 'r';
         public const char Section = 's';
+        public const char Sort = 's';
         public const char Values = 'v';
         public const char Verbosity = 'v';
     }

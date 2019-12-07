@@ -28,28 +28,31 @@ namespace Orang.CommandLine
             if (count > 0)
                 WriteLine();
 
-            if (Options.IncludeSummary)
+            if (ShouldLog(Verbosity.Detailed)
+                || Options.IncludeSummary)
             {
-                WriteGroups(matchData.GroupDefinitions);
-                WriteLine(Verbosity.Minimal);
+                Verbosity verbosity = (Options.IncludeSummary) ? Verbosity.Minimal : Verbosity.Detailed;
 
-            if (Options.ContentDisplayStyle == ContentDisplayStyle.Value
-                && Options.ModifyOptions.HasAnyFunction)
-            {
-                WriteCount("Values", count, Colors.Message_OK, Verbosity.Minimal);
-            }
-            else
-            {
-                WriteCount("Matches", matchData.Count, Colors.Message_OK, Verbosity.Minimal);
+                WriteGroups(matchData.GroupDefinitions, verbosity: verbosity);
+                WriteLine(verbosity);
 
-                if (count != matchData.Count)
+                if (Options.ContentDisplayStyle == ContentDisplayStyle.Value
+                    && Options.ModifyOptions.HasAnyFunction)
                 {
-                    Write("  ", Colors.Message_OK, Verbosity.Minimal);
-                    WriteCount("Captures", count, Colors.Message_OK, Verbosity.Minimal);
+                    WriteCount("Values", count, Colors.Message_OK, verbosity);
                 }
+                else
+                {
+                    WriteCount("Matches", matchData.Count, Colors.Message_OK, verbosity);
+
+                    if (count != matchData.Count)
+                    {
+                        Write("  ", Colors.Message_OK, verbosity);
+                        WriteCount("Captures", count, Colors.Message_OK, verbosity);
+                    }
                 }
 
-                WriteLine(Verbosity.Minimal);
+                WriteLine(verbosity);
             }
 
             return (count > 0) ? CommandResult.Success : CommandResult.NoSuccess;

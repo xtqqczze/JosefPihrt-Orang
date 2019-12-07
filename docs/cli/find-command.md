@@ -16,7 +16,6 @@ orang find [<PATH>]
 [-h|--help]
 [-t|--highlight]          <HIGHLIGHT>
 [-i|--include-directory]  <REGEX>
-[-l|--line-number]
 [-m|--max-count]          <MAX_OPTIONS>
 [   --modify]             <MODIFY_OPTIONS>
 [-n|--name]               <REGEX>
@@ -24,6 +23,8 @@ orang find [<PATH>]
 [-o|--output]             <OUTPUT_OPTIONS>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
+[-p|--properties]         <FILE_PROPERTIES>
+[-s|--sort]               <SORT_OPTIONS>
 [-v|--verbosity]          <VERBOSITY>
 [   --file-log]           <FILE_LOG>
 ```
@@ -38,7 +39,7 @@ Path to one or more files and/or directories that should be searched\.
 
 **`[--ask] <ASK_MODE>`**
 
-Ask for continuation after each file or value\. Allowed values are \[f\]ile and \[v\]alue\.
+Ask for permission after each file or value\. Allowed values are \[f\]ile and \[v\]alue\.
 
 **`[-a|--attributes] <ATTRIBUTES>`**
 
@@ -50,11 +51,11 @@ File attributes that should be skipped\. Allowed values are archive, compressed,
 
 **`[-c|--content] <REGEX>`**
 
-Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
+Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, length=\<NUM>, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, n\[e\]gative, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
-Display of the results\. Allowed values are \[c\]ontent=\<CONTENT\_DISPLAY> and \[p\]ath=\<PATH\_DISPLAY>\.
+Display of the results\. Allowed values are \[c\]ontent=\<CONTENT\_DISPLAY>, count, \[c\]reation\-time, indent=\<INDENT>, \[l\]ine\-number, \[m\]odified\-time, \[p\]ath=\<PATH\_DISPLAY>, \[s\]ize, separator=\<SEPARATOR>, summary and \[t\]rim\-line\.
 
 **`[--encoding] <ENCODING>`**
 
@@ -62,7 +63,7 @@ Encoding to use when a file does not contain byte order mark\. Default encoding 
 
 **`[-e|--extension] <EXTENSION_FILTER>`**
 
-A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are \[c\]ulture\-\[i\]nvariant, \[f\]rom\-file, \[i\]gnore\-case, \[li\]st\-\[s\]eparator, \[l\]iteral, \[neg\]ative and timeout=\<NUM>\.
+A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are \[c\]ulture\-\[i\]nvariant, \[f\]rom\-file, \[i\]gnore\-case, \[li\]st\-\[s\]eparator, \[l\]iteral, n\[e\]gative and timeout=\<NUM>\.
 
 **`[-h|--help]`**
 
@@ -74,11 +75,7 @@ Parts of the output to highlight\. Allowed values are \[n\]one, \[m\]atch, \[e\]
 
 **`[-i|--include-directory] <REGEX>`**
 
-Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
-
-**`[-l|--line-number]`**
-
-Include line number\.
+Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, length=\<NUM>, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, n\[e\]gative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
 **`[-m|--max-count] <MAX_OPTIONS>`**
 
@@ -90,7 +87,7 @@ Allowed values are \[m\]ethod=\<METHOD>, \[a\]ggregate, \[c\]ulture\-\[i\]nvaria
 
 **`[-n|--name] <REGEX>`**
 
-Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, \[neg\]ative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
+Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, \[c\]ulture\-\[i\]nvariant, \[e\]cma\-\[s\]cript, \[n\] explicit\-capture, \[f\]rom\-file, \[g\]roup=\<GROUP\_NAME>, \[i\]gnore\-case, \[x\] ignore\-pattern\-whitespace, \[li\]st, length=\<NUM>, \[li\]st\-\[s\]eparator, \[l\]iteral, \[m\]ultiline, n\[e\]gative, \[p\]art=\<NAME\_PART>, \[r\]ight\-to\-left, \[s\]ingleline, timeout=\<NUM>, \[w\]hole\-\[i\]nput, \[w\]hole\-\[l\]ine and \[w\]hole\-word\.
 
 **`[--no-recurse]`**
 
@@ -106,7 +103,15 @@ Read the list of paths to search from a file\. Paths should be separated by newl
 
 **`[--progress]`**
 
-Display dot \(\.\) for every tenth searched directory\.
+Display dot \(\.\) for every hundredth searched file or directory\.
+
+**`[-p|--properties] <FILE_PROPERTIES>`**
+
+A filter for file properties\. Allowed values are \[c\]reation\-time=\<DATE>, \[m\]odified\-time=\<DATE> and \[s\]ize=\<NUM>\.
+
+**`[-s|--sort] <SORT_OPTIONS>`**
+
+Sort matched files and directories\. Allowed values are \[a\]scending, \[c\]reation\-time, \[d\]escending, max=\<NUM>, \[m\]odified\-time, \[n\]ame and \[s\]ize\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 
@@ -115,6 +120,12 @@ The amount of information to display in the log\. Allowed values are \[q\]uiet, 
 **`[--file-log] <FILE_LOG>`**
 
 Syntax is \<LOG\_PATH> \[\<LOG\_OPTIONS>\]\. Allowed values are \[v\]erbosity=\<VERBOSITY> and \[a\]ppend\.
+
+## Samples
+
+## Use Redirected Input
+
+Piped output from a previous command will be treated as a list of paths separated by newlines.
 
 ## Samples
 
