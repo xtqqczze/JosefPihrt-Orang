@@ -151,11 +151,14 @@ namespace Orang.CommandLine
 
             stopwatch.Stop();
 
-            if (ShouldLog(Verbosity.Detailed)
-                || Options.IncludeSummary)
+            if (!OmitSummary)
             {
-                context.Telemetry.Elapsed = stopwatch.Elapsed;
-                WriteSummary(context.Telemetry, (Options.IncludeSummary) ? Verbosity.Minimal : Verbosity.Detailed);
+                if (ShouldLog(Verbosity.Detailed)
+                    || Options.IncludeSummary)
+                {
+                    context.Telemetry.Elapsed = stopwatch.Elapsed;
+                    WriteSummary(context.Telemetry, (Options.IncludeSummary) ? Verbosity.Minimal : Verbosity.Detailed);
+                }
             }
         }
 
