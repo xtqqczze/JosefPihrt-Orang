@@ -307,31 +307,33 @@ namespace Orang.CommandLine
 
                     } while (en.MoveNext());
 
-                    WriteLine(Verbosity.Minimal);
-                    WriteCount("Values", count, verbosity: Verbosity.Minimal);
-                    WriteLine(Verbosity.Minimal);
+                    if (ShouldLog(Verbosity.Detailed)
+                        || Options.IncludeSummary)
+                    {
+                        WriteLine(Verbosity.Minimal);
+                        WriteCount("Values", count, verbosity: Verbosity.Minimal);
+                        WriteLine(Verbosity.Minimal);
+                    }
                 }
             }
 
             List<string> Intersect()
             {
-                var list = new List<string>(GetValuesInRange(0, _storageIndexes[0]));
+                var list = new List<string>(GetRange(0, _storageIndexes[0]));
 
                 for (int i = 1; i < _storageIndexes.Count; i++)
                 {
-                    IEnumerable<string> second = GetValuesInRange(_storageIndexes[i - 1], _storageIndexes[i]);
+                    IEnumerable<string> second = GetRange(_storageIndexes[i - 1], _storageIndexes[i]);
 
                     list = list.Intersect(second).ToList();
                 }
 
                 return list;
-            }
 
-            IEnumerable<string> GetValuesInRange(int start, int endIndex)
-            {
-                for (int i = start; i < endIndex; i++)
+                IEnumerable<string> GetRange(int start, int end)
                 {
-                    yield return allValues[i];
+                    for (int i = start; i < end; i++)
+                        yield return allValues[i];
                 }
             }
         }

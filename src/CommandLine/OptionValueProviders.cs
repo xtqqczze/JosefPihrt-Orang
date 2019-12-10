@@ -135,6 +135,7 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(SyntaxSection.Substitutions)
         );
 
+        //TODO: sort=ascending,descending
         public static OptionValueProvider ModifyFlagsProvider { get; } = new OptionValueProvider(MetaValues.ModifyOptions,
             OptionValues.Method,
             SimpleOptionValue.Create(ModifyFlags.Aggregate, description: "Display list of all values at the end of search."),
