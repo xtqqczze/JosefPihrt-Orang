@@ -28,11 +28,6 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.ModifyOptions)]
         public IEnumerable<string> Modify { get; set; }
 
-        [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
-            HelpText = "Path to a file that should store results. Syntax is <PATH> [<OUTPUT_OPTIONS>].",
-            MetaValue = MetaValues.OutputOptions)]
-        public IEnumerable<string> Output { get; set; }
-
         public bool TryParse(ref RegexCommandOptions options)
         {
             var baseOptions = (CommonRegexCommandOptions)options;
@@ -75,9 +70,6 @@ namespace Orang.CommandLine
                 }
             }
 
-            if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
-                return false;
-
             if (!TryParseDisplay(
                 values: Display,
                 optionName: OptionNames.Display,
@@ -112,7 +104,6 @@ namespace Orang.CommandLine
 
             options.ModifyOptions = modifyOptions;
             options.Input = input;
-            options.Output = outputOptions;
 
             return true;
         }

@@ -19,11 +19,6 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Regex)]
         public IEnumerable<string> Content { get; set; }
 
-        [Option(shortName: OptionShortNames.Output, longName: OptionNames.Output,
-            HelpText = "Path to a file that should store results. Syntax is <PATH> [<OUTPUT_OPTIONS>].",
-            MetaValue = MetaValues.OutputOptions)]
-        public IEnumerable<string> Output { get; set; }
-
         [Option(longName: OptionNames.Modify,
             HelpText = "",
             MetaValue = MetaValues.ModifyOptions)]
@@ -79,9 +74,6 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            if (!TryParseOutputOptions(Output, OptionNames.Output, out OutputOptions outputOptions))
-                return false;
-
             if (!TryParseMaxCount(MaxCount, out int maxCount, out int maxMatches, out int maxMatchingFiles))
                 return false;
 
@@ -118,7 +110,6 @@ namespace Orang.CommandLine
             options.HighlightOptions = highlightOptions;
             options.SearchTarget = GetSearchTarget();
             options.ContentFilter = contentFilter;
-            options.Output = outputOptions;
             options.MaxMatchesInFile = maxMatchesInFile;
             options.MaxMatches = maxMatches;
             options.MaxMatchingFiles = maxMatchingFiles;

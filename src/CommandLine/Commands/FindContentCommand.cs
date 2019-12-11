@@ -42,23 +42,15 @@ namespace Orang.CommandLine
             if (aggregate)
             {
                 _storage = new ListResultStorage();
-            }
-            else if (Options.OutputPath != null
-                && Options.Output.IncludeContent)
-            {
-                _storage = new TextWriterResultStorage(context.Output);
-            }
 
-            if (_storage != null
-                && (Options.ModifyOptions.Functions & ModifyFunctions.Intersect) != 0)
-            {
-                _storageIndexes = new List<int>();
+                if ((Options.ModifyOptions.Functions & ModifyFunctions.Intersect) != 0)
+                    _storageIndexes = new List<int>();
             }
 
             base.ExecuteCore(context);
 
             if (aggregate)
-                WriteAggregatedValues(context);
+                WriteAggregatedValues();
         }
 
         protected override void ExecuteFile(string filePath, SearchContext context)
@@ -131,8 +123,6 @@ namespace Orang.CommandLine
                     columnWidths: columnWidths,
                     verbosity: Verbosity.Minimal);
             }
-
-            context.Output?.WriteLineIf(Options.Output.IncludePath, result.Path);
 
             if (Options.ContentFilter.IsNegative)
             {
@@ -276,7 +266,7 @@ namespace Orang.CommandLine
             }
         }
 
-        private void WriteAggregatedValues(SearchContext context)
+        private void WriteAggregatedValues()
         {
             int count = 0;
 
@@ -296,13 +286,13 @@ namespace Orang.CommandLine
                     ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
                     var valueWriter = new ValueWriter(includeEndingIndent: false, verbosity: Verbosity.Minimal);
 
-                    WriteLine(Verbosity.Minimal);
+                    ConsoleOut.WriteLineIf(ConsoleOut.Verbosity > Verbosity.Minimal || (ConsoleOut.Verbosity == Verbosity.Minimal && Options.PathDisplayStyle != PathDisplayStyle.Omit));
+                    Out?.WriteLineIf(Out.Verbosity > Verbosity.Minimal || (Out.Verbosity == Verbosity.Minimal && Options.PathDisplayStyle != PathDisplayStyle.Omit));
 
                     do
                     {
                         valueWriter.Write(en.Current, symbols, colors, boundaryColors);
                         WriteLine(Verbosity.Minimal);
-                        context.Output?.WriteLine(en.Current);
                         count++;
 
                     } while (en.MoveNext());
@@ -361,7 +351,7 @@ namespace Orang.CommandLine
             WriteLine(verbosity);
         }
 
-        protected override ContentWriterOptions CreateMatchWriteOptions(string indent)
+        protected override ContentWriterOptions CreateContentWriterOptions(string indent)
         {
             int groupNumber = Options.ContentFilter.GroupNumber;
 
