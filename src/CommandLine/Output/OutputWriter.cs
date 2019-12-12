@@ -38,10 +38,14 @@ namespace Orang.CommandLine
                 || options.ContentDisplayStyle == ContentDisplayStyle.ValueDetail)
             {
                 bool addDetails = options.ContentDisplayStyle == ContentDisplayStyle.ValueDetail;
+                MatchOutputInfo outputInfo = null;
+                string indent = null;
 
-                MatchOutputInfo outputInfo = (addDetails) ? MatchOutputInfo.Create(matchData, groupNumber) : null;
-
-                string indent = (addDetails) ? new string(' ', outputInfo.Width) : null;
+                if (addDetails)
+                {
+                    outputInfo = MatchOutputInfo.Create(matchData, groupNumber);
+                    indent = new string(' ', outputInfo.Width);
+                }
 
                 int count = 0;
 
@@ -112,7 +116,7 @@ namespace Orang.CommandLine
 
                                 if (addDetails)
                                 {
-                                    Write(outputInfo.GetText(
+                                    Write(outputInfo!.GetText(
                                         captureItem,
                                         i + 1,
                                         j + 1,
@@ -215,10 +219,14 @@ namespace Orang.CommandLine
                 else
                 {
                     bool addDetails = options.ContentDisplayStyle == ContentDisplayStyle.ValueDetail;
+                SplitOutputInfo outputInfo = null;
+                string indent = null;
 
-                    SplitOutputInfo outputInfo = (addDetails) ? SplitOutputInfo.Create(splitData) : null;
-
-                    string indent = (addDetails) ? new string(' ', outputInfo.Width) : null;
+                if (addDetails)
+                {
+                    outputInfo = SplitOutputInfo.Create(splitData);
+                    indent = new string(' ', outputInfo.Width);
+                }
 
                     using (IEnumerator<SplitItem> en = splitData.Items.GetEnumerator())
                     {
@@ -233,7 +241,7 @@ namespace Orang.CommandLine
                                 SplitItem item = en.Current;
 
                                 if (addDetails)
-                                    Write(outputInfo.GetText(item));
+                                    Write(outputInfo!.GetText(item));
 
                                 valueWriter.WriteSplit(item.Value, symbols, splitColors, boundaryColors);
 

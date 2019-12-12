@@ -311,7 +311,7 @@ namespace Orang.CommandLine
                             }
                             else if (ConsoleHelpers.Question("Replace content?", indent))
                             {
-                                File.WriteAllText(filePath, textWriter.ToString(), encoding);
+                                File.WriteAllText(filePath, textWriter!.ToString(), encoding);
                             }
                             else
                             {
