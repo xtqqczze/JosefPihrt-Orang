@@ -109,7 +109,7 @@ namespace Orang.CommandLine
                 {
                     if (options.Help)
                     {
-                        string commandName = typeof(AbstractCommandLineOptions).GetCustomAttribute<VerbAttribute>().Name;
+                        string commandName = options.GetType().GetCustomAttribute<VerbAttribute>().Name;
 
                         Console.WriteLine(HelpProvider.GetHelpText(commandName));
 
@@ -126,17 +126,17 @@ namespace Orang.CommandLine
                     {
                         ConsoleOut.Verbosity = defaultVerbosity;
 
-                        if (TryParseFileLogOptions(options.FileLog, OptionNames.FileLog, out string fileLogPath, out FileLogFlags fileLogFlags, out Verbosity fileLogVerbosity))
+                        if (TryParseOutputOptions(options.Output, OptionNames.Output, out string filePath, out Verbosity fileVerbosity, out Encoding encoding, out bool append))
                         {
-                            if (fileLogPath != null)
+                            if (filePath != null)
                             {
-                                FileMode fileMode = ((fileLogFlags & FileLogFlags.Append) != 0)
+                                FileMode fileMode = (append)
                                     ? FileMode.Append
                                     : FileMode.Create;
 
-                                var stream = new FileStream(fileLogPath, fileMode, FileAccess.Write, FileShare.Read);
-                                var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096, leaveOpen: false);
-                                Out = new TextWriterWithVerbosity(writer) { Verbosity = fileLogVerbosity };
+                                var stream = new FileStream(filePath, fileMode, FileAccess.Write, FileShare.Read);
+                                var writer = new StreamWriter(stream, encoding, bufferSize: 4096, leaveOpen: false);
+                                Out = new TextWriterWithVerbosity(writer) { Verbosity = fileVerbosity };
                             }
 
                             success = true;

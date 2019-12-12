@@ -29,12 +29,6 @@ namespace Orang.CommandLine
             if (ConsoleOut.Verbosity >= Verbosity.Minimal)
                 _askMode = Options.AskMode;
 
-            if (Options.OutputPath != null
-                && Options.Output.IncludeContent)
-            {
-                _storage = new TextWriterResultStorage(context.Output);
-            }
-
             base.ExecuteCore(context);
         }
 
@@ -108,8 +102,6 @@ namespace Orang.CommandLine
                     columnWidths: columnWidths,
                     verbosity: Verbosity.Minimal);
             }
-
-            context.Output?.WriteLineIf(Options.Output.IncludePath, result.Path);
 
             if (Options.ContentFilter.IsNegative)
             {
@@ -222,7 +214,7 @@ namespace Orang.CommandLine
             WriteLine(verbosity);
         }
 
-        protected override ContentWriterOptions CreateMatchWriteOptions(string indent)
+        protected override ContentWriterOptions CreateContentWriterOptions(string indent)
         {
             int groupNumber = Options.ContentFilter.GroupNumber;
 
