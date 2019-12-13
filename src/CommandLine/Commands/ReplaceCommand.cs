@@ -127,7 +127,7 @@ namespace Orang.CommandLine
             ContentWriterOptions writerOptions,
             string baseDirectoryPath = null)
         {
-            string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
                 ? Options.Indent
                 : "";
 
@@ -156,25 +156,12 @@ namespace Orang.CommandLine
             string baseDirectoryPath = null,
             ColumnWidths columnWidths = null)
         {
-            string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
                 ? Options.Indent
                 : "";
 
             if (!Options.OmitPath)
-            {
-                WritePath(
-                    result,
-                    baseDirectoryPath,
-                    relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
-                    colors: Colors.Matched_Path,
-                    matchColors: (Options.HighlightMatch) ? Colors.Match_Path : default,
-                    indent: indent,
-                    fileProperties: Options.Format.FileProperties,
-                    columnWidths: columnWidths,
-                    verbosity: Verbosity.Minimal);
-            }
-
-            ReplaceMatches(result.Path, encoding, input, match, indent, writerOptions, context);
+                WritePath(context, result, baseDirectoryPath, indent, columnWidths);
         }
 
         private string ReadFile(
@@ -210,7 +197,7 @@ namespace Orang.CommandLine
                     ex,
                     filePath,
                     basePath,
-                    relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
+                    relativePath: Options.DisplayRelativePath,
                     indent: indent);
 
                 return null;

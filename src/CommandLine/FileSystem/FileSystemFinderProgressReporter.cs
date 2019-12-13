@@ -88,15 +88,20 @@ namespace Orang.FileSystem
                 }
 
                 if (FileReportMode == ProgressReportMode.Path)
-                    WritePath(value, indent: Options.Indent);
+                    WritePath(value, indent: GetIndent());
             }
             else if (ConsoleReportMode == ProgressReportMode.Path)
             {
-                WritePath(value, indent: Options.Indent, verbosity: Verbosity.Diagnostic);
+                WritePath(value, indent: GetIndent(), verbosity: Verbosity.Diagnostic);
             }
             else if (FileReportMode == ProgressReportMode.Path)
             {
-                WritePath(value, indent: Options.Indent);
+                WritePath(value, indent: GetIndent());
+            }
+
+            string GetIndent()
+            {
+                return (Options.DisplayRelativePath) ? Options.Indent : "";
             }
         }
 
@@ -105,7 +110,7 @@ namespace Orang.FileSystem
             Out.WritePath(
                 value.Path,
                 BaseDirectoryPath,
-                relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
+                relativePath: Options.DisplayRelativePath,
                 indent: indent,
                 verbosity: Verbosity.Diagnostic);
 
@@ -117,7 +122,7 @@ namespace Orang.FileSystem
             LogHelpers.WritePath(
                 value.Path,
                 BaseDirectoryPath,
-                relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
+                relativePath: Options.DisplayRelativePath,
                 colors: Colors.Path_Progress,
                 indent: indent,
                 verbosity: verbosity);
