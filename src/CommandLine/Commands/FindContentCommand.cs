@@ -193,7 +193,7 @@ namespace Orang.CommandLine
                             telemetry.MatchCount++;
                         }
 
-                        _storageIndexes?.Add(_storage.Count);
+                        _storageIndexes?.Add(_storage!.Count);
                     }
                     else
                     {
@@ -210,7 +210,7 @@ namespace Orang.CommandLine
                         _storage?.Add(value);
                     }
 
-                    _storageIndexes?.Add(_storage.Count);
+                    _storageIndexes?.Add(_storage!.Count);
                 }
                 else
                 {
