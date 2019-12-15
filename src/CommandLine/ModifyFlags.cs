@@ -11,16 +11,18 @@ namespace Orang
         Distinct = 1,
         Sort = 1 << 1,
         SortDescending = 1 << 2,
-        Intersect = 1 << 3,
-        RemoveEmpty = 1 << 4,
-        RemoveWhiteSpace = 1 << 5,
-        TrimStart = 1 << 6,
-        TrimEnd = 1 << 7,
+        Except = 1 << 3,
+        Intersect = 1 << 4,
+        ExceptIntersect = Except | Intersect,
+        RemoveEmpty = 1 << 5,
+        RemoveWhiteSpace = 1 << 6,
+        TrimStart = 1 << 7,
+        TrimEnd = 1 << 8,
         Trim = TrimStart | TrimEnd,
-        ToUpper = 1 << 8,
-        ToLower = 1 << 9,
-        Aggregate = 1 << 10,
-        IgnoreCase = 1 << 11,
-        CultureInvariant = 1 << 12
+        ToUpper = 1 << 9,
+        ToLower = 1 << 10,
+        Aggregate = 1 << 11,
+        IgnoreCase = 1 << 12,
+        CultureInvariant = 1 << 13
     }
 }

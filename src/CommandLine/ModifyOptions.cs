@@ -33,6 +33,25 @@ namespace Orang
 
         public Func<IEnumerable<string>, IEnumerable<string>> Modify { get; }
 
+        public StringComparer StringComparer
+        {
+            get
+            {
+                if (IgnoreCase)
+                {
+                    return (CultureInvariant)
+                        ? StringComparer.InvariantCultureIgnoreCase
+                        : StringComparer.CurrentCultureIgnoreCase;
+                }
+                else
+                {
+                    return (CultureInvariant)
+                        ? StringComparer.InvariantCulture
+                        : StringComparer.CurrentCulture;
+                }
+            }
+        }
+
         public bool HasAnyFunction
         {
             get

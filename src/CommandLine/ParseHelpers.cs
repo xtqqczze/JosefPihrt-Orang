@@ -218,6 +218,12 @@ namespace Orang.CommandLine
                 return false;
             }
 
+            if ((modifyFlags & ModifyFlags.ExceptIntersect) == ModifyFlags.ExceptIntersect)
+            {
+                WriteError($"Values '{OptionValues.ModifyFlags_Except.HelpValue}' and '{OptionValues.ModifyFlags_Intersect.HelpValue}' cannot be use both at the same time.");
+                return false;
+            }
+
             var functions = ModifyFunctions.None;
 
             if ((modifyFlags & ModifyFlags.Distinct) != 0)
@@ -228,6 +234,9 @@ namespace Orang.CommandLine
 
             if ((modifyFlags & ModifyFlags.SortDescending) != 0)
                 functions |= ModifyFunctions.SortDescending;
+
+            if ((modifyFlags & ModifyFlags.Except) != 0)
+                functions |= ModifyFunctions.Except;
 
             if ((modifyFlags & ModifyFlags.Intersect) != 0)
                 functions |= ModifyFunctions.Intersect;

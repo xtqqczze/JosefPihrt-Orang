@@ -100,19 +100,7 @@ namespace Orang
             if (filter != null)
                 functions &= filter.Value;
 
-            StringComparer comparer;
-            if (options.IgnoreCase)
-            {
-                comparer = (options.CultureInvariant)
-                    ? StringComparer.InvariantCultureIgnoreCase
-                    : StringComparer.CurrentCultureIgnoreCase;
-            }
-            else
-            {
-                comparer = (options.CultureInvariant)
-                    ? StringComparer.InvariantCulture
-                    : StringComparer.CurrentCulture;
-            }
+            StringComparer comparer = options.StringComparer;
 
             bool trimStart = (functions & ModifyFunctions.TrimStart) != 0;
             bool trimEnd = (functions & ModifyFunctions.TrimEnd) != 0;

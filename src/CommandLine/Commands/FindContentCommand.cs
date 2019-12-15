@@ -34,7 +34,7 @@ namespace Orang.CommandLine
             if (ConsoleOut.Verbosity >= Verbosity.Minimal)
                 _askMode = Options.AskMode;
 
-            bool aggregate = (Options.ModifyOptions.Functions & ModifyFunctions.Intersect) != 0
+            bool aggregate = (Options.ModifyOptions.Functions & ModifyFunctions.ExceptIntersect) != 0
                 || (Options.ModifyOptions.Aggregate
                     && (Options.ModifyOptions.Modify != null
                         || (Options.ModifyOptions.Functions & ModifyFunctions.Enumerable) != 0));
@@ -43,7 +43,7 @@ namespace Orang.CommandLine
             {
                 _storage = new ListResultStorage();
 
-                if ((Options.ModifyOptions.Functions & ModifyFunctions.Intersect) != 0)
+                if ((Options.ModifyOptions.Functions & ModifyFunctions.ExceptIntersect) != 0)
                     _storageIndexes = new List<int>();
             }
 
@@ -258,14 +258,33 @@ namespace Orang.CommandLine
         private void WriteAggregatedValues()
         {
             int count = 0;
-
+            ModifyOptions modifyOptions = Options.ModifyOptions;
             List<string> allValues = ((ListResultStorage)_storage).Values;
 
             if (_storageIndexes?.Count > 1)
-                allValues = Intersect();
+            {
+                Debug.Assert((modifyOptions.Functions & ModifyFunctions.ExceptIntersect) != 0, modifyOptions.Functions.ToString());
+
+                if ((modifyOptions.Functions & ModifyFunctions.Except) != 0)
+                {
+                    if (_storageIndexes.Count > 2)
+                        throw new InvalidOperationException("'Except' operation cannot be applied on more than two files.");
+
+                    int index = _storageIndexes[0];
+
+                    allValues = allValues
+                        .Take(index)
+                        .Except(GetRange(index, allValues.Count))
+                        .ToList();
+                }
+                else if ((modifyOptions.Functions & ModifyFunctions.Intersect) != 0)
+                {
+                    allValues = Intersect();
+                }
+            }
 
             using (IEnumerator<string> en = allValues
-                .Modify(Options.ModifyOptions, filter: ModifyFunctions.Enumerable)
+                .Modify(modifyOptions, filter: ModifyFunctions.Enumerable)
                 .GetEnumerator())
             {
                 if (en.MoveNext())
@@ -304,16 +323,16 @@ namespace Orang.CommandLine
                 {
                     IEnumerable<string> second = GetRange(_storageIndexes[i - 1], _storageIndexes[i]);
 
-                    list = list.Intersect(second).ToList();
+                    list = list.Intersect(second, modifyOptions.StringComparer).ToList();
                 }
 
                 return list;
+            }
 
-                IEnumerable<string> GetRange(int start, int end)
-                {
-                    for (int i = start; i < end; i++)
-                        yield return allValues[i];
-                }
+            IEnumerable<string> GetRange(int start, int end)
+            {
+                for (int i = start; i < end; i++)
+                    yield return allValues[i];
             }
         }
 
