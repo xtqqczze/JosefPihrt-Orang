@@ -86,12 +86,15 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
+            if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions, out bool aggregateOnly))
                 return false;
 
             //TODO: ?
             if (modifyOptions.HasAnyFunction)
                 contentDisplayStyle = ContentDisplayStyle.Value;
+
+            if (aggregateOnly)
+                ConsoleOut.Verbosity = Orang.Verbosity.Minimal;
 
             options.Format = new OutputDisplayFormat(
                 contentDisplayStyle: contentDisplayStyle ?? ContentDisplayStyle.Value,

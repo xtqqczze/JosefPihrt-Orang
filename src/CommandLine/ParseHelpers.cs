@@ -176,9 +176,11 @@ namespace Orang.CommandLine
         public static bool TryParseModifyOptions(
             IEnumerable<string> values,
             string optionName,
-            out ModifyOptions modifyOptions)
+            out ModifyOptions modifyOptions,
+            out bool aggregateOnly)
         {
             modifyOptions = null;
+            aggregateOnly = false;
 
             Func<IEnumerable<string>, IEnumerable<string>> modify = null;
             List<string> options = null;
@@ -229,10 +231,10 @@ namespace Orang.CommandLine
             if ((modifyFlags & ModifyFlags.Distinct) != 0)
                 functions |= ModifyFunctions.Distinct;
 
-            if ((modifyFlags & ModifyFlags.Sort) != 0)
+            if ((modifyFlags & ModifyFlags.Ascending) != 0)
                 functions |= ModifyFunctions.Sort;
 
-            if ((modifyFlags & ModifyFlags.SortDescending) != 0)
+            if ((modifyFlags & ModifyFlags.Descending) != 0)
                 functions |= ModifyFunctions.SortDescending;
 
             if ((modifyFlags & ModifyFlags.Except) != 0)
@@ -259,11 +261,13 @@ namespace Orang.CommandLine
             if ((modifyFlags & ModifyFlags.ToUpper) != 0)
                 functions |= ModifyFunctions.ToUpper;
 
+            aggregateOnly = (modifyFlags & ModifyFlags.AggregateOnly) != 0;
+
             if (modifyFlags != ModifyFlags.None)
             {
                 modifyOptions = new ModifyOptions(
                     functions: functions,
-                    aggregate: (modifyFlags & ModifyFlags.Aggregate) != 0,
+                    aggregate: (modifyFlags & ModifyFlags.Aggregate) != 0 || aggregateOnly,
                     ignoreCase: (modifyFlags & ModifyFlags.IgnoreCase) != 0,
                     cultureInvariant: (modifyFlags & ModifyFlags.CultureInvariant) != 0,
                     modify: modify);

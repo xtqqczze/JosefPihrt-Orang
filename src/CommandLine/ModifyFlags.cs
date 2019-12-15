@@ -9,8 +9,8 @@ namespace Orang
     {
         None = 0,
         Distinct = 1,
-        Sort = 1 << 1,
-        SortDescending = 1 << 2,
+        Ascending = 1 << 1,
+        Descending = 1 << 2,
         Except = 1 << 3,
         Intersect = 1 << 4,
         ExceptIntersect = Except | Intersect,
@@ -23,6 +23,7 @@ namespace Orang
         ToLower = 1 << 10,
         Aggregate = 1 << 11,
         IgnoreCase = 1 << 12,
-        CultureInvariant = 1 << 13
+        CultureInvariant = 1 << 13,
+        AggregateOnly = 1 << 14
     }
 }

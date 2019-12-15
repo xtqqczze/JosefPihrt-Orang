@@ -90,12 +90,18 @@ namespace Orang.CommandLine
                 maxMatchingFiles = (maxCount > 0) ? maxCount : maxMatchingFiles;
             }
 
-            if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions))
+            if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions, out bool aggregateOnly))
                 return false;
 
             //TODO: ?
             if (modifyOptions.HasAnyFunction)
                 contentDisplayStyle = ContentDisplayStyle.Value;
+
+            if (aggregateOnly)
+            {
+                ConsoleOut.Verbosity = Orang.Verbosity.Minimal;
+                pathDisplayStyle = PathDisplayStyle.Omit;
+            }
 
             options.Format = new OutputDisplayFormat(
                 contentDisplayStyle: contentDisplayStyle ?? ContentDisplayStyle.Line,
