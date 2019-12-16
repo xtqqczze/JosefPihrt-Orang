@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
-using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
@@ -53,7 +52,7 @@ namespace Orang.CommandLine
             if (!result.IsDirectory
                 && Options.ContentFilter != null)
             {
-                string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
                     ? Options.Indent
                     : "";
 
@@ -80,25 +79,12 @@ namespace Orang.CommandLine
             string baseDirectoryPath = null,
             ColumnWidths columnWidths = null)
         {
-            string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
                 ? Options.Indent
                 : "";
 
             if (!Options.OmitPath)
-            {
-                WritePath(
-                    result,
-                    baseDirectoryPath,
-                    relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
-                    colors: Colors.Matched_Path,
-                    matchColors: (Options.HighlightMatch) ? Colors.Match : default,
-                    indent: indent,
-                    fileProperties: Options.Format.FileProperties,
-                    columnWidths: columnWidths,
-                    verbosity: Verbosity.Minimal);
-
-                WriteLine(Verbosity.Minimal);
-            }
+                WritePath(context, result, baseDirectoryPath, indent, columnWidths);
 
             bool success = false;
 

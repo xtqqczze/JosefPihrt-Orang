@@ -55,7 +55,7 @@ namespace Orang.CommandLine
             if (!result.IsDirectory
                 && Options.ContentFilter != null)
             {
-                string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+                string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
                     ? Options.Indent
                     : "";
 
@@ -82,27 +82,14 @@ namespace Orang.CommandLine
             string baseDirectoryPath,
             ColumnWidths columnWidths)
         {
-            string indent = (baseDirectoryPath != null && Options.PathDisplayStyle == PathDisplayStyle.Relative)
+            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
                 ? Options.Indent
                 : "";
 
             string path = result.Path;
 
             if (!Options.OmitPath)
-            {
-                WritePath(
-                    result,
-                    baseDirectoryPath,
-                    relativePath: Options.PathDisplayStyle == PathDisplayStyle.Relative,
-                    colors: Colors.Matched_Path,
-                    matchColors: (Options.HighlightMatch) ? Colors.Match : default,
-                    indent: indent,
-                    fileProperties: Options.Format.FileProperties,
-                    columnWidths: columnWidths,
-                    verbosity: Verbosity.Minimal);
-
-                WriteLine(Verbosity.Minimal);
-            }
+                WritePath(context, result, baseDirectoryPath, indent, columnWidths);
 
             NamePart part = result.Part;
 
@@ -121,7 +108,7 @@ namespace Orang.CommandLine
 
             int indentCount = fileNameIndex;
 
-            if (Options.PathDisplayStyle == PathDisplayStyle.Relative
+            if (Options.DisplayRelativePath
                 && baseDirectoryPath != null
                 && path.StartsWith(baseDirectoryPath, StringComparison.OrdinalIgnoreCase))
             {

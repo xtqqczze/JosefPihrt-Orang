@@ -93,7 +93,7 @@ namespace Orang.CommandLine
                     string key = value.Substring(0, index);
                     string value2 = value.Substring(index + 1);
 
-                    if (OptionValues.Max.IsKeyOrShortKey(key))
+                    if (OptionValues.MaxCount.IsKeyOrShortKey(key))
                     {
                         if (!TryParseCount(value2, out maxCount, value))
                             return false;
@@ -654,8 +654,8 @@ namespace Orang.CommandLine
             if ((options & ReplacementOptions.Literal) != 0)
                 replacement = RegexEscape.EscapeSubstitution(replacement);
 
-            if ((options & ReplacementOptions.Multiline) != 0)
-                replacement = RegexEscape.ConvertToMultiline(replacement);
+            if ((options & ReplacementOptions.CharacterEscapes) != 0)
+                replacement = RegexEscape.ConvertCharacterEscapes(replacement);
 
             return true;
         }
