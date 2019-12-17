@@ -82,7 +82,7 @@ Stop searching after specified number is reached\. Allowed values are \<NUM>, m\
 
 **`[--modify] <MODIFY_OPTIONS>`**
 
-Allowed values are m\[ethod\]=\<METHOD>, a\[ggregate\], ci \[culture\-invariant\], d\[istinct\], intersect, i\[gnore\-case\], re\[move\-empty\], rw \[remove\-white\-space\], s\[ort\], sd \[sort\-descending\], tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\] and ts \[trim\-start\]\.
+Allowed values are m\[ethod\]=\<METHOD>, ag\[gregate\], ci \[culture\-invariant\], d\[istinct\], e\[xcept\], intersect, i\[gnore\-case\], re\[move\-empty\], rw \[remove\-white\-space\], a\[scending\], d\[escending\], tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\], ts \[trim\-start\] and aggregate\-only\.
 
 **`[-n|--name] <REGEX>`**
 

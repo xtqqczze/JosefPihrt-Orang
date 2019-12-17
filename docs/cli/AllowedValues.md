@@ -8,6 +8,7 @@
 * [\<FILE_PROPERTIES>](#file-properties)
 * [\<HIGHLIGHT>](#highlight)
 * [\<MAX_OPTIONS>](#max-options)
+* [\<MODIFY_OPTIONS>](#modify-options)
 * [\<NAME_PART>](#name-part)
 * [\<OUTPUT_OPTIONS>](#output-options)
 * [\<PATH_DISPLAY>](#path-display)
@@ -118,6 +119,28 @@
 | \<NUM>                  | Stop searching after \<NUM> matches \(or matches in file when searching in file's content\)\. |
 | m\[atches\]=\<NUM>      | Stop searching after \<NUM> matches\.                                                         |
 | m\[atching\-\]f\[iles\] | Stop searching after \<NUM> matching files\.                                                  |
+
+## \<MODIFY\_OPTIONS>
+
+| Value                       | Description                                                    |
+| --------------------------- | -------------------------------------------------------------- |
+| m\[ethod\]=\<METHOD>        |
+| ag\[gregate\]               | Display list of all values at the end of search\.              |
+| ci \[culture\-invariant\]   | Ignore cultural differences between languages\.                |
+| d\[istinct\]                | Return distinct values\.                                       |
+| e\[xcept\]                  | Return values from first file except values from second file\. |
+| intersect                   | Return values that were found in all files\.                   |
+| i\[gnore\-case\]            | Use case\-insensitive matching\.                               |
+| re\[move\-empty\]           | Remove values that are empty strings\.                         |
+| rw \[remove\-white\-space\] | Remove values that are empty or consist of white\-space\.      |
+| a\[scending\]               | Sort values in an ascending order\.                            |
+| d\[escending\]              | Sort values in a descending order\.                            |
+| tl \[to\-lower\]            | Convert value to lowercase\.                                   |
+| tu \[to\-upper\]            | Convert value to uppercase\.                                   |
+| t\[rim\]                    | Trim leading and trailing white\-space\.                       |
+| te \[trim\-end\]            | Trim trailing white\-space\.                                   |
+| ts \[trim\-start\]          | Trim leading white\-space\.                                    |
+| aggregate\-only             | Display only list of all values at the end of search\.         |
 
 ## \<NAME\_PART>
 
