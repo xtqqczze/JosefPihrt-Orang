@@ -24,25 +24,21 @@ namespace Orang.CommandLine
 
         public TOptions Options { get; }
 
+        protected FileSystemFinderOptions FinderOptions => _finderOptions ?? (_finderOptions = CreateFinderOptions());
+
         protected virtual bool OmitSummary => false;
 
-        protected FileSystemFinderOptions FinderOptions
-        {
-            get
-            {
-                return _finderOptions ?? (_finderOptions = new FileSystemFinderOptions(
-                    searchTarget: Options.SearchTarget,
-                    recurseSubdirectories: Options.RecurseSubdirectories,
-                    attributes: Options.Attributes,
-                    attributesToSkip: Options.AttributesToSkip,
-                    empty: Options.Empty,
-                    canEnumerate: CanEnumerate));
-            }
-        }
-
-        public virtual bool CanEnumerate => true;
-
         public virtual bool CanEndProgress => !Options.OmitPath;
+
+        protected virtual FileSystemFinderOptions CreateFinderOptions()
+        {
+            return new FileSystemFinderOptions(
+                searchTarget: Options.SearchTarget,
+                recurseSubdirectories: Options.RecurseSubdirectories,
+                attributes: Options.Attributes,
+                attributesToSkip: Options.AttributesToSkip,
+                empty: Options.Empty);
+        }
 
         protected abstract void ExecuteDirectory(string directoryPath, SearchContext context);
 
@@ -163,11 +159,18 @@ namespace Orang.CommandLine
 
                 if (fileProperties.Contains(FileProperty.Size))
                 {
-                    maxSizeWidth = resultList
-                        .Where(f => !f.IsDirectory)
-                        .Max(f => ((FileInfo)f.FileSystemInfo).Length)
-                        .ToString("n0")
-                        .Length;
+                    if (resultList.Any(f => !f.IsDirectory))
+                    {
+                        maxSizeWidth = resultList
+                            .Where(f => !f.IsDirectory)
+                            .Max(f => ((FileInfo)f.FileSystemInfo).Length)
+                            .ToString("n0")
+                            .Length;
+                    }
+                    else
+                    {
+                        maxSizeWidth = 0;
+                    }
                 }
 
                 columnWidths = new ColumnWidths(maxNameWidth, maxSizeWidth);
@@ -379,6 +382,11 @@ namespace Orang.CommandLine
                 indent: indent,
                 verbosity: Verbosity.Minimal);
 
+            WriteProperties(context, result, columnWidths);
+        }
+
+        protected void WriteProperties(SearchContext context, FileSystemFinderResult result, ColumnWidths columnWidths)
+        {
             if (columnWidths != null
                 && ShouldLog(Verbosity.Minimal))
             {
