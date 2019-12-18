@@ -175,21 +175,16 @@ namespace Orang.Expressions
                 value.Substring(index1 + 1, index2 - index1 - 1),
                 kind);
 
-            ExpressionKind GetBinaryOperatorKind(char ch)
+            static ExpressionKind GetBinaryOperatorKind(char ch)
             {
-                switch (ch)
+                return ch switch
                 {
-                    case '<':
-                        return ExpressionKind.GreaterThanOrEqualExpression;
-                    case '(':
-                        return ExpressionKind.GreaterThanExpression;
-                    case '>':
-                        return ExpressionKind.LessThanOrEqualExpression;
-                    case ')':
-                        return ExpressionKind.LessThanExpression;
-                    default:
-                        return ExpressionKind.None;
-                }
+                    '<' => ExpressionKind.GreaterThanOrEqualExpression,
+                    '(' => ExpressionKind.GreaterThanExpression,
+                    '>' => ExpressionKind.LessThanOrEqualExpression,
+                    ')' => ExpressionKind.LessThanExpression,
+                    _ => ExpressionKind.None,
+                };
             }
         }
     }

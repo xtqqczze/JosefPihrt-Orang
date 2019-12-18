@@ -181,7 +181,7 @@ namespace Orang.CommandLine
 
             return 1;
 
-            bool IsHelpOption(string value)
+            static bool IsHelpOption(string value)
             {
                 if (value.StartsWith("--"))
                     return string.Compare(value, 2, OptionNames.Help, 0, OptionNames.Help.Length, StringComparison.Ordinal) == 0;
@@ -331,17 +331,13 @@ namespace Orang.CommandLine
 
         private static int GetExitCode(CommandResultKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case CommandResultKind.Success:
-                    return 0;
-                case CommandResultKind.NoMatch:
-                    return 1;
-                case CommandResultKind.Fail:
-                    return 2;
-                default:
-                    throw new InvalidOperationException($"Unknown enum value '{kind}'.");
-            }
+                CommandResultKind.Success => 0,
+                CommandResultKind.NoMatch => 1,
+                CommandResultKind.Fail => 2,
+                _ => throw new InvalidOperationException($"Unknown enum value '{kind}'."),
+            };
         }
     }
 }

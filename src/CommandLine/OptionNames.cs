@@ -56,7 +56,7 @@ namespace Orang.CommandLine
 
                 return _namesToShortNames;
 
-                ImmutableDictionary<string, string> Create()
+                static ImmutableDictionary<string, string> Create()
                 {
                     FieldInfo[] names = typeof(OptionNames).GetFields();
 
