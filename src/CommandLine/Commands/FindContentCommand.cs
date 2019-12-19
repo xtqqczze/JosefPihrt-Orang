@@ -175,11 +175,11 @@ namespace Orang.CommandLine
                     }
 
                     contentWriter = ContentWriter.CreateFind(
-                        Options.ContentDisplayStyle,
-                        input,
-                        writerOptions,
-                        (hasAnyFunction) ? _fileStorage : _storage,
-                        Options.CreateOutputInfo(input, match),
+                        contentDisplayStyle: Options.ContentDisplayStyle,
+                        input: input,
+                        options: writerOptions,
+                        storage: (hasAnyFunction) ? _fileStorage : _storage,
+                        outputInfo: Options.CreateOutputInfo(input, match),
                         writer: (hasAnyFunction) ? null : ContentTextWriter.Default,
                         ask: _askMode == AskMode.Value);
                 }
@@ -287,15 +287,6 @@ namespace Orang.CommandLine
                     ConsoleOut.WriteLineIf(ShouldWriteLine(ConsoleOut.Verbosity));
                     Out?.WriteLineIf(ShouldWriteLine(Out.Verbosity));
 
-                    bool ShouldWriteLine(Verbosity verbosity)
-                    {
-                        if (verbosity > Verbosity.Minimal)
-                            return true;
-
-                        return verbosity == Verbosity.Minimal
-                            && (Options.PathDisplayStyle != PathDisplayStyle.Omit || Options.IncludeSummary);
-                    }
-
                     do
                     {
                         valueWriter.Write(en.Current, symbols, colors, boundaryColors);
@@ -332,6 +323,15 @@ namespace Orang.CommandLine
             {
                 for (int i = start; i < end; i++)
                     yield return allValues[i];
+            }
+
+            bool ShouldWriteLine(Verbosity verbosity)
+            {
+                if (verbosity > Verbosity.Minimal)
+                    return true;
+
+                return verbosity == Verbosity.Minimal
+                    && (Options.PathDisplayStyle != PathDisplayStyle.Omit || Options.IncludeSummary);
             }
         }
 
