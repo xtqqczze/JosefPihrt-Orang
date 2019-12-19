@@ -293,7 +293,7 @@ namespace Orang.CommandLine
 
         private class OutputValueWriter : ValueWriter
         {
-            public OutputValueWriter(string indent, HighlightOptions highlightOptions) : base(indent, includeEndingIndent: false, Verbosity.Quiet)
+            public OutputValueWriter(string indent, HighlightOptions highlightOptions) : base(new ContentTextWriter(Verbosity.Minimal), indent, includeEndingIndent: false)
             {
                 HighlightOptions = highlightOptions;
             }

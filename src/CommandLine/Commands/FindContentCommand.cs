@@ -153,14 +153,14 @@ namespace Orang.CommandLine
 
                 GetGroups(match, writerOptions.GroupNumber, context, isPathWritten: !Options.OmitPath, predicate: Options.ContentFilter.Predicate, groups: groups);
 
-                if (_storage != null
+                bool hasAnyFunction = Options.ModifyOptions.HasAnyFunction;
+
+                if (hasAnyFunction
                     || Options.AskMode == AskMode.Value
                     || ShouldLog(Verbosity.Normal))
                 {
-                    if (Options.ModifyOptions.HasAnyFunction)
+                    if (hasAnyFunction)
                     {
-                        Debug.Assert(Options.ContentDisplayStyle == ContentDisplayStyle.Value, Options.ContentDisplayStyle.ToString());
-
                         if (_fileValues == null)
                         {
                             _fileValues = new List<string>();
@@ -172,55 +172,45 @@ namespace Orang.CommandLine
 
                         if (_fileStorage == null)
                             _fileStorage = new ListResultStorage(_fileValues);
-
-                        using (var contentWriter2 = new EmptyContentWriter(null, writerOptions, (Options.ModifyOptions.HasAnyFunction) ? _fileStorage : _storage))
-                        {
-                            WriteMatches(contentWriter2, groups, context);
-                        }
-
-                        ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
-                        ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
-
-                        var valueWriter = new ValueWriter(writerOptions.Indent, includeEndingIndent: false);
-
-                        foreach (string value in _fileValues.Modify(Options.ModifyOptions))
-                        {
-                            Write(writerOptions.Indent, Verbosity.Normal);
-                            valueWriter.Write(value, Symbols, colors, boundaryColors);
-                            WriteLine(Verbosity.Normal);
-
-                            _storage?.Add(value);
-                            telemetry.MatchCount++;
-                        }
-
-                        _storageIndexes?.Add(_storage!.Count);
-                    }
-                    else
-                    {
-                        MatchOutputInfo outputInfo = Options.CreateOutputInfo(input, match);
-
-                        contentWriter = ContentWriter.CreateFind(Options.ContentDisplayStyle, input, writerOptions, _storage, outputInfo, ask: _askMode == AskMode.Value);
-                    }
-                }
-                else if (Options.ModifyOptions.HasAnyFunction)
-                {
-                    foreach (string value in _fileValues.Modify(Options.ModifyOptions))
-                    {
-                        telemetry.MatchCount++;
-                        _storage?.Add(value);
                     }
 
-                    _storageIndexes?.Add(_storage!.Count);
+                    contentWriter = ContentWriter.CreateFind(
+                        Options.ContentDisplayStyle,
+                        input,
+                        writerOptions,
+                        (hasAnyFunction) ? _fileStorage : _storage,
+                        Options.CreateOutputInfo(input, match),
+                        writer: (hasAnyFunction) ? null : ContentTextWriter.Default,
+                        ask: _askMode == AskMode.Value);
                 }
                 else
                 {
                     contentWriter = new EmptyContentWriter(null, writerOptions);
                 }
 
-                if (contentWriter != null)
-                {
-                    WriteMatches(contentWriter, groups, context);
+                WriteMatches(contentWriter, groups, context);
 
+                if (hasAnyFunction)
+                {
+                    ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
+                    ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
+
+                    var valueWriter = new ValueWriter(ContentTextWriter.Default, writerOptions.Indent, includeEndingIndent: false);
+
+                    foreach (string value in _fileValues.Modify(Options.ModifyOptions))
+                    {
+                        Write(writerOptions.Indent, Verbosity.Normal);
+                        valueWriter.Write(value, Symbols, colors, boundaryColors);
+                        WriteLine(Verbosity.Normal);
+
+                        _storage?.Add(value);
+                        telemetry.MatchCount++;
+                    }
+
+                    _storageIndexes?.Add(_storage!.Count);
+                }
+                else
+                {
                     telemetry.MatchCount += contentWriter.MatchCount;
 
                     if (contentWriter.MatchingLineCount >= 0)
@@ -292,10 +282,19 @@ namespace Orang.CommandLine
                     OutputSymbols symbols = OutputSymbols.Create(Options.HighlightOptions);
                     ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
                     ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
-                    var valueWriter = new ValueWriter(includeEndingIndent: false, verbosity: Verbosity.Minimal);
+                    var valueWriter = new ValueWriter(new ContentTextWriter(Verbosity.Minimal), includeEndingIndent: false);
 
-                    ConsoleOut.WriteLineIf(ConsoleOut.Verbosity > Verbosity.Minimal || (ConsoleOut.Verbosity == Verbosity.Minimal && Options.PathDisplayStyle != PathDisplayStyle.Omit));
-                    Out?.WriteLineIf(Out.Verbosity > Verbosity.Minimal || (Out.Verbosity == Verbosity.Minimal && Options.PathDisplayStyle != PathDisplayStyle.Omit));
+                    ConsoleOut.WriteLineIf(ShouldWriteLine(ConsoleOut.Verbosity));
+                    Out?.WriteLineIf(ShouldWriteLine(Out.Verbosity));
+
+                    bool ShouldWriteLine(Verbosity verbosity)
+                    {
+                        if (verbosity > Verbosity.Minimal)
+                            return true;
+
+                        return verbosity == Verbosity.Minimal
+                            && (Options.PathDisplayStyle != PathDisplayStyle.Omit || Options.IncludeSummary);
+                    }
 
                     do
                     {

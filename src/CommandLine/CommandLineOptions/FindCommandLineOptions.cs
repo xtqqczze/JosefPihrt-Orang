@@ -93,9 +93,11 @@ namespace Orang.CommandLine
             if (!TryParseModifyOptions(Modify, OptionNames.Modify, out ModifyOptions modifyOptions, out bool aggregateOnly))
                 return false;
 
-            //TODO: ?
-            if (modifyOptions.HasAnyFunction)
+            if (modifyOptions.HasAnyFunction
+                && contentDisplayStyle == ContentDisplayStyle.ValueDetail)
+            {
                 contentDisplayStyle = ContentDisplayStyle.Value;
+            }
 
             if (aggregateOnly)
             {
