@@ -22,6 +22,7 @@ namespace Orang.CommandLine
         public const string Num = "<NUM>";
         public const string OutputOptions = "<OUTPUT_OPTIONS>";
         public const string SortOptions = "<SORT_OPTIONS>";
+        public const string SortProperty = "<SORT_PROPERTY>";
         public const string PathDisplay = "<PATH_DISPLAY>";
         public const string PatternOptions = "<PATTERN_OPTIONS>";
         public const string Regex = "<REGEX>";

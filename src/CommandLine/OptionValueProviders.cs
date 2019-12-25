@@ -136,23 +136,24 @@ namespace Orang.CommandLine
         );
 
         public static OptionValueProvider ModifyFlagsProvider { get; } = new OptionValueProvider(MetaValues.ModifyOptions,
-            OptionValues.Method,
             SimpleOptionValue.Create(ModifyFlags.Aggregate, shortValue: "ag", description: "Display list of all values at the end of search."),
+            SimpleOptionValue.Create(ModifyFlags.AggregateOnly, shortValue: "", description: "Display only list of all values at the end of search."),
+            SimpleOptionValue.Create(ModifyFlags.Ascending, description: "Sort values in an ascending order."),
             SimpleOptionValue.Create(ModifyFlags.CultureInvariant, shortValue: "ci", description: "Ignore cultural differences between languages."),
-            SimpleOptionValue.Create(ModifyFlags.Distinct, description: "Return distinct values."),
+            SimpleOptionValue.Create(ModifyFlags.Descending, description: "Sort values in a descending order."),
+            SimpleOptionValue.Create(ModifyFlags.Distinct, shortValue: "", description: "Return distinct values."),
             OptionValues.ModifyFlags_Except,
             OptionValues.ModifyFlags_Intersect,
             SimpleOptionValue.Create(ModifyFlags.IgnoreCase, description: "Use case-insensitive matching."),
+            OptionValues.Method,
             SimpleOptionValue.Create(ModifyFlags.RemoveEmpty, shortValue: "re", description: "Remove values that are empty strings."),
             SimpleOptionValue.Create(ModifyFlags.RemoveWhiteSpace, shortValue: "rw", description: "Remove values that are empty or consist of white-space."),
-            SimpleOptionValue.Create(ModifyFlags.Ascending, description: "Sort values in an ascending order."),
-            SimpleOptionValue.Create(ModifyFlags.Descending, description: "Sort values in a descending order."),
+            OptionValues.SortBy,
             SimpleOptionValue.Create(ModifyFlags.ToLower, shortValue: "tl", description: "Convert value to lowercase."),
             SimpleOptionValue.Create(ModifyFlags.ToUpper, shortValue: "tu", description: "Convert value to uppercase."),
             SimpleOptionValue.Create(ModifyFlags.Trim, description: "Trim leading and trailing white-space."),
             SimpleOptionValue.Create(ModifyFlags.TrimEnd, shortValue: "te", description: "Trim trailing white-space."),
-            SimpleOptionValue.Create(ModifyFlags.TrimStart, shortValue: "ts", description: "Trim leading white-space."),
-            SimpleOptionValue.Create(ModifyFlags.AggregateOnly, shortValue: "", description: "Display only list of all values at the end of search.")
+            SimpleOptionValue.Create(ModifyFlags.TrimStart, shortValue: "ts", description: "Trim leading white-space.")
         );
 
         public static OptionValueProvider HighlightOptionsProvider { get; } = new OptionValueProvider(MetaValues.Highlight,
@@ -349,6 +350,10 @@ namespace Orang.CommandLine
             OptionValues.FileProperty_CreationTime,
             OptionValues.FileProperty_ModifiedTime,
             OptionValues.FileProperty_Size
+        );
+
+        public static OptionValueProvider ValueSortPropertyProvider { get; } = new OptionValueProvider(MetaValues.SortProperty,
+            SimpleOptionValue.Create(ValueSortProperty.Length, description: "Sort values by value's length.")
         );
 
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName

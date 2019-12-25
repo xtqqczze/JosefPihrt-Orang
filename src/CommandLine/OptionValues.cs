@@ -47,6 +47,7 @@ namespace Orang.CommandLine
         public static readonly KeyValuePairOptionValue MaxMatchingFiles = KeyValuePairOptionValue.Create("matching-files", "<NUM>", shortKey: "mf", helpValue: "m[atching-]f[iles]", description: "Stop searching after <NUM> matching files.");
         public static readonly KeyValuePairOptionValue Method = KeyValuePairOptionValue.Create("method", "<METHOD>", shortKey: "m");
         public static readonly KeyValuePairOptionValue Part = KeyValuePairOptionValue.Create("part", MetaValues.NamePart, shortKey: "p", description: "The part of a file or a directory name that should be matched.");
+        public static readonly KeyValuePairOptionValue SortBy = KeyValuePairOptionValue.Create("sort-by", MetaValues.SortProperty, shortKey: "", description: "");
         public static readonly KeyValuePairOptionValue Timeout = KeyValuePairOptionValue.Create("timeout", "<NUM>", shortKey: "", description: "Match time-out interval in seconds.");
         public static readonly KeyValuePairOptionValue Verbosity = KeyValuePairOptionValue.Create("verbosity", MetaValues.Verbosity, shortKey: "v");
     }

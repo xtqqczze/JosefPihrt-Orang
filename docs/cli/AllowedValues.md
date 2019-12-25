@@ -15,6 +15,7 @@
 * [\<PATTERN_OPTIONS>](#pattern-options)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
+* [\<SORT_PROPERTY>](#sort-property)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
 * [\<VERBOSITY>](#verbosity)
 
@@ -124,23 +125,24 @@
 
 | Value                       | Description                                                    |
 | --------------------------- | -------------------------------------------------------------- |
-| m\[ethod\]=\<METHOD>        |
 | ag\[gregate\]               | Display list of all values at the end of search\.              |
+| aggregate\-only             | Display only list of all values at the end of search\.         |
+| a\[scending\]               | Sort values in an ascending order\.                            |
 | ci \[culture\-invariant\]   | Ignore cultural differences between languages\.                |
-| d\[istinct\]                | Return distinct values\.                                       |
+| d\[escending\]              | Sort values in a descending order\.                            |
+| distinct                    | Return distinct values\.                                       |
 | e\[xcept\]                  | Return values from first file except values from second file\. |
 | intersect                   | Return values that were found in all files\.                   |
 | i\[gnore\-case\]            | Use case\-insensitive matching\.                               |
+| m\[ethod\]=\<METHOD>        |
 | re\[move\-empty\]           | Remove values that are empty strings\.                         |
 | rw \[remove\-white\-space\] | Remove values that are empty or consist of white\-space\.      |
-| a\[scending\]               | Sort values in an ascending order\.                            |
-| d\[escending\]              | Sort values in a descending order\.                            |
+| sort\-by=\<SORT\_PROPERTY>  |
 | tl \[to\-lower\]            | Convert value to lowercase\.                                   |
 | tu \[to\-upper\]            | Convert value to uppercase\.                                   |
 | t\[rim\]                    | Trim leading and trailing white\-space\.                       |
 | te \[trim\-end\]            | Trim trailing white\-space\.                                   |
 | ts \[trim\-start\]          | Trim leading white\-space\.                                    |
-| aggregate\-only             | Display only list of all values at the end of search\.         |
 
 ## \<NAME\_PART>
 
@@ -212,6 +214,12 @@
 | m\[odified\-\]t\[ime\] | Sort items by last modified time\. |
 | n\[ame\]               | Sort items by full name\.          |
 | s\[ize\]               | Sort items by size\.               |
+
+## \<SORT\_PROPERTY>
+
+| Value      | Description                     |
+| ---------- | ------------------------------- |
+| l\[ength\] | Sort values by value's length\. |
 
 ## \<SYNTAX\_SECTIONS>
 

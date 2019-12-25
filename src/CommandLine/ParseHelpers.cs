@@ -183,6 +183,7 @@ namespace Orang.CommandLine
             aggregateOnly = false;
 
             Func<IEnumerable<string>, IEnumerable<string>> modify = null;
+            var sortProperty = ValueSortProperty.None;
             List<string> options = null;
 
             foreach (string value in values)
@@ -197,6 +198,11 @@ namespace Orang.CommandLine
                     if (OptionValues.Method.IsKeyOrShortKey(key))
                     {
                         if (!DelegateFactory.TryCreate(value2, new Type[] { typeof(IEnumerable<string>) }, out modify))
+                            return false;
+                    }
+                    else if (OptionValues.SortBy.IsKeyOrShortKey(key))
+                    {
+                        if (!TryParseAsEnum(value2, optionName, out sortProperty, provider: OptionValueProviders.ValueSortPropertyProvider))
                             return false;
                     }
                     else
@@ -270,6 +276,7 @@ namespace Orang.CommandLine
                     aggregate: (modifyFlags & ModifyFlags.Aggregate) != 0 || aggregateOnly,
                     ignoreCase: (modifyFlags & ModifyFlags.IgnoreCase) != 0,
                     cultureInvariant: (modifyFlags & ModifyFlags.CultureInvariant) != 0,
+                    sortProperty: sortProperty,
                     modify: modify);
             }
             else

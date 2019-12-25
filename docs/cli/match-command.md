@@ -51,7 +51,7 @@ Maximum number of matches returned\.
 
 **`[--modify] <MODIFY_OPTIONS>`**
 
-Allowed values are m\[ethod\]=\<METHOD>, ag\[gregate\], ci \[culture\-invariant\], d\[istinct\], e\[xcept\], intersect, i\[gnore\-case\], re\[move\-empty\], rw \[remove\-white\-space\], a\[scending\], d\[escending\], tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\], ts \[trim\-start\] and aggregate\-only\.
+Allowed values are ag\[gregate\], aggregate\-only, a\[scending\], ci \[culture\-invariant\], d\[escending\], distinct, e\[xcept\], intersect, i\[gnore\-case\], m\[ethod\]=\<METHOD>, re\[move\-empty\], rw \[remove\-white\-space\], sort\-by=\<SORT\_PROPERTY>, tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\] and ts \[trim\-start\]\.
 
 **`[-o|--output] <OUTPUT_OPTIONS>`**
 

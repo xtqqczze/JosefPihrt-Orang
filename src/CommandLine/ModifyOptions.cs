@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Orang
+namespace Orang.CommandLine
 {
     internal class ModifyOptions
     {
@@ -14,12 +14,14 @@ namespace Orang
             bool aggregate = false,
             bool ignoreCase = false,
             bool cultureInvariant = false,
+            ValueSortProperty sortProperty = ValueSortProperty.None,
             Func<IEnumerable<string>, IEnumerable<string>> modify = null)
         {
             Functions = functions;
             Aggregate = aggregate;
             IgnoreCase = ignoreCase;
             CultureInvariant = cultureInvariant;
+            SortProperty = sortProperty;
             Modify = modify;
         }
 
@@ -30,6 +32,8 @@ namespace Orang
         public bool IgnoreCase { get; }
 
         public bool CultureInvariant { get; }
+
+        public ValueSortProperty SortProperty { get; }
 
         public Func<IEnumerable<string>, IEnumerable<string>> Modify { get; }
 

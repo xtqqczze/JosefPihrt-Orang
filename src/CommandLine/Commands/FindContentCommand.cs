@@ -278,7 +278,7 @@ namespace Orang.CommandLine
                 if (en.MoveNext())
                 {
                     OutputSymbols symbols = OutputSymbols.Create(Options.HighlightOptions);
-                    ConsoleColors colors = (Options.HighlightMatch) ? Colors.Match : default;
+                    ConsoleColors colors = ((Options.HighlightOptions & HighlightOptions.Match) != 0) ? Colors.Match : default;
                     ConsoleColors boundaryColors = (Options.HighlightBoundary) ? Colors.MatchBoundary : default;
                     var valueWriter = new ValueWriter(new ContentTextWriter(Verbosity.Minimal), includeEndingIndent: false);
 

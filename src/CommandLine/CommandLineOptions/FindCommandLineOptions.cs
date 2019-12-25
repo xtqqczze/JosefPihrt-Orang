@@ -33,7 +33,7 @@ namespace Orang.CommandLine
 
             options = (FindCommandOptions)baseOptions;
 
-            if (!TryParseAsEnumFlags(Highlight, OptionNames.Highlight, out HighlightOptions highlightOptions, defaultValue: HighlightOptions.Match, provider: OptionValueProviders.FindHighlightOptionsProvider))
+            if (!TryParseAsEnumFlags(Highlight, OptionNames.Highlight, out HighlightOptions highlightOptions, defaultValue: HighlightOptions.Default, provider: OptionValueProviders.FindHighlightOptionsProvider))
                 return false;
 
             Filter contentFilter = null;

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Orang.CommandLine;
 using Orang.FileSystem;
 
 namespace Orang
@@ -141,11 +142,25 @@ namespace Orang
 
             if ((functions & ModifyFunctions.Sort) != 0)
             {
-                return values.OrderBy(f => f, comparer);
+                if (options.SortProperty == ValueSortProperty.Length)
+                {
+                    return values.OrderBy(f => f.Length);
+                }
+                else
+                {
+                    return values.OrderBy(f => f, comparer);
+                }
             }
             else if ((functions & ModifyFunctions.SortDescending) != 0)
             {
-                return values.OrderByDescending(f => f, comparer);
+                if (options.SortProperty == ValueSortProperty.Length)
+                {
+                    return values.OrderByDescending(f => f.Length);
+                }
+                else
+                {
+                    return values.OrderByDescending(f => f, comparer);
+                }
             }
 
             return values;
