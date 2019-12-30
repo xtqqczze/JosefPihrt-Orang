@@ -13,6 +13,7 @@ namespace Orang.CommandLine
         public const string Ask = "ask";
         public const string Attributes = "attributes";
         public const string AttributesToSkip = "attributes-to-skip";
+        public const string Conflict = "conflict";
         public const string Content = "content";
         public const string ContentOnly = "content-only";
         public const string Display = "display";
@@ -40,6 +41,7 @@ namespace Orang.CommandLine
         public const string Replacement = "replacement";
         public const string Section = "section";
         public const string Sort = "sort";
+        public const string Target = "target";
         public const string Timeout = "timeout";
         public const string Values = "values";
         public const string Verbosity = "verbosity";

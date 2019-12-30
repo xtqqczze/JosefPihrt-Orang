@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -64,12 +63,14 @@ namespace Orang.CommandLine
                 });
 
                 ParserResult<object> parserResult = parser.ParseArguments<
+                    CopyCommandLineOptions,
                     DeleteCommandLineOptions,
                     EscapeCommandLineOptions,
                     FindCommandLineOptions,
                     HelpCommandLineOptions,
                     ListSyntaxCommandLineOptions,
                     MatchCommandLineOptions,
+                    MoveCommandLineOptions,
                     RenameCommandLineOptions,
                     ReplaceCommandLineOptions,
                     SplitCommandLineOptions
@@ -146,6 +147,8 @@ namespace Orang.CommandLine
                     return 1;
 
                 return parserResult.MapResult(
+                    (CopyCommandLineOptions options) => Copy(options),
+                    (MoveCommandLineOptions options) => Move(options),
                     (DeleteCommandLineOptions options) => Delete(options),
                     (EscapeCommandLineOptions options) => Escape(options),
                     (FindCommandLineOptions options) => Find(options),
@@ -178,6 +181,34 @@ namespace Orang.CommandLine
                     && value[0] == '-'
                     && value[1] == OptionShortNames.Help;
             }
+        }
+
+        private static int Copy(CopyCommandLineOptions commandLineOptions)
+        {
+            var options = new CopyCommandOptions();
+
+            if (!commandLineOptions.TryParse(ref options))
+                return 1;
+
+            var command = new CopyCommand(options);
+
+            CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
+        }
+
+        private static int Move(MoveCommandLineOptions commandLineOptions)
+        {
+            var options = new MoveCommandOptions();
+
+            if (!commandLineOptions.TryParse(ref options))
+                return 1;
+
+            var command = new MoveCommand(options);
+
+            CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
         }
 
         private static int Delete(DeleteCommandLineOptions commandLineOptions)
@@ -225,7 +256,7 @@ namespace Orang.CommandLine
             }
             else
             {
-                var command = new FindCommand(options);
+                var command = new FindCommand<FindCommandOptions>(options);
 
                 result = command.Execute();
             }

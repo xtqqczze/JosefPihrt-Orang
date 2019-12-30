@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,11 +11,18 @@ namespace Orang.FileSystem
 {
     internal static class FileSystemHelpers
     {
-        private static readonly EnumerationOptions _enumerationOptions = new EnumerationOptions()
+        private static readonly EnumerationOptions _enumerationOptionsNoRecurse = new EnumerationOptions()
         {
             AttributesToSkip = 0,
             IgnoreInaccessible = true,
             RecurseSubdirectories = false,
+        };
+
+        private static readonly EnumerationOptions _enumerationOptionsRecurse = new EnumerationOptions()
+        {
+            AttributesToSkip = 0,
+            IgnoreInaccessible = true,
+            RecurseSubdirectories = true,
         };
 
         internal static int IndexOfDirectorySeparator(string path, int start)
@@ -51,13 +59,13 @@ namespace Orang.FileSystem
             {
                 if (!directoriesOnly)
                 {
-                    foreach (string path in Directory.EnumerateFiles(directoryPath, "*", _enumerationOptions))
+                    foreach (string path in Directory.EnumerateFiles(directoryPath, "*", _enumerationOptionsNoRecurse))
                         File.Delete(path);
                 }
 
                 if (!filesOnly)
                 {
-                    foreach (string path in Directory.EnumerateDirectories(directoryPath, "*", _enumerationOptions))
+                    foreach (string path in Directory.EnumerateDirectories(directoryPath, "*", _enumerationOptionsNoRecurse))
                         Directory.Delete(path, recursive: true);
                 }
             }
@@ -92,6 +100,16 @@ namespace Orang.FileSystem
             {
                 File.Delete(filePath);
             }
+        }
+
+        public static IEnumerable<string> EnumerateAllFiles(string directoryPath)
+        {
+            return Directory.EnumerateFiles(directoryPath, "*", _enumerationOptionsRecurse);
+        }
+
+        public static bool FileOrDirectoryExists(string path)
+        {
+            return File.Exists(path) || Directory.Exists(path);
         }
 
         internal static bool TryReadAllText(string path, out string content)

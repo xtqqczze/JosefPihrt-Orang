@@ -7,11 +7,11 @@ using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
-    internal class FindCommand : CommonFindCommand<FindCommandOptions>
+    internal class FindCommand<TOptions> : CommonFindCommand<TOptions> where TOptions : FindCommandOptions
     {
         private bool _ask;
 
-        public FindCommand(FindCommandOptions options) : base(options)
+        public FindCommand(TOptions options) : base(options)
         {
         }
 
@@ -74,6 +74,12 @@ namespace Orang.CommandLine
                     context.State = SearchState.Canceled;
                 }
             }
+
+            ExecuteResult(result, context, baseDirectoryPath, indent);
+        }
+
+        protected virtual void ExecuteResult(FileSystemFinderResult result, SearchContext context, string baseDirectoryPath, string indent)
+        {
         }
 
         protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)

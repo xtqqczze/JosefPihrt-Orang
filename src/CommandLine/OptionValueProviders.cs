@@ -331,6 +331,12 @@ namespace Orang.CommandLine
             OptionValues.FileProperty_Size
         );
 
+        public static OptionValueProvider ConflictOptionProvider { get; } = new OptionValueProvider(MetaValues.ConflictOption,
+            SimpleOptionValue.Create(ConflictOption.Ask, description: "Ask when a file or already exists."),
+            SimpleOptionValue.Create(ConflictOption.Overwrite, description: "Overwrite a file when it already exists."),
+            SimpleOptionValue.Create(ConflictOption.Skip, description: "Do not copy a file if it already exists.")
+        );
+
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName
         {
             get

@@ -73,5 +73,32 @@ namespace Orang.CommandLine
 
             return false;
         }
+
+        public static DialogResult QuestionWithResult(string question, string indent = null)
+        {
+            ConsoleOut.Write(indent);
+            ConsoleOut.Write(question);
+            ConsoleOut.Write(" (Y/A/N/C): ");
+
+            switch (Console.ReadLine()?.Trim())
+            {
+                case "y":
+                case "Y":
+                    return DialogResult.Yes;
+                case "a":
+                case "A":
+                    return DialogResult.YesToAll;
+                case "n":
+                case "N":
+                    return DialogResult.No;
+                case "c":
+                case "C":
+                    return DialogResult.Cancel;
+                case null:
+                    return DialogResult.None;
+            }
+
+            return DialogResult.None;
+        }
     }
 }
