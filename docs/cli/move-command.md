@@ -121,5 +121,8 @@ The directory to copy files and directories to\.
 
 The amount of information to display in the log\. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\] and di\[agnostic\]\.
 
+## Use Redirected Input
+
+Piped output from a previous command will be treated as a list of paths separated by newlines.
 
 *\(Generated with [DotMarkdown](http://github.com/JosefPihrt/DotMarkdown)\)*
