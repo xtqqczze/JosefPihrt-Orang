@@ -141,7 +141,7 @@ namespace Orang.CommandLine
 
             if (sortOptions?.Descriptors.Any() == true)
             {
-                results = SortHelpers.SortResults(context.Results, sortOptions.Descriptors);
+                results = SortHelpers.SortResults(context.Results, sortOptions.Descriptors, Options.PathDisplayStyle);
 
                 if (sortOptions.MaxCount > 0)
                     results = results.Take(sortOptions.MaxCount);
@@ -159,18 +159,31 @@ namespace Orang.CommandLine
 
                 if (fileProperties.Contains(FileProperty.Size))
                 {
-                    if (resultList.Any(f => !f.IsDirectory))
+                    long maxSize = 0;
+                    if (context.Telemetry.MaxFileSize > 0)
                     {
-                        maxSizeWidth = resultList
-                            .Where(f => !f.IsDirectory)
-                            .Max(f => ((FileInfo)f.FileSystemInfo).Length)
-                            .ToString("n0")
-                            .Length;
+                        maxSize = context.Telemetry.MaxFileSize;
                     }
                     else
                     {
-                        maxSizeWidth = 0;
+                        foreach (SearchResult result in resultList)
+                        {
+                            long size = result.GetSize();
+
+                            if (result.IsDirectory)
+                            {
+                                if (context.DirectorySizeMap == null)
+                                    context.DirectorySizeMap = new Dictionary<string, long>();
+
+                                context.DirectorySizeMap[result.Path] = size;
+                            }
+
+                            if (size > maxSize)
+                                maxSize = size;
+                        }
                     }
+
+                    maxSizeWidth = maxSize.ToString("n0").Length;
                 }
 
                 columnWidths = new ColumnWidths(maxNameWidth, maxSizeWidth);
@@ -208,10 +221,7 @@ namespace Orang.CommandLine
                 && context.Telemetry.FilesTotalSize == 0)
             {
                 foreach (SearchResult result in results.Take(i))
-                {
-                    if (!result.IsDirectory)
-                        context.Telemetry.FilesTotalSize += new FileInfo(result.Path).Length;
-                }
+                    context.Telemetry.FilesTotalSize += result.GetSize();
             }
         }
 
@@ -401,14 +411,25 @@ namespace Orang.CommandLine
 
         protected void WritePath(SearchContext context, FileSystemFinderResult result, string baseDirectoryPath, string indent, ColumnWidths columnWidths, ConsoleColors matchColors)
         {
-            LogHelpers.WritePath(
-                result,
-                baseDirectoryPath,
-                relativePath: Options.DisplayRelativePath,
-                colors: Colors.Matched_Path,
-                matchColors: (Options.HighlightMatch) ? matchColors : default,
-                indent: indent,
-                verbosity: Verbosity.Minimal);
+            if (Options.PathDisplayStyle == PathDisplayStyle.Match)
+            {
+                if (ShouldLog(Verbosity.Minimal))
+                {
+                    Write(indent, Verbosity.Minimal);
+                    Write(result.Match.Value, (Options.HighlightMatch) ? matchColors : default, Verbosity.Minimal);
+                }
+            }
+            else
+            {
+                LogHelpers.WritePath(
+                    result,
+                    baseDirectoryPath,
+                    relativePath: Options.DisplayRelativePath,
+                    colors: Colors.Matched_Path,
+                    matchColors: (Options.HighlightMatch) ? matchColors : default,
+                    indent: indent,
+                    verbosity: Verbosity.Minimal);
+            }
 
             WriteProperties(context, result, columnWidths);
         }
@@ -428,20 +449,19 @@ namespace Orang.CommandLine
                     {
                         sb.Append("  ");
 
-                        if (result.IsDirectory)
-                        {
-                            sb.Append(' ', columnWidths.SizeWidth);
-                        }
-                        else
-                        {
-                            long size = new FileInfo(result.Path).Length;
-                            string sizeText = size.ToString("n0");
+                        long size = (result.IsDirectory)
+                            ? context.DirectorySizeMap[result.Path]
+                            : new FileInfo(result.Path).Length;
 
-                            sb.Append(' ', columnWidths.SizeWidth - sizeText.Length);
-                            sb.Append(sizeText);
+                        string sizeText = size.ToString("n0");
 
-                            context.Telemetry.FilesTotalSize += size;
-                        }
+                        sb.Append(' ', columnWidths.SizeWidth - sizeText.Length);
+                        sb.Append(sizeText);
+
+                        context.Telemetry.FilesTotalSize += size;
+
+                        if (size > context.Telemetry.MaxFileSize)
+                            context.Telemetry.MaxFileSize = size;
                     }
                     else if (fileProperty == FileProperty.CreationTime)
                     {
