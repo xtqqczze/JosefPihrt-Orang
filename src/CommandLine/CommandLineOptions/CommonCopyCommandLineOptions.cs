@@ -8,10 +8,10 @@ namespace Orang.CommandLine
 {
     internal abstract class CommonCopyCommandLineOptions : FindCommandLineOptions
     {
-        [Option(longName: OptionNames.Conflict,
-            HelpText = "Defines how to resolve conflict during copy/move operation.",
-            MetaValue = MetaValues.ConflictOption)]
-        public string Conflict { get; set; }
+        [Option(longName: OptionNames.Overwrite,
+            HelpText = "Defines how to proceed if a file already exists.",
+            MetaValue = MetaValues.OverwriteOption)]
+        public string Overwrite { get; set; }
 
         [Option(longName: OptionNames.Target,
             Required = true,
@@ -31,10 +31,10 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            if (!TryParseAsEnum(Conflict, OptionNames.Conflict, out ConflictOption conflictOption, defaultValue: ConflictOption.Ask, provider: OptionValueProviders.ConflictOptionProvider))
+            if (!TryParseAsEnum(Overwrite, OptionNames.Overwrite, out OverwriteOption overwriteOption, defaultValue: OverwriteOption.Ask, provider: OptionValueProviders.OverwriteOptionProvider))
                 return false;
 
-            options.ConflictOption = conflictOption;
+            options.OverwriteOption = overwriteOption;
             options.Target = target;
             options.RecurseSubdirectories = false;
 

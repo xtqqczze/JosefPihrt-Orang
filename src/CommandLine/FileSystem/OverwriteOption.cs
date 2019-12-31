@@ -2,10 +2,10 @@
 
 namespace Orang.FileSystem
 {
-    internal enum ConflictOption
+    internal enum OverwriteOption
     {
         Ask = 0,
-        Overwrite = 1,
-        Skip = 2,
+        Yes = 1,
+        No = 2,
     }
 }

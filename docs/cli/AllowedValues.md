@@ -2,7 +2,6 @@
 
 * [\<ASK_MODE>](#ask-mode)
 * [\<ATTRIBUTES>](#attributes)
-* [\<CONFLICT_OPTION>](#conflict-option)
 * [\<CONTENT_DISPLAY>](#content-display)
 * [\<DISPLAY_OPTIONS>](#display-options)
 * [\<EXTENSION_OPTIONS>](#extension-options)
@@ -11,6 +10,7 @@
 * [\<MAX_OPTIONS>](#max-options)
 * [\<NAME_PART>](#name-part)
 * [\<OUTPUT_OPTIONS>](#output-options)
+* [\<OVERWRITE_OPTION>](#overwrite-option)
 * [\<PATH_DISPLAY>](#path-display)
 * [\<PATTERN_OPTIONS>](#pattern-options)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
@@ -46,14 +46,6 @@
 | sparse\-file           |
 | s\[ystem\]             |
 | temporary              |
-
-## \<CONFLICT\_OPTION>
-
-| Value         | Description                               |
-| ------------- | ----------------------------------------- |
-| a\[sk\]       | Ask when a file or already exists\.       |
-| o\[verwrite\] | Overwrite a file when it already exists\. |
-| s\[kip\]      | Do not copy a file if it already exists\. |
 
 ## \<CONTENT\_DISPLAY>
 
@@ -144,6 +136,14 @@
 | e\[ncoding\]=\<ENCODING>   |
 | v\[erbosity\]=\<VERBOSITY> |
 | a\[ppend\]                 | If the file exists output will be appended to the end of the file\. |
+
+## \<OVERWRITE\_OPTION>
+
+| Value   | Description                                       |
+| ------- | ------------------------------------------------- |
+| a\[sk\] | Ask when a file or already exists\.               |
+| y\[es\] | Overwrite a file when it already exists\.         |
+| n\[o\]  | Do not copy or move a file if it already exists\. |
 
 ## \<PATH\_DISPLAY>
 

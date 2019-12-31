@@ -19,10 +19,10 @@ namespace Orang.CommandLine
 
         public string Target => Options.Target;
 
-        public ConflictOption ConflictOption
+        public OverwriteOption OverwriteOption
         {
-            get { return Options.ConflictOption; }
-            private set { Options.ConflictOption = value; }
+            get { return Options.OverwriteOption; }
+            private set { Options.OverwriteOption = value; }
         }
 
         protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
@@ -104,7 +104,7 @@ namespace Orang.CommandLine
         {
             bool overwrite = false;
 
-            if (ConflictOption == ConflictOption.Skip
+            if (OverwriteOption == OverwriteOption.No
                 && FileSystemHelpers.FileOrDirectoryExists(destinationPath))
             {
                 return;
@@ -116,7 +116,7 @@ namespace Orang.CommandLine
                 Logger.WriteLine(Verbosity.Minimal);
             }
 
-            if (ConflictOption == ConflictOption.Ask)
+            if (OverwriteOption == OverwriteOption.Ask)
             {
                 if (FileSystemHelpers.FileOrDirectoryExists(destinationPath))
                 {
@@ -131,7 +131,7 @@ namespace Orang.CommandLine
                         case DialogResult.YesToAll:
                             {
                                 overwrite = true;
-                                ConflictOption = ConflictOption.Overwrite;
+                                OverwriteOption = OverwriteOption.Yes;
                                 break;
                             }
                         case DialogResult.No:
@@ -141,7 +141,7 @@ namespace Orang.CommandLine
                             }
                         case DialogResult.NoToAll:
                             {
-                                ConflictOption = ConflictOption.Skip;
+                                OverwriteOption = OverwriteOption.No;
                                 return;
                             }
                         case DialogResult.Cancel:
@@ -156,14 +156,14 @@ namespace Orang.CommandLine
                     }
                 }
             }
-            else if (ConflictOption == ConflictOption.Overwrite)
+            else if (OverwriteOption == OverwriteOption.Yes)
             {
                 if (FileSystemHelpers.FileOrDirectoryExists(destinationPath))
                     overwrite = true;
             }
             else
             {
-                throw new InvalidOperationException($"Unknown enum value '{ConflictOption}'.");
+                throw new InvalidOperationException($"Unknown enum value '{OverwriteOption}'.");
             }
 
             if (overwrite)

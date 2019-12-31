@@ -9,7 +9,6 @@ orang move [<PATH>]
 [   --ask]                <ASK_MODE>
 [-a|--attributes]         <ATTRIBUTES>
 [   --attributes-to-skip] <ATTRIBUTES>
-[   --conflict]           <CONFLICT_OPTION>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
 [   --encoding]           <ENCODING>
@@ -21,6 +20,7 @@ orang move [<PATH>]
 [-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
+[   --overwrite]          <OVERWRITE_OPTION>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
 [-p|--properties]         <FILE_PROPERTIES>
@@ -48,10 +48,6 @@ File attributes that are required\. Allowed values are archive, compressed, d\[i
 **`[--attributes-to-skip] <ATTRIBUTES>`**
 
 File attributes that should be skipped\. Allowed values are archive, compressed, e\[mpty\], encrypted, h\[idden\], normal, offline, r\[ead\-only\], r\[eparse\]\-p\[oint\], s\[ystem\] and temporary\.
-
-**`[--conflict] <CONFLICT_OPTION>`**
-
-Defines how to resolve conflict during copy/move operation\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
 
 **`[-c|--content] <REGEX>`**
 
@@ -96,6 +92,10 @@ Do not search subdirectories\.
 **`[-o|--output] <OUTPUT_OPTIONS>`**
 
 Path to a file that should store output\. Syntax is \<PATH> \[\<OUTPUT\_OPTIONS>\]\. Allowed values are e\[ncoding\]=\<ENCODING>, v\[erbosity\]=\<VERBOSITY> and a\[ppend\]\.
+
+**`[--overwrite] <OVERWRITE_OPTION>`**
+
+Defines how to proceed if a file already exists\. Allowed values are a\[sk\], y\[es\] and n\[o\]\.
 
 **`[--paths-from] <FILE_PATH>`**
 
