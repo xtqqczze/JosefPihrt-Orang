@@ -7,13 +7,16 @@ using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
-    internal class FindCommand<TOptions> : CommonFindCommand<TOptions> where TOptions : FindCommandOptions
+    internal class FindCommand : CommonFindCommand<FindCommandOptions>
     {
         private bool _ask;
 
-        public FindCommand(TOptions options) : base(options)
+        public FindCommand(FindCommandOptions options, CommonCopyOperation operation = null) : base(options)
         {
+            Operation = operation;
         }
+
+        public CommonCopyOperation Operation { get; }
 
         protected override void ExecuteCore(SearchContext context)
         {
@@ -38,6 +41,9 @@ namespace Orang.CommandLine
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
+            if (Operation?.CanExecute(directoryPath) == false)
+                return;
+
             foreach (FileSystemFinderResult result in Find(directoryPath, context))
             {
                 ExecuteOrAddResult(result, context, directoryPath);
@@ -75,11 +81,7 @@ namespace Orang.CommandLine
                 }
             }
 
-            ExecuteResult(result, context, baseDirectoryPath, indent);
-        }
-
-        protected virtual void ExecuteResult(FileSystemFinderResult result, SearchContext context, string baseDirectoryPath, string indent)
-        {
+            Operation?.Execute(result, context, baseDirectoryPath, indent);
         }
 
         protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)

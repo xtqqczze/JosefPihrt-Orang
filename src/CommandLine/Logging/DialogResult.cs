@@ -8,6 +8,7 @@ namespace Orang.CommandLine
         Yes = 1,
         YesToAll = 2,
         No = 3,
-        Cancel = 4
+        NoToAll = 4,
+        Cancel = 5
     }
 }

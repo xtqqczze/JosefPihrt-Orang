@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using static Orang.Logger;
 
@@ -9,6 +10,21 @@ namespace Orang.CommandLine
 {
     internal static class ConsoleHelpers
     {
+        private static readonly ImmutableDictionary<string, DialogResult> _dialogResultMap = CreateDialogResultMap();
+
+        private static ImmutableDictionary<string, DialogResult> CreateDialogResultMap()
+        {
+            ImmutableDictionary<string, DialogResult>.Builder builder = ImmutableDictionary.CreateBuilder<string, DialogResult>();
+
+            builder.Add("y", DialogResult.Yes);
+            builder.Add("ya", DialogResult.YesToAll);
+            builder.Add("n", DialogResult.No);
+            builder.Add("na", DialogResult.NoToAll);
+            builder.Add("c", DialogResult.Cancel);
+
+            return builder.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
+        }
+
         public static string ReadRedirectedInput()
         {
             if (Console.IsInputRedirected)
@@ -78,24 +94,18 @@ namespace Orang.CommandLine
         {
             ConsoleOut.Write(indent);
             ConsoleOut.Write(question);
-            ConsoleOut.Write(" (Y/A/N/C): ");
+            ConsoleOut.Write(" (Y/YA/N/NA/C): ");
 
-            switch (Console.ReadLine()?.Trim())
+            string s = Console.ReadLine()?.Trim();
+
+            if (s != null)
             {
-                case "y":
-                case "Y":
-                    return DialogResult.Yes;
-                case "a":
-                case "A":
-                    return DialogResult.YesToAll;
-                case "n":
-                case "N":
-                    return DialogResult.No;
-                case "c":
-                case "C":
-                    return DialogResult.Cancel;
-                case null:
-                    return DialogResult.None;
+                if (_dialogResultMap.TryGetValue(s, out DialogResult dialogResult))
+                    return dialogResult;
+            }
+            else
+            {
+                ConsoleOut.WriteLine();
             }
 
             return DialogResult.None;

@@ -190,11 +190,9 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            var command = new CopyCommand(options);
+            var operation = new CopyOperation(options);
 
-            CommandResult result = command.Execute();
-
-            return GetExitCode(result.Kind);
+            return Find(options, operation);
         }
 
         private static int Move(MoveCommandLineOptions commandLineOptions)
@@ -204,11 +202,9 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            var command = new MoveCommand(options);
+            var operation = new MoveOperation(options);
 
-            CommandResult result = command.Execute();
-
-            return GetExitCode(result.Kind);
+            return Find(options, operation);
         }
 
         private static int Delete(DeleteCommandLineOptions commandLineOptions)
@@ -246,22 +242,7 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            CommandResult result;
-
-            if (options.ContentFilter != null)
-            {
-                var command = new FindContentCommand(options);
-
-                result = command.Execute();
-            }
-            else
-            {
-                var command = new FindCommand<FindCommandOptions>(options);
-
-                result = command.Execute();
-            }
-
-            return GetExitCode(result.Kind);
+            return Find(options);
         }
 
         private static int Help(HelpCommandLineOptions commandLineOptions)
@@ -344,6 +325,26 @@ namespace Orang.CommandLine
             var command = new SplitCommand(options);
 
             CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
+        }
+
+        private static int Find(FindCommandOptions options, CommonCopyOperation operation = null)
+        {
+            CommandResult result;
+
+            if (options.ContentFilter != null)
+            {
+                var command = new FindContentCommand(options, operation);
+
+                result = command.Execute();
+            }
+            else
+            {
+                var command = new FindCommand(options, operation);
+
+                result = command.Execute();
+            }
 
             return GetExitCode(result.Kind);
         }

@@ -15,9 +15,12 @@ namespace Orang.CommandLine
         private AskMode _askMode;
         private OutputSymbols _symbols;
 
-        public FindContentCommand(FindCommandOptions options) : base(options)
+        public FindContentCommand(FindCommandOptions options, CommonCopyOperation operation = null) : base(options)
         {
+            Operation = operation;
         }
+
+        public CommonCopyOperation Operation { get; }
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 
@@ -43,6 +46,9 @@ namespace Orang.CommandLine
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
+            if (Operation?.CanExecute(directoryPath) == false)
+                return;
+
             foreach (FileSystemFinderResult result in Find(directoryPath, context))
             {
                 ProcessResult(result, context, DirectoryWriterOptions, directoryPath);
@@ -110,6 +116,8 @@ namespace Orang.CommandLine
                     context.State = SearchState.Canceled;
                 }
             }
+
+            Operation?.Execute(result, context, baseDirectoryPath, indent);
         }
 
         private void WriteMatches(

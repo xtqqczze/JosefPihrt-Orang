@@ -2,6 +2,7 @@
 
 * [\<ASK_MODE>](#ask-mode)
 * [\<ATTRIBUTES>](#attributes)
+* [\<CONFLICT_OPTION>](#conflict-option)
 * [\<CONTENT_DISPLAY>](#content-display)
 * [\<DISPLAY_OPTIONS>](#display-options)
 * [\<EXTENSION_OPTIONS>](#extension-options)
@@ -45,6 +46,14 @@
 | sparse\-file           |
 | s\[ystem\]             |
 | temporary              |
+
+## \<CONFLICT\_OPTION>
+
+| Value         | Description                               |
+| ------------- | ----------------------------------------- |
+| a\[sk\]       | Ask when a file or already exists\.       |
+| o\[verwrite\] | Overwrite a file when it already exists\. |
+| s\[kip\]      | Do not copy a file if it already exists\. |
 
 ## \<CONTENT\_DISPLAY>
 

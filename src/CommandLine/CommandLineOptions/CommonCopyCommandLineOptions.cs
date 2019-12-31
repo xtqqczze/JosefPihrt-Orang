@@ -36,6 +36,7 @@ namespace Orang.CommandLine
 
             options.ConflictOption = conflictOption;
             options.Target = target;
+            options.RecurseSubdirectories = false;
 
             return true;
         }
