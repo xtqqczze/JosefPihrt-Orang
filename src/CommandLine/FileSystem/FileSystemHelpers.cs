@@ -193,5 +193,17 @@ namespace Orang.FileSystem
             return ch == Path.DirectorySeparatorChar
                 || ch == Path.AltDirectorySeparatorChar;
         }
+
+        public static long GetDirectorySize(string directoryPath)
+        {
+            long size = 0;
+
+            foreach (string filePath in Directory.EnumerateFiles(directoryPath, "*", _enumerationOptionsRecurse))
+            {
+                size += new FileInfo(filePath).Length;
+            }
+
+            return size;
+        }
     }
 }
