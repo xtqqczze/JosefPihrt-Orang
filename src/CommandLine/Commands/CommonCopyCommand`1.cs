@@ -13,6 +13,24 @@ namespace Orang.CommandLine
         {
         }
 
+        protected override void ExecuteDirectory(string directoryPath, SearchContext context)
+        {
+            if (Options.TargetNormalized == null)
+                Options.TargetNormalized = Options.Target.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+
+            string pathNormalized = directoryPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+
+            if (Options.TargetNormalized.StartsWith(pathNormalized, StringComparison.OrdinalIgnoreCase)
+                || pathNormalized.StartsWith(Options.TargetNormalized, StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.WriteWarning("Source directory cannot be subdirectory of a destination directory or vice versa.");
+            }
+            else
+            {
+                base.ExecuteDirectory(directoryPath, context);
+            }
+        }
+
         protected override void ExecuteResult(
             FileSystemFinderResult result,
             SearchContext context,

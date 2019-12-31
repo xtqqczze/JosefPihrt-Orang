@@ -12,6 +12,8 @@ namespace Orang.CommandLine
 
         public string Target { get; internal set; }
 
+        public string TargetNormalized { get; internal set; }
+
         public ConflictOption ConflictOption { get; internal set; }
     }
 }
