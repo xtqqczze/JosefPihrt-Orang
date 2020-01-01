@@ -25,6 +25,7 @@ orang sync [<PATH>]
 [-p|--properties]         <FILE_PROPERTIES>
 [-s|--sort]               <SORT_OPTIONS>
     --target              <DIRECTORY_PATH>
+[   --two-way]
 [-v|--verbosity]          <VERBOSITY>
 ```
 
@@ -111,6 +112,10 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 **`--target <DIRECTORY_PATH>`**
 
 A directory to be synchronized\.
+
+**`[--two-way]`**
+
+Synchronize both directories\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

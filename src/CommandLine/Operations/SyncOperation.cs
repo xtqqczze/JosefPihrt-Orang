@@ -28,6 +28,9 @@ namespace Orang.CommandLine
 
         public void DeleteFilesAndDirectoriesInTarget(string directoryPath, string indent)
         {
+            if (Options.TwoWay)
+                return;
+
             foreach (string path in FileSystemHelpers.EnumerateAllDirectories(Target))
             {
                 string relativePath = path.Substring(Target.Length + 1);

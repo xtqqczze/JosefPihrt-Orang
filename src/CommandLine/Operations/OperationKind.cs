@@ -6,6 +6,6 @@ namespace Orang.CommandLine
     {
         Copy = 0,
         Move = 1,
-        Sync = 1,
+        Sync = 2,
     }
 }

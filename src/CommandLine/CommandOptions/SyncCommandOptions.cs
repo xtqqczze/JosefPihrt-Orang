@@ -7,5 +7,7 @@ namespace Orang.CommandLine
         internal SyncCommandOptions()
         {
         }
+
+        public bool TwoWay { get; internal set; }
     }
 }

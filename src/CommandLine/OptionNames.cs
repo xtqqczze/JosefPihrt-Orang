@@ -43,6 +43,7 @@ namespace Orang.CommandLine
         public const string Sort = "sort";
         public const string Target = "target";
         public const string Timeout = "timeout";
+        public const string TwoWay = "two-way";
         public const string Values = "values";
         public const string Verbosity = "verbosity";
 

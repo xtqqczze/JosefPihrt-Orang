@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -345,33 +346,56 @@ namespace Orang.CommandLine
 
         private static int Find(FindCommandOptions options, CommonCopyOperation operation = null)
         {
-            CommandResult result;
+            CommandResult result = Execute(options, operation);
 
-            if (options.ContentFilter != null)
+            if (result.Kind != CommandResultKind.Fail
+                && result.Kind != CommandResultKind.Canceled
+                && options is SyncCommandOptions syncOptions
+                && syncOptions.TwoWay)
             {
-                var command = new FindContentCommand(options, operation);
+                string target = syncOptions.Paths[0];
 
-                result = command.Execute();
-            }
-            else
-            {
-                var command = new FindCommand(options, operation);
+                syncOptions.Paths = ImmutableArray.Create(operation.Target);
+                syncOptions.Target = target;
 
-                result = command.Execute();
+                operation = new SyncOperation(syncOptions);
+
+                result = Execute(syncOptions, operation);
             }
 
             return GetExitCode(result.Kind);
+
+            static CommandResult Execute(FindCommandOptions options, CommonCopyOperation operation = null)
+            {
+                if (options.ContentFilter != null)
+                {
+                    var command = new FindContentCommand(options, operation);
+
+                    return command.Execute();
+                }
+                else
+                {
+                    var command = new FindCommand(options, operation);
+
+                    return command.Execute();
+                }
+            }
         }
 
         private static int GetExitCode(CommandResultKind kind)
         {
-            return kind switch
+            switch (kind)
             {
-                CommandResultKind.Success => 0,
-                CommandResultKind.NoMatch => 1,
-                CommandResultKind.Fail => 2,
-                _ => throw new InvalidOperationException($"Unknown enum value '{kind}'."),
-            };
+                case CommandResultKind.Success:
+                    return 0;
+                case CommandResultKind.NoMatch:
+                    return 1;
+                case CommandResultKind.Fail:
+                case CommandResultKind.Canceled:
+                    return 2;
+                default:
+                    throw new InvalidOperationException($"Unknown enum value '{kind}'.");
+            }
         }
     }
 }

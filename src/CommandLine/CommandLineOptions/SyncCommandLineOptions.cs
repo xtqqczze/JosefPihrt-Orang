@@ -15,6 +15,10 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
+        [Option(longName: OptionNames.TwoWay,
+            HelpText = "Synchronize directories in both directions.")]
+        public bool TwoWay { get; set; }
+
         public bool TryParse(ref SyncCommandOptions options)
         {
             var baseOptions = (CommonCopyCommandOptions)options;
@@ -34,7 +38,10 @@ namespace Orang.CommandLine
                 return false;
 
             options.OverwriteOption = OverwriteOption.Yes;
+            options.SearchTarget = SearchTarget.All;
+
             options.Target = target;
+            options.TwoWay = TwoWay;
 
             return true;
         }
