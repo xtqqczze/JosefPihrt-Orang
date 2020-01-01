@@ -8,10 +8,6 @@ namespace Orang.CommandLine
 {
     internal abstract class CommonCopyCommandLineOptions : FindCommandLineOptions
     {
-        [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
-            HelpText = "Display which files or directories should be copied/moved but do not actually copy/move any file or directory.")]
-        public bool DryRun { get; set; }
-
         [Option(longName: OptionNames.Overwrite,
             HelpText = "Defines how to proceed if a file already exists.",
             MetaValue = MetaValues.OverwriteOption)]
@@ -38,7 +34,6 @@ namespace Orang.CommandLine
             if (!TryParseAsEnum(Overwrite, OptionNames.Overwrite, out OverwriteOption overwriteOption, defaultValue: OverwriteOption.Ask, provider: OptionValueProviders.OverwriteOptionProvider))
                 return false;
 
-            options.DryRun = DryRun;
             options.OverwriteOption = overwriteOption;
             options.Target = target;
             options.RecurseSubdirectories = false;

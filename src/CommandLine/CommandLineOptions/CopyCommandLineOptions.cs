@@ -7,6 +7,10 @@ namespace Orang.CommandLine
     [Verb("copy", HelpText = "Searches the file system for files and directories and copy them to a destionation directory.")]
     internal class CopyCommandLineOptions : CommonCopyCommandLineOptions
     {
+        [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
+            HelpText = "Display which files or directories should be copied but do not actually copy any file or directory.")]
+        public bool DryRun { get; set; }
+
         public bool TryParse(ref CopyCommandOptions options)
         {
             var baseOptions = (CommonCopyCommandOptions)options;
@@ -15,6 +19,8 @@ namespace Orang.CommandLine
                 return false;
 
             options = (CopyCommandOptions)baseOptions;
+
+            options.DryRun = DryRun;
 
             return true;
         }
