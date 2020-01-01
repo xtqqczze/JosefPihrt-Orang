@@ -2,10 +2,10 @@
 
 namespace Orang.CommandLine
 {
-    internal enum OperationKind
+    internal class SyncCommandOptions : CommonCopyCommandOptions
     {
-        Copy = 0,
-        Move = 1,
-        Sync = 1,
+        internal SyncCommandOptions()
+        {
+        }
     }
 }

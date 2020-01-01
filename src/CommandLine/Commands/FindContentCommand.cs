@@ -36,6 +36,12 @@ namespace Orang.CommandLine
 
         protected override void ExecuteFile(string filePath, SearchContext context)
         {
+            if (Operation?.Kind == OperationKind.Sync)
+            {
+                WriteWarning("File cannot be synchronized.");
+                return;
+            }
+
             context.Telemetry.FileCount++;
 
             FileSystemFinderResult? maybeResult = MatchFile(filePath);
@@ -54,11 +60,13 @@ namespace Orang.CommandLine
                 ProcessResult(result, context, DirectoryWriterOptions, directoryPath);
 
                 if (context.State == SearchState.Canceled)
-                    break;
+                    return;
 
                 if (context.State == SearchState.MaxReached)
                     break;
             }
+
+            (Operation as SyncOperation)?.DeleteFilesAndDirectoriesInTarget(directoryPath, GetPathIndent(directoryPath));
         }
 
         private void ProcessResult(

@@ -151,6 +151,7 @@
 | ------------ | ----------------------------------------------- |
 | f\[ull\]     | Display full path\.                             |
 | r\[elative\] | Display path relatively to the base directory\. |
+| m\[atch\]    | Display only match\.                            |
 | o\[mit\]     | Do not display path\.                           |
 
 ## \<PATTERN\_OPTIONS>

@@ -15,6 +15,7 @@ Search, replace, rename and delete files and its content using the power of \.NE
 * [rename](rename-command.md)
 * [replace](replace-command.md)
 * [split](split-command.md)
+* [sync](sync-command.md)
 
 ## Links
 

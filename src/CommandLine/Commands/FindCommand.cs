@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
 using static Orang.Logger;
@@ -31,6 +32,12 @@ namespace Orang.CommandLine
 
         protected override void ExecuteFile(string filePath, SearchContext context)
         {
+            if (Operation?.Kind == OperationKind.Sync)
+            {
+                WriteWarning("File cannot be synchronized.");
+                return;
+            }
+
             context.Telemetry.FileCount++;
 
             FileSystemFinderResult? maybeResult = MatchFile(filePath);
@@ -49,11 +56,13 @@ namespace Orang.CommandLine
                 ExecuteOrAddResult(result, context, directoryPath);
 
                 if (context.State == SearchState.Canceled)
-                    break;
+                    return;
 
                 if (context.State == SearchState.MaxReached)
                     break;
             }
+
+            (Operation as SyncOperation)?.DeleteFilesAndDirectoriesInTarget(directoryPath, GetPathIndent(directoryPath));
         }
 
         protected override void ExecuteResult(SearchResult result, SearchContext context, ColumnWidths columnWidths)

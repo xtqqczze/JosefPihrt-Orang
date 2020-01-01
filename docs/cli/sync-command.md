@@ -1,17 +1,16 @@
-﻿# `orang copy`
+﻿# `orang sync`
 
-Searches the file system for files and directories and copy them to a destination directory\.
+Synchronizes content of one directory with another directory\.
 
 ## Synopsis
 
 ```
-orang copy [<PATH>]
+orang sync [<PATH>]
 [   --ask]                <ASK_MODE>
 [-a|--attributes]         <ATTRIBUTES>
 [   --attributes-to-skip] <ATTRIBUTES>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
-[-d|--dry-run]
 [   --encoding]           <ENCODING>
 [-e|--extension]          <EXTENSION_FILTER>
 [-h|--help]
@@ -21,7 +20,6 @@ orang copy [<PATH>]
 [-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
-[   --overwrite]          <OVERWRITE_OPTION>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
 [-p|--properties]         <FILE_PROPERTIES>
@@ -57,10 +55,6 @@ Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTION
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
 Display of the results\. Allowed values are c\[ontent\]=\<CONTENT\_DISPLAY>, c\[ount\], c\[reation\-\]t\[ime\], indent=\<INDENT>, l\[ine\-number\], m\[odified\-\]t\[ime\], p\[ath\]=\<PATH\_DISPLAY>, s\[ize\], s\[eparator\]=\<SEPARATOR>, su\[mmary\] and t\[rim\-line\]\.
-
-**`[-d|--dry-run]`**
-
-Display which files or directories should be copied but do not actually copy any file or directory\.
 
 **`[--encoding] <ENCODING>`**
 
@@ -98,10 +92,6 @@ Do not search subdirectories\.
 
 Path to a file that should store output\. Syntax is \<PATH> \[\<OUTPUT\_OPTIONS>\]\. Allowed values are e\[ncoding\]=\<ENCODING>, v\[erbosity\]=\<VERBOSITY> and a\[ppend\]\.
 
-**`[--overwrite] <OVERWRITE_OPTION>`**
-
-Defines how to proceed if a file already exists\. Allowed values are a\[sk\], y\[es\] and n\[o\]\.
-
 **`[--paths-from] <FILE_PATH>`**
 
 Read the list of paths to search from a file\. Paths should be separated by newlines\.
@@ -120,37 +110,11 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 
 **`--target <DIRECTORY_PATH>`**
 
-A directory to copy files and directories to\.
+A directory to be synchronized\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 
 The amount of information to display in the log\. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\] and di\[agnostic\]\.
 
-## Use Redirected Input
 
-Piped output from a previous command will be treated as a list of paths separated by newlines.
-
-## Samples
-
-### Sample
-
-Backup Visual Studio project but exclude directories that are not necessary.
-
-#### Syntax
-
-```
-orang copy MyProject ^
- --target "backup/MyProject" ^
- --overwrite yes ^
- --include-directory "bin,obj,packages,node_modules,.vs" literal list whole-input negative
-```
-
-#### Short Syntax
-
-```
-orang copy MyProject ^
- --target "backup/MyProject" ^
- --overwrite y ^
- -i "bin,obj,packages,node_modules,.vs" l li wi ne
-```
 *\(Generated with [DotMarkdown](http://github.com/JosefPihrt/DotMarkdown)\)*

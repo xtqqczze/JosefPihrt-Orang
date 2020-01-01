@@ -1,6 +1,6 @@
 ﻿# `orang move`
 
-Searches the file system for files and directories and move them to a destionation directory\.
+Searches the file system for files and directories and move them to a destination directory\.
 
 ## Synopsis
 
@@ -11,6 +11,7 @@ orang move [<PATH>]
 [   --attributes-to-skip] <ATTRIBUTES>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
+[-d|--dry-run]
 [   --encoding]           <ENCODING>
 [-e|--extension]          <EXTENSION_FILTER>
 [-h|--help]
@@ -56,6 +57,10 @@ Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTION
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
 Display of the results\. Allowed values are c\[ontent\]=\<CONTENT\_DISPLAY>, c\[ount\], c\[reation\-\]t\[ime\], indent=\<INDENT>, l\[ine\-number\], m\[odified\-\]t\[ime\], p\[ath\]=\<PATH\_DISPLAY>, s\[ize\], s\[eparator\]=\<SEPARATOR>, su\[mmary\] and t\[rim\-line\]\.
+
+**`[-d|--dry-run]`**
+
+Display which files or directories should be moved but do not actually move any file or directory\.
 
 **`[--encoding] <ENCODING>`**
 
@@ -115,7 +120,7 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 
 **`--target <DIRECTORY_PATH>`**
 
-The directory to copy files and directories to\.
+A directory to move files and directories to\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

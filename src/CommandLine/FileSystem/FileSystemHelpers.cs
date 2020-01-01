@@ -107,6 +107,11 @@ namespace Orang.FileSystem
             return Directory.EnumerateFiles(directoryPath, "*", _enumerationOptionsRecurse);
         }
 
+        public static IEnumerable<string> EnumerateAllDirectories(string directoryPath)
+        {
+            return Directory.EnumerateDirectories(directoryPath, "*", _enumerationOptionsRecurse);
+        }
+
         public static bool FileOrDirectoryExists(string path)
         {
             return File.Exists(path) || Directory.Exists(path);
