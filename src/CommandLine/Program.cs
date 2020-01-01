@@ -197,30 +197,6 @@ namespace Orang.CommandLine
             return Find(options, operation);
         }
 
-        private static int Move(MoveCommandLineOptions commandLineOptions)
-        {
-            var options = new MoveCommandOptions();
-
-            if (!commandLineOptions.TryParse(ref options))
-                return 1;
-
-            var operation = new MoveOperation(options);
-
-            return Find(options, operation);
-        }
-
-        private static int Sync(SyncCommandLineOptions commandLineOptions)
-        {
-            var options = new SyncCommandOptions();
-
-            if (!commandLineOptions.TryParse(ref options))
-                return 1;
-
-            var operation = new SyncOperation(options);
-
-            return Find(options, operation);
-        }
-
         private static int Delete(DeleteCommandLineOptions commandLineOptions)
         {
             var options = new DeleteCommandOptions();
@@ -299,6 +275,30 @@ namespace Orang.CommandLine
             CommandResult result = command.Execute();
 
             return GetExitCode(result.Kind);
+        }
+
+        private static int Move(MoveCommandLineOptions commandLineOptions)
+        {
+            var options = new MoveCommandOptions();
+
+            if (!commandLineOptions.TryParse(ref options))
+                return 1;
+
+            var operation = new MoveOperation(options);
+
+            return Find(options, operation);
+        }
+
+        private static int Sync(SyncCommandLineOptions commandLineOptions)
+        {
+            var options = new SyncCommandOptions();
+
+            if (!commandLineOptions.TryParse(ref options))
+                return 1;
+
+            var operation = new SyncOperation(options);
+
+            return Find(options, operation);
         }
 
         private static int Rename(RenameCommandLineOptions commandLineOptions)
