@@ -195,7 +195,7 @@ namespace Orang.CommandLine
 
             var operation = new CopyOperation(options);
 
-            return Find(options, operation);
+            return CommonFind(options, operation);
         }
 
         private static int Delete(DeleteCommandLineOptions commandLineOptions)
@@ -233,7 +233,7 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            return Find(options);
+            return CommonFind(options);
         }
 
         private static int Help(HelpCommandLineOptions commandLineOptions)
@@ -287,7 +287,7 @@ namespace Orang.CommandLine
 
             var operation = new MoveOperation(options);
 
-            return Find(options, operation);
+            return CommonFind(options, operation);
         }
 
         private static int Sync(SyncCommandLineOptions commandLineOptions)
@@ -299,7 +299,7 @@ namespace Orang.CommandLine
 
             var operation = new SyncOperation(options);
 
-            return Find(options, operation);
+            return CommonFind(options, operation);
         }
 
         private static int Rename(RenameCommandLineOptions commandLineOptions)
@@ -344,7 +344,7 @@ namespace Orang.CommandLine
             return GetExitCode(result.Kind);
         }
 
-        private static int Find(FindCommandOptions options, CommonCopyOperation operation = null)
+        private static int CommonFind(FindCommandOptions options, CommonCopyOperation operation = null)
         {
             CommandResult result = Execute(options, operation);
 

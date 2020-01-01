@@ -7,6 +7,7 @@ using Orang.FileSystem;
 
 namespace Orang.CommandLine
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal abstract class CommonCopyOperation
     {
         protected CommonCopyOperation()
@@ -28,6 +29,9 @@ namespace Orang.CommandLine
             get { return Options.OverwriteOption; }
             private set { Options.OverwriteOption = value; }
         }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay => $"{Kind}  {Target}";
 
         protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
 
