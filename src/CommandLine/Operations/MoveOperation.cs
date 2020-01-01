@@ -15,6 +15,8 @@ namespace Orang.CommandLine
 
         new public MoveCommandOptions Options { get; }
 
+        public override OperationKind Kind => OperationKind.Move;
+
         protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
             File.Move(sourcePath, destinationPath);

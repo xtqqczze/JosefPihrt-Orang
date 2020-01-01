@@ -15,6 +15,8 @@ namespace Orang.CommandLine
 
         new public CopyCommandOptions Options { get; }
 
+        public override OperationKind Kind => OperationKind.Copy;
+
         protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
             File.Copy(sourcePath, destinationPath);

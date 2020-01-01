@@ -205,6 +205,9 @@ namespace Orang.CommandLine
                 WriteCount("Matching files", telemetry.MatchingFileCount, Colors.Message_OK, verbosity);
 
             WriteLine(verbosity);
+
+            if (Operation != null)
+                WriteOperationText(telemetry, Operation.Kind, verbosity);
         }
 
         protected override ContentWriterOptions CreateContentWriterOptions(string indent)

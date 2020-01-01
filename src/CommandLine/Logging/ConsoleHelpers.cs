@@ -94,7 +94,7 @@ namespace Orang.CommandLine
         {
             ConsoleOut.Write(indent);
             ConsoleOut.Write(question);
-            ConsoleOut.Write(" (Y/YA/N/NA/C): ");
+            ConsoleOut.Write(" (Y[A]/N[A]/C): ");
 
             string s = Console.ReadLine()?.Trim();
 

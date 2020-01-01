@@ -94,16 +94,20 @@ namespace Orang.CommandLine
             WriteLine(verbosity);
 
             if (Options.SearchTarget != SearchTarget.Directories)
-            {
                 WriteCount("Matching files", telemetry.MatchingFileCount, Colors.Message_OK, verbosity);
-                WriteLine(verbosity);
-            }
 
             if (Options.SearchTarget != SearchTarget.Files)
             {
+                if (Options.SearchTarget != SearchTarget.Directories)
+                    Write("  ", Colors.Message_OK, verbosity);
+
                 WriteCount("Matching directories", telemetry.MatchingDirectoryCount, Colors.Message_OK, verbosity);
-                WriteLine(verbosity);
             }
+
+            WriteLine(verbosity);
+
+            if (Operation != null)
+                WriteOperationText(telemetry, Operation.Kind, verbosity);
         }
     }
 }

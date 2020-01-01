@@ -13,9 +13,13 @@ namespace Orang.CommandLine
         {
         }
 
+        public abstract OperationKind Kind { get; }
+
         protected abstract CommonCopyCommandOptions CommonOptions { get; }
 
         public CommonCopyCommandOptions Options => CommonOptions;
+
+        public bool DryRun => Options.DryRun;
 
         public string Target => Options.Target;
 
@@ -72,7 +76,8 @@ namespace Orang.CommandLine
 
                 string destinationPath = Path.Combine(Target, fileName);
 
-                ExecuteOperationAndCatchIfThrows(context, sourcePath, destinationPath, indent);
+                if (!DryRun)
+                    ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
             }
 
             void Execute(string path)
@@ -83,20 +88,21 @@ namespace Orang.CommandLine
 
                 string destinationPath = Path.Combine(Target, relativePath);
 
-                ExecuteOperationAndCatchIfThrows(context, path, destinationPath, indent);
+                if (!DryRun)
+                    ExecuteOperationAndCatchIfThrows(path, destinationPath);
             }
-        }
 
-        private void ExecuteOperationAndCatchIfThrows(SearchContext context, string sourcePath, string destinationPath, string indent)
-        {
-            try
+            void ExecuteOperationAndCatchIfThrows(string sourcePath, string destinationPath)
             {
-                ExecuteOperation(context, sourcePath, destinationPath, indent);
-            }
-            catch (Exception ex) when (ex is IOException
-                || ex is UnauthorizedAccessException)
-            {
-                LogHelpers.WriteFileError(ex, sourcePath, relativePath: Options.DisplayRelativePath, indent: indent);
+                try
+                {
+                    ExecuteOperation(context, sourcePath, destinationPath, indent);
+                }
+                catch (Exception ex) when (ex is IOException
+                    || ex is UnauthorizedAccessException)
+                {
+                    LogHelpers.WriteFileError(ex, sourcePath, relativePath: Options.DisplayRelativePath, indent: indent);
+                }
             }
         }
 
@@ -176,6 +182,8 @@ namespace Orang.CommandLine
             }
 
             ExecuteOperation(sourcePath, destinationPath);
+
+            context.Telemetry.ProcessedFileCount++;
         }
     }
 }

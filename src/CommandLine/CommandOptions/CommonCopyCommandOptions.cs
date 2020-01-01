@@ -10,6 +10,8 @@ namespace Orang.CommandLine
         {
         }
 
+        public bool DryRun { get; internal set; }
+
         public string Target { get; internal set; }
 
         public string TargetNormalized { get; internal set; }

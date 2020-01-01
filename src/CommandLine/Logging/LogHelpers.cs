@@ -71,6 +71,22 @@ namespace Orang.CommandLine
             WriteLine(verbosity);
         }
 
+        public static void WriteOperationText(SearchTelemetry telemetry, OperationKind kind, Verbosity verbosity)
+        {
+            WriteCount(GetOperationText(), telemetry.ProcessedFileCount, Colors.Message_Change, verbosity);
+            WriteLine(verbosity);
+
+            string GetOperationText()
+            {
+                return kind switch
+                {
+                    OperationKind.Copy => "Copied files",
+                    OperationKind.Move => "Moved files",
+                    _ => throw new InvalidOperationException($"Unknown enum value '{kind}'."),
+                };
+            }
+        }
+
         public static void WriteProcessedFilesAndDirectories(
             SearchTelemetry telemetry,
             SearchTarget searchTarget,
