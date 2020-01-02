@@ -27,6 +27,8 @@ namespace Orang.CommandLine
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 
+        public virtual bool CanWriteContent => true;
+
         public override bool CanEndProgress
         {
             get
@@ -205,7 +207,8 @@ namespace Orang.CommandLine
             if (!Options.OmitPath)
                 WritePath(context, result, baseDirectoryPath, indent, columnWidths);
 
-            if (ContentFilter.IsNegative)
+            if (ContentFilter.IsNegative
+                || !CanWriteContent)
             {
                 WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
             }

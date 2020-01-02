@@ -344,6 +344,13 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(OverwriteOption.No, description: "Do not copy or move a file if it already exists.")
         );
 
+        public static OptionValueProvider FileCompareOptionsProvider { get; } = new OptionValueProvider(MetaValues.CompareOptions,
+            SimpleOptionValue.Create(FileCompareOptions.Attributes, description: "Compare file attributes."),
+            SimpleOptionValue.Create(FileCompareOptions.Content, description: "Compare file content."),
+            SimpleOptionValue.Create(FileCompareOptions.ModifiedTime, description: "Compare time a file was last modified."),
+            SimpleOptionValue.Create(FileCompareOptions.Size, description: "Compare file size.")
+        );
+
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName
         {
             get

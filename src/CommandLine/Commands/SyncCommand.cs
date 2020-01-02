@@ -15,6 +15,13 @@ namespace Orang.CommandLine
         {
         }
 
+        public override bool CanWriteContent => false;
+
+        protected override bool CanExecuteOperation(string sourcePath, string destinationPath)
+        {
+            return !FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
+        }
+
         protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
             File.Copy(sourcePath, destinationPath);
@@ -97,6 +104,25 @@ namespace Orang.CommandLine
                     }
                 }
             }
+        }
+
+        protected override void WritePath(string sourcePath, string destinationPath, string indent)
+        {
+            Write("COPY   ", Verbosity.Minimal);
+            LogHelpers.WritePath(sourcePath, indent: indent, verbosity: Verbosity.Minimal);
+            WriteLine(Verbosity.Minimal);
+            Write("       ", Verbosity.Minimal);
+            LogHelpers.WritePath(destinationPath, indent: indent, verbosity: Verbosity.Minimal);
+            WriteLine(Verbosity.Minimal);
+        }
+
+        protected override void WritePath(SearchContext context, FileSystemFinderResult result, string baseDirectoryPath, string indent, ColumnWidths columnWidths)
+        {
+        }
+
+        protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)
+        {
+            //TODO: SyncCommand.WriteSummary
         }
     }
 }

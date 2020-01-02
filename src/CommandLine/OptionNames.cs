@@ -13,6 +13,7 @@ namespace Orang.CommandLine
         public const string Ask = "ask";
         public const string Attributes = "attributes";
         public const string AttributesToSkip = "attributes-to-skip";
+        public const string Compare = "compare";
         public const string Content = "content";
         public const string ContentOnly = "content-only";
         public const string Display = "display";

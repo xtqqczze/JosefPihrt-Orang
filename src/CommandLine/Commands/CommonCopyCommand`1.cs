@@ -26,6 +26,8 @@ namespace Orang.CommandLine
 
         protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
 
+        protected virtual bool CanExecuteOperation(string sourcePath, string destinationPath) => true;
+
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
             if (Options.TargetNormalized == null)
@@ -93,8 +95,7 @@ namespace Orang.CommandLine
 
                 string destinationPath = Path.Combine(Target, fileName);
 
-                if (!Options.DryRun)
-                    ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
+                ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
             }
 
             void Execute(string path)
@@ -105,8 +106,7 @@ namespace Orang.CommandLine
 
                 string destinationPath = Path.Combine(Target, relativePath);
 
-                if (!Options.DryRun)
-                    ExecuteOperationAndCatchIfThrows(path, destinationPath);
+                ExecuteOperationAndCatchIfThrows(path, destinationPath);
             }
 
             void ExecuteOperationAndCatchIfThrows(string sourcePath, string destinationPath)
@@ -126,81 +126,116 @@ namespace Orang.CommandLine
         private void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, string indent)
         {
             bool overwrite = false;
+            bool pathWritten = false;
+            bool exists = FileSystemHelpers.FileOrDirectoryExists(destinationPath);
 
-            if (OverwriteOption == OverwriteOption.No
-                && FileSystemHelpers.FileOrDirectoryExists(destinationPath))
+            switch (OverwriteOption)
             {
-                return;
-            }
-
-            if (!Options.OmitPath)
-            {
-                LogHelpers.WritePath(destinationPath, indent: indent, verbosity: Verbosity.Minimal);
-                WriteLine(Verbosity.Minimal);
-            }
-
-            if (OverwriteOption == OverwriteOption.Ask)
-            {
-                if (FileSystemHelpers.FileOrDirectoryExists(destinationPath))
-                {
-                    DialogResult dialogResult = ConsoleHelpers.QuestionWithResult("Overwrite file?", indent);
-                    switch (dialogResult)
+                case OverwriteOption.Ask:
                     {
-                        case DialogResult.Yes:
+                        if (exists)
+                        {
+                            if (!Options.OmitPath)
                             {
-                                overwrite = true;
-                                break;
+                                WritePath(sourcePath, destinationPath, indent);
+                                pathWritten = true;
                             }
-                        case DialogResult.YesToAll:
+
+                            DialogResult dialogResult = ConsoleHelpers.QuestionWithResult("Overwrite file?", indent);
+                            switch (dialogResult)
                             {
-                                overwrite = true;
-                                OverwriteOption = OverwriteOption.Yes;
-                                break;
+                                case DialogResult.Yes:
+                                    {
+                                        overwrite = true;
+                                        break;
+                                    }
+                                case DialogResult.YesToAll:
+                                    {
+                                        overwrite = true;
+                                        OverwriteOption = OverwriteOption.Yes;
+                                        break;
+                                    }
+                                case DialogResult.No:
+                                case DialogResult.None:
+                                    {
+                                        return;
+                                    }
+                                case DialogResult.NoToAll:
+                                    {
+                                        OverwriteOption = OverwriteOption.No;
+                                        return;
+                                    }
+                                case DialogResult.Cancel:
+                                    {
+                                        context.State = SearchState.Canceled;
+                                        return;
+                                    }
+                                default:
+                                    {
+                                        throw new InvalidOperationException($"Unknown enum value '{dialogResult}'.");
+                                    }
                             }
-                        case DialogResult.No:
-                        case DialogResult.None:
-                            {
-                                return;
-                            }
-                        case DialogResult.NoToAll:
-                            {
-                                OverwriteOption = OverwriteOption.No;
-                                return;
-                            }
-                        case DialogResult.Cancel:
-                            {
-                                context.State = SearchState.Canceled;
-                                return;
-                            }
-                        default:
-                            {
-                                throw new InvalidOperationException($"Unknown enum value '{dialogResult}'.");
-                            }
+                        }
+
+                        break;
                     }
+
+                case OverwriteOption.Yes:
+                    {
+                        if (exists)
+                            overwrite = true;
+
+                        break;
+                    }
+
+                case OverwriteOption.No:
+                    {
+                        if (exists)
+                            return;
+
+                        break;
+                    }
+
+                default:
+                    {
+                        throw new InvalidOperationException($"Unknown enum value '{OverwriteOption}'.");
+                    }
+            }
+
+            if (Options.DryRun)
+            {
+                if (overwrite)
+                {
+                    File.Delete(destinationPath);
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                 }
             }
-            else if (OverwriteOption == OverwriteOption.Yes)
-            {
-                if (FileSystemHelpers.FileOrDirectoryExists(destinationPath))
-                    overwrite = true;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unknown enum value '{OverwriteOption}'.");
-            }
 
-            if (overwrite)
+            if (!exists
+                || CanExecuteOperation(sourcePath, destinationPath))
             {
-                File.Delete(destinationPath);
-            }
-            else
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
-            }
+                if (!Options.OmitPath
+                    && !pathWritten)
+                {
+                    WritePath(sourcePath, destinationPath, indent);
+                }
 
-            ExecuteOperation(sourcePath, destinationPath);
+                if (!Options.DryRun)
+                {
+                    ExecuteOperation(sourcePath, destinationPath);
 
-            context.Telemetry.ProcessedFileCount++;
+                    context.Telemetry.ProcessedFileCount++;
+                }
+            }
+        }
+
+        protected virtual void WritePath(string sourcePath, string destinationPath, string indent)
+        {
+            LogHelpers.WritePath(destinationPath, indent: indent, verbosity: Verbosity.Minimal);
+            WriteLine(Verbosity.Minimal);
         }
     }
 }
