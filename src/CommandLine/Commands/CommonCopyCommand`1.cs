@@ -137,7 +137,7 @@ namespace Orang.CommandLine
                         {
                             if (!Options.OmitPath)
                             {
-                                WritePath(sourcePath, destinationPath, indent);
+                                WritePath(destinationPath, exists, indent);
                                 pathWritten = true;
                             }
 
@@ -202,29 +202,26 @@ namespace Orang.CommandLine
                     }
             }
 
-            if (Options.DryRun)
-            {
-                if (overwrite)
-                {
-                    File.Delete(destinationPath);
-                }
-                else
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
-                }
-            }
-
             if (!exists
                 || CanExecuteOperation(sourcePath, destinationPath))
             {
                 if (!Options.OmitPath
                     && !pathWritten)
                 {
-                    WritePath(sourcePath, destinationPath, indent);
+                    WritePath(destinationPath, exists, indent);
                 }
 
                 if (!Options.DryRun)
                 {
+                    if (overwrite)
+                    {
+                        File.Delete(destinationPath);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                    }
+
                     ExecuteOperation(sourcePath, destinationPath);
 
                     context.Telemetry.ProcessedFileCount++;
@@ -232,9 +229,9 @@ namespace Orang.CommandLine
             }
         }
 
-        protected virtual void WritePath(string sourcePath, string destinationPath, string indent)
+        protected virtual void WritePath(string path, bool exists, string indent)
         {
-            LogHelpers.WritePath(destinationPath, indent: indent, verbosity: Verbosity.Minimal);
+            LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
         }
     }

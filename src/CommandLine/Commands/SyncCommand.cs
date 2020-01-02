@@ -60,14 +60,11 @@ namespace Orang.CommandLine
                     {
                         try
                         {
-                            Directory.Delete(path, recursive: true);
+                            if (!Options.DryRun)
+                                Directory.Delete(path, recursive: true);
 
                             if (!Options.OmitPath)
-                            {
-                                Write("DELETE ", Verbosity.Minimal);
-                                LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
-                                WriteLine(Verbosity.Minimal);
-                            }
+                                WritePathPrefix(path, "DEL", Colors.Sync_Delete, indent);
                         }
                         catch (Exception ex) when (ex is IOException
                             || ex is UnauthorizedAccessException)
@@ -87,14 +84,11 @@ namespace Orang.CommandLine
                     {
                         try
                         {
-                            File.Delete(path);
+                            if (!Options.DryRun)
+                                File.Delete(path);
 
                             if (!Options.OmitPath)
-                            {
-                                Write("DELETE ", Verbosity.Minimal);
-                                LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
-                                WriteLine(Verbosity.Minimal);
-                            }
+                                WritePathPrefix(path, "DEL", Colors.Sync_Delete, indent);
                         }
                         catch (Exception ex) when (ex is IOException
                             || ex is UnauthorizedAccessException)
@@ -106,13 +100,26 @@ namespace Orang.CommandLine
             }
         }
 
-        protected override void WritePath(string sourcePath, string destinationPath, string indent)
+        protected override void WritePath(string path, bool exists, string indent)
         {
-            Write("COPY   ", Verbosity.Minimal);
+            if (exists)
+            {
+                WritePathPrefix(path, "UPD", Colors.Sync_Update, indent);
+            }
+            else
+            {
+                WritePathPrefix(path, "ADD", Colors.Sync_Add, indent);
+            }
+        }
+
+        private void WritePathPrefix(string sourcePath, string prefix, ConsoleColors colors, string indent)
+        {
+            if (!ShouldLog(Verbosity.Minimal))
+                return;
+
+            Write(prefix, colors, Verbosity.Minimal);
+            Write(" ", Verbosity.Minimal);
             LogHelpers.WritePath(sourcePath, indent: indent, verbosity: Verbosity.Minimal);
-            WriteLine(Verbosity.Minimal);
-            Write("       ", Verbosity.Minimal);
-            LogHelpers.WritePath(destinationPath, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
         }
 
