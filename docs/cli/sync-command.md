@@ -115,7 +115,7 @@ A directory to be synchronized\.
 
 **`[--two-way]`**
 
-Synchronize both directories\.
+Synchronize directories in both directions\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

@@ -367,18 +367,9 @@ namespace Orang.CommandLine
 
             static CommandResult Execute(FindCommandOptions options, CommonCopyOperation operation = null)
             {
-                if (options.ContentFilter != null)
-                {
-                    var command = new FindContentCommand(options, operation);
+                var command = new FindCommand<FindCommandOptions>(options, operation);
 
-                    return command.Execute();
-                }
-                else
-                {
-                    var command = new FindCommand(options, operation);
-
-                    return command.Execute();
-                }
+                return command.Execute();
             }
         }
 
