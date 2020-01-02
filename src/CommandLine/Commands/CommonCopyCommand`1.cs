@@ -3,24 +3,18 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 using Orang.FileSystem;
+using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal abstract class CommonCopyOperation
+    internal abstract class CommonCopyCommand<TOptions> : FindCommand<TOptions> where TOptions : CommonCopyCommandOptions
     {
-        protected CommonCopyOperation()
+        protected CommonCopyCommand(TOptions options) : base(options)
         {
         }
-
-        public abstract OperationKind Kind { get; }
-
-        protected abstract CommonCopyCommandOptions CommonOptions { get; }
-
-        public CommonCopyCommandOptions Options => CommonOptions;
-
-        public bool DryRun => Options.DryRun;
 
         public string Target => Options.Target;
 
@@ -30,12 +24,9 @@ namespace Orang.CommandLine
             private set { Options.OverwriteOption = value; }
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private string DebuggerDisplay => $"{Kind}  {Target}";
-
         protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
 
-        public bool CanExecute(string directoryPath)
+        protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
             if (Options.TargetNormalized == null)
                 Options.TargetNormalized = Target.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
@@ -45,11 +36,33 @@ namespace Orang.CommandLine
             if (Options.TargetNormalized.StartsWith(pathNormalized, StringComparison.OrdinalIgnoreCase)
                 || pathNormalized.StartsWith(Options.TargetNormalized, StringComparison.OrdinalIgnoreCase))
             {
-                Logger.WriteWarning("Source directory cannot be subdirectory of a destination directory or vice versa.");
-                return false;
+                WriteWarning("Source directory cannot be subdirectory of a destination directory or vice versa.");
+                return;
             }
 
-            return true;
+            base.ExecuteDirectory(directoryPath, context);
+        }
+
+        protected override void ExecuteResult(
+            FileSystemFinderResult result,
+            SearchContext context,
+            ContentWriterOptions writerOptions,
+            Match match,
+            string input,
+            Encoding encoding,
+            string baseDirectoryPath = null,
+            ColumnWidths columnWidths = null)
+        {
+            base.ExecuteResult(result, context, writerOptions, match, input, encoding, baseDirectoryPath, columnWidths);
+
+            Execute(result, context, baseDirectoryPath, GetPathIndent(baseDirectoryPath));
+        }
+
+        protected override void ExecuteResult(FileSystemFinderResult result, SearchContext context, string baseDirectoryPath = null, ColumnWidths columnWidths = null)
+        {
+            base.ExecuteResult(result, context, baseDirectoryPath, columnWidths);
+
+            Execute(result, context, baseDirectoryPath, GetPathIndent(baseDirectoryPath));
         }
 
         public void Execute(
@@ -80,7 +93,7 @@ namespace Orang.CommandLine
 
                 string destinationPath = Path.Combine(Target, fileName);
 
-                if (!DryRun)
+                if (!Options.DryRun)
                     ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
             }
 
@@ -92,7 +105,7 @@ namespace Orang.CommandLine
 
                 string destinationPath = Path.Combine(Target, relativePath);
 
-                if (!DryRun)
+                if (!Options.DryRun)
                     ExecuteOperationAndCatchIfThrows(path, destinationPath);
             }
 
@@ -123,7 +136,7 @@ namespace Orang.CommandLine
             if (!Options.OmitPath)
             {
                 LogHelpers.WritePath(destinationPath, indent: indent, verbosity: Verbosity.Minimal);
-                Logger.WriteLine(Verbosity.Minimal);
+                WriteLine(Verbosity.Minimal);
             }
 
             if (OverwriteOption == OverwriteOption.Ask)

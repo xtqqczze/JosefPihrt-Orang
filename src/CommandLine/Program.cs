@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -76,7 +75,7 @@ namespace Orang.CommandLine
                     ReplaceCommandLineOptions,
                     SplitCommandLineOptions,
                     SyncCommandLineOptions
-                    > (args);
+                    >(args);
 
                 bool help = false;
                 bool success = true;
@@ -193,9 +192,11 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            var operation = new CopyOperation(options);
+            var command = new CopyCommand(options);
 
-            return CommonFind(options, operation);
+            CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
         }
 
         private static int Delete(DeleteCommandLineOptions commandLineOptions)
@@ -233,7 +234,11 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            return CommonFind(options);
+            var command = new FindCommand<FindCommandOptions>(options);
+
+            CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
         }
 
         private static int Help(HelpCommandLineOptions commandLineOptions)
@@ -285,9 +290,11 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            var operation = new MoveOperation(options);
+            var command = new MoveCommand(options);
 
-            return CommonFind(options, operation);
+            CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
         }
 
         private static int Sync(SyncCommandLineOptions commandLineOptions)
@@ -297,9 +304,11 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            var operation = new SyncOperation(options);
+            var command = new SyncCommand(options);
 
-            return CommonFind(options, operation);
+            CommandResult result = command.Execute();
+
+            return GetExitCode(result.Kind);
         }
 
         private static int Rename(RenameCommandLineOptions commandLineOptions)
@@ -342,35 +351,6 @@ namespace Orang.CommandLine
             CommandResult result = command.Execute();
 
             return GetExitCode(result.Kind);
-        }
-
-        private static int CommonFind(FindCommandOptions options, CommonCopyOperation operation = null)
-        {
-            CommandResult result = Execute(options, operation);
-
-            if (result.Kind != CommandResultKind.Fail
-                && result.Kind != CommandResultKind.Canceled
-                && options is SyncCommandOptions syncOptions
-                && syncOptions.TwoWay)
-            {
-                string target = syncOptions.Paths[0];
-
-                syncOptions.Paths = ImmutableArray.Create(operation.Target);
-                syncOptions.Target = target;
-
-                operation = new SyncOperation(syncOptions);
-
-                result = Execute(syncOptions, operation);
-            }
-
-            return GetExitCode(result.Kind);
-
-            static CommandResult Execute(FindCommandOptions options, CommonCopyOperation operation = null)
-            {
-                var command = new FindCommand<FindCommandOptions>(options, operation);
-
-                return command.Execute();
-            }
         }
 
         private static int GetExitCode(CommandResultKind kind)

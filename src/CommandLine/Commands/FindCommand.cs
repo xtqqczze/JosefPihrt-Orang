@@ -19,12 +19,11 @@ namespace Orang.CommandLine
         private ContentWriterOptions _fileWriterOptions;
         private ContentWriterOptions _directoryWriterOptions;
 
-        public FindCommand(TOptions options, CommonCopyOperation operation = null) : base(options)
+        public FindCommand(TOptions options) : base(options)
         {
-            Operation = operation;
         }
 
-        public CommonCopyOperation Operation { get; }
+        public Filter ContentFilter => Options.ContentFilter;
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 
@@ -33,7 +32,7 @@ namespace Orang.CommandLine
             get
             {
                 return !Options.OmitPath
-                    || (Options.ContentFilter != null && ConsoleOut.Verbosity > Verbosity.Minimal);
+                    || (ContentFilter != null && ConsoleOut.Verbosity > Verbosity.Minimal);
             }
         }
 
@@ -80,10 +79,10 @@ namespace Orang.CommandLine
 
         protected virtual ContentWriterOptions CreateContentWriterOptions(string indent)
         {
-            int groupNumber = Options.ContentFilter.GroupNumber;
+            int groupNumber = ContentFilter.GroupNumber;
 
             GroupDefinition? groupDefinition = (groupNumber >= 0)
-                ? new GroupDefinition(groupNumber, Options.ContentFilter.GroupName)
+                ? new GroupDefinition(groupNumber, ContentFilter.GroupName)
                 : default(GroupDefinition?);
 
             return new ContentWriterOptions(
@@ -106,19 +105,13 @@ namespace Orang.CommandLine
 
         protected override void ExecuteFile(string filePath, SearchContext context)
         {
-            if (Operation?.Kind == OperationKind.Sync)
-            {
-                WriteWarning("File cannot be synchronized.");
-                return;
-            }
-
             context.Telemetry.FileCount++;
 
             FileSystemFinderResult? maybeResult = MatchFile(filePath);
 
             if (maybeResult != null)
             {
-                if (Options.ContentFilter != null)
+                if (ContentFilter != null)
                 {
                     ProcessResult(maybeResult.Value, context, FileWriterOptions);
                 }
@@ -131,12 +124,9 @@ namespace Orang.CommandLine
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
-            if (Operation?.CanExecute(directoryPath) == false)
-                return;
-
             foreach (FileSystemFinderResult result in Find(directoryPath, context))
             {
-                if (Options.ContentFilter != null)
+                if (ContentFilter != null)
                 {
                     ProcessResult(result, context, DirectoryWriterOptions, directoryPath);
                 }
@@ -146,13 +136,11 @@ namespace Orang.CommandLine
                 }
 
                 if (context.State == SearchState.Canceled)
-                    return;
+                    break;
 
                 if (context.State == SearchState.MaxReached)
                     break;
             }
-
-            (Operation as SyncOperation)?.DeleteFilesAndDirectoriesInTarget(directoryPath, GetPathIndent(directoryPath));
         }
 
         private void ProcessResult(
@@ -166,7 +154,7 @@ namespace Orang.CommandLine
             if (input == null)
                 return;
 
-            Match match = Options.ContentFilter.Match(input, context.CancellationToken);
+            Match match = ContentFilter.Match(input, context.CancellationToken);
 
             if (match == null)
                 return;
@@ -217,7 +205,7 @@ namespace Orang.CommandLine
             if (!Options.OmitPath)
                 WritePath(context, result, baseDirectoryPath, indent, columnWidths);
 
-            if (Options.ContentFilter.IsNegative)
+            if (ContentFilter.IsNegative)
             {
                 WriteLineIf(!Options.OmitPath, Verbosity.Minimal);
             }
@@ -238,13 +226,11 @@ namespace Orang.CommandLine
                     context.State = SearchState.Canceled;
                 }
             }
-
-            Operation?.Execute(result, context, baseDirectoryPath, indent);
         }
 
         protected override void ExecuteResult(SearchResult result, SearchContext context, ColumnWidths columnWidths)
         {
-            if (Options.ContentFilter != null)
+            if (ContentFilter != null)
             {
                 ExecuteResult((ContentSearchResult)result, context, columnWidths);
             }
@@ -278,8 +264,6 @@ namespace Orang.CommandLine
                     context.State = SearchState.Canceled;
                 }
             }
-
-            Operation?.Execute(result, context, baseDirectoryPath, indent);
         }
 
         private void WriteMatches(
@@ -297,7 +281,7 @@ namespace Orang.CommandLine
             {
                 groups = ListCache<Group>.GetInstance();
 
-                GetGroups(match, writerOptions.GroupNumber, context, isPathWritten: !Options.OmitPath, predicate: Options.ContentFilter.Predicate, groups: groups);
+                GetGroups(match, writerOptions.GroupNumber, context, isPathWritten: !Options.OmitPath, predicate: ContentFilter.Predicate, groups: groups);
 
                 if (Options.AskMode == AskMode.Value
                     || ShouldLog(Verbosity.Normal))
@@ -551,7 +535,14 @@ namespace Orang.CommandLine
 
         protected override void WritePath(SearchContext context, FileSystemFinderResult result, string baseDirectoryPath, string indent, ColumnWidths columnWidths)
         {
-            WritePath(context, result, baseDirectoryPath, indent, columnWidths, Colors.Match_Path);
+            if (ContentFilter != null)
+            {
+                WritePath(context, result, baseDirectoryPath, indent, columnWidths, Colors.Match_Path);
+            }
+            else
+            {
+                base.WritePath(context, result, baseDirectoryPath, indent, columnWidths);
+            }
         }
 
         protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)
@@ -563,7 +554,7 @@ namespace Orang.CommandLine
 
             WriteLine(verbosity);
 
-            if (Options.ContentFilter != null)
+            if (ContentFilter != null)
             {
                 WriteCount("Matches", telemetry.MatchCount, Colors.Message_OK, verbosity);
                 Write("  ", Colors.Message_OK, verbosity);
@@ -592,9 +583,6 @@ namespace Orang.CommandLine
             }
 
             WriteLine(verbosity);
-
-            if (Operation != null)
-                WriteOperationText(telemetry, Operation.Kind, verbosity);
         }
     }
 }
