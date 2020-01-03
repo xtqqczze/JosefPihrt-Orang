@@ -35,5 +35,11 @@ namespace Orang.CommandLine
         public long FilesTotalSize { get; internal set; }
 
         public long MaxFileSize { get; internal set; }
+
+        public int UpdatedCount { get; internal set; }
+
+        public int AddedCount { get; internal set; }
+
+        public int DeletedCount { get; internal set; }
     }
 }

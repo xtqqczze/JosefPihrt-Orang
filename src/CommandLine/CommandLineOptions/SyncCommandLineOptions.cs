@@ -25,6 +25,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
+        [Option(longName: OptionNames.TargetAction,
+            HelpText = "Defines how to proceed if a file already exists.",
+            MetaValue = MetaValues.TargetAction)]
+        public string TargetAction { get; set; }
+
         [Option(longName: OptionNames.TwoWay,
             HelpText = "Synchronize directories in both directions.")]
         public bool TwoWay { get; set; }
@@ -51,12 +56,15 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            options.TargetAction = TargetExistsAction.Overwrite;
+            if (!TryParseAsEnum(TargetAction, OptionNames.TargetAction, out TargetExistsAction targetAction, defaultValue: TargetExistsAction.Overwrite, provider: OptionValueProviders.TargetExistsActionProvider))
+                return false;
+
             options.SearchTarget = SearchTarget.All;
 
+            options.CompareOptions = compareOptions;
             options.DryRun = DryRun;
             options.Target = target;
-            options.CompareOptions = compareOptions;
+            options.TargetAction = targetAction;
             options.TwoWay = TwoWay;
 
             return true;

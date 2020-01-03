@@ -80,7 +80,7 @@ namespace Orang.CommandLine
 
             var progress = new FileSystemFinderProgressReporter(consoleReportMode, fileReportMode, Options, GetPathIndent());
 
-            var context = new SearchContext(progress: progress, results: results, cancellationToken: cancellationToken);
+            var context = new SearchContext(telemetry: new SearchTelemetry(), progress: progress, results: results, cancellationToken: cancellationToken);
 
             ExecuteCore(context);
 

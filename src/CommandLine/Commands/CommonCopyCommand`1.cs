@@ -102,7 +102,7 @@ namespace Orang.CommandLine
                 catch (Exception ex) when (ex is IOException
                     || ex is UnauthorizedAccessException)
                 {
-                    LogHelpers.WriteFileError(ex, sourcePath, relativePath: Options.DisplayRelativePath, indent: indent);
+                    WriteError(ex, sourcePath, indent: indent);
                 }
             }
         }
@@ -166,10 +166,16 @@ namespace Orang.CommandLine
                     }
                 case TargetExistsAction.Overwrite:
                     {
-                        if (fileExists
-                            && IsOperationRequired())
+                        if (fileExists)
                         {
-                            overwrite = true;
+                            if (IsOperationRequired())
+                            {
+                                overwrite = true;
+                            }
+                            else
+                            {
+                                return;
+                            }
                         }
 
                         break;
@@ -205,10 +211,9 @@ namespace Orang.CommandLine
                         if (overwrite)
                             File.Delete(destinationPath);
 
-                        if (!directoryExists)
-                            Directory.CreateDirectory(destinationPath);
+                        Directory.CreateDirectory(destinationPath);
 
-                        context.Telemetry.ProcessedDirectoryCount++;
+                        context.Telemetry.AddedCount++;
                     }
                 }
             }
@@ -233,7 +238,14 @@ namespace Orang.CommandLine
 
                     ExecuteOperation(sourcePath, destinationPath);
 
-                    context.Telemetry.ProcessedFileCount++;
+                    if (fileExists)
+                    {
+                        context.Telemetry.UpdatedCount++;
+                    }
+                    else
+                    {
+                        context.Telemetry.AddedCount++;
+                    }
                 }
             }
 
@@ -249,6 +261,14 @@ namespace Orang.CommandLine
         {
             LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
+        }
+
+        protected virtual void WriteError(
+            Exception ex,
+            string path,
+            string indent)
+        {
+            LogHelpers.WriteFileError(ex, path, relativePath: Options.DisplayRelativePath, indent: indent);
         }
 
         private bool FileEquals(string path1, string path2)

@@ -57,7 +57,10 @@ namespace Orang.CommandLine
                         try
                         {
                             if (!Options.DryRun)
+                            {
                                 Directory.Delete(path, recursive: true);
+                                context.Telemetry.DeletedCount++;
+                            }
 
                             if (!Options.OmitPath)
                                 WritePath(path, OperationKind.Delete, indent);
@@ -65,7 +68,7 @@ namespace Orang.CommandLine
                         catch (Exception ex) when (ex is IOException
                             || ex is UnauthorizedAccessException)
                         {
-                            WriteFileError(ex, path, indent: indent);
+                            WriteError(ex, path, indent: indent);
                         }
                     }
                 }
@@ -81,7 +84,10 @@ namespace Orang.CommandLine
                         try
                         {
                             if (!Options.DryRun)
+                            {
                                 File.Delete(path);
+                                context.Telemetry.DeletedCount++;
+                            }
 
                             if (!Options.OmitPath)
                                 WritePath(path, OperationKind.Delete, indent);
@@ -89,7 +95,7 @@ namespace Orang.CommandLine
                         catch (Exception ex) when (ex is IOException
                             || ex is UnauthorizedAccessException)
                         {
-                            WriteFileError(ex, path, indent: indent);
+                            WriteError(ex, path, indent: indent);
                         }
                     }
                 }
@@ -135,9 +141,10 @@ namespace Orang.CommandLine
 
         private void WritePathPrefix(string path, string prefix, ConsoleColors colors, string indent)
         {
+            Write(indent, Verbosity.Minimal);
             Write(prefix, colors, Verbosity.Minimal);
             Write(" ", Verbosity.Minimal);
-            LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
+            LogHelpers.WritePath(path, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
         }
 
@@ -145,9 +152,31 @@ namespace Orang.CommandLine
         {
         }
 
+        protected override void WriteError(Exception ex, string path, string indent)
+        {
+            Write(indent, Verbosity.Minimal);
+            Write("ERR", Colors.Sync_Error, Verbosity.Minimal);
+            Write(" ", Verbosity.Minimal);
+            Write(ex.Message, verbosity: Verbosity.Minimal);
+            WriteLine(Verbosity.Minimal);
+#if DEBUG
+            WriteLine($"{indent}STACK TRACE:");
+            WriteLine(ex.StackTrace);
+#endif
+        }
+
         protected override void WriteSummary(SearchTelemetry telemetry, Verbosity verbosity)
         {
-            //TODO: SyncCommand.WriteSummary
+            base.WriteSummary(telemetry, verbosity);
+
+            WriteCount("Added", telemetry.AddedCount, verbosity: verbosity);
+            Write("  ", verbosity);
+            WriteCount("Updated", telemetry.UpdatedCount, verbosity: verbosity);
+            Write("  ", verbosity);
+            WriteCount("Deleted", telemetry.DeletedCount, verbosity: verbosity);
+            Write("  ", verbosity);
+
+            WriteLine(verbosity);
         }
     }
 }
