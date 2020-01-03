@@ -18,15 +18,13 @@ namespace Orang.CommandLine
 
         public string Target => Options.Target;
 
-        public OverwriteOption OverwriteOption
+        public TargetExistsAction TargetAction
         {
-            get { return Options.OverwriteOption; }
-            private set { Options.OverwriteOption = value; }
+            get { return Options.TargetAction; }
+            private set { Options.TargetAction = value; }
         }
 
         protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
-
-        protected virtual bool CanExecuteOperation(string sourcePath, string destinationPath) => true;
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
@@ -115,11 +113,12 @@ namespace Orang.CommandLine
             bool pathWritten = false;
             bool fileExists = File.Exists(destinationPath);
 
-            switch (OverwriteOption)
+            switch (TargetAction)
             {
-                case OverwriteOption.Ask:
+                case TargetExistsAction.Ask:
                     {
-                        if (fileExists)
+                        if (fileExists
+                            && IsOperationRequired())
                         {
                             if (!Options.OmitPath)
                             {
@@ -138,7 +137,7 @@ namespace Orang.CommandLine
                                 case DialogResult.YesToAll:
                                     {
                                         overwrite = true;
-                                        OverwriteOption = OverwriteOption.Yes;
+                                        TargetAction = TargetExistsAction.Overwrite;
                                         break;
                                     }
                                 case DialogResult.No:
@@ -148,7 +147,7 @@ namespace Orang.CommandLine
                                     }
                                 case DialogResult.NoToAll:
                                     {
-                                        OverwriteOption = OverwriteOption.No;
+                                        TargetAction = TargetExistsAction.Skip;
                                         return;
                                     }
                                 case DialogResult.Cancel:
@@ -165,14 +164,17 @@ namespace Orang.CommandLine
 
                         break;
                     }
-                case OverwriteOption.Yes:
+                case TargetExistsAction.Overwrite:
                     {
-                        if (fileExists)
+                        if (fileExists
+                            && IsOperationRequired())
+                        {
                             overwrite = true;
+                        }
 
                         break;
                     }
-                case OverwriteOption.No:
+                case TargetExistsAction.Skip:
                     {
                         if (fileExists)
                             return;
@@ -181,7 +183,7 @@ namespace Orang.CommandLine
                     }
                 default:
                     {
-                        throw new InvalidOperationException($"Unknown enum value '{OverwriteOption}'.");
+                        throw new InvalidOperationException($"Unknown enum value '{TargetAction}'.");
                     }
             }
 
@@ -210,8 +212,7 @@ namespace Orang.CommandLine
                     }
                 }
             }
-            else if (!fileExists
-                || CanExecuteOperation(sourcePath, destinationPath))
+            else
             {
                 if (!Options.OmitPath
                     && !pathWritten)
@@ -235,12 +236,55 @@ namespace Orang.CommandLine
                     context.Telemetry.ProcessedFileCount++;
                 }
             }
+
+            bool IsOperationRequired()
+            {
+                return isDirectory
+                    || Options.CompareOptions == FileCompareOptions.None
+                    || !FileEquals(sourcePath, destinationPath);
+            }
         }
 
         protected virtual void WritePath(string path, OperationKind kind, string indent)
         {
             LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
+        }
+
+        private bool FileEquals(string path1, string path2)
+        {
+            if (Options.CompareModifiedTime
+                && File.GetLastWriteTimeUtc(path1) != File.GetLastWriteTimeUtc(path2))
+            {
+                return false;
+            }
+
+            if (Options.CompareAttributes
+                && File.GetAttributes(path1) != File.GetAttributes(path2))
+            {
+                return false;
+            }
+
+            if (Options.CompareSize || Options.CompareContent)
+            {
+                using (var fs1 = new FileStream(path1, FileMode.Open, FileAccess.Read))
+                using (var fs2 = new FileStream(path2, FileMode.Open, FileAccess.Read))
+                {
+                    if (Options.CompareSize
+                        && fs1.Length != fs2.Length)
+                    {
+                        return false;
+                    }
+
+                    if (Options.CompareContent
+                        && !StreamComparer.Default.ByteEquals(fs1, fs2))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         protected enum OperationKind

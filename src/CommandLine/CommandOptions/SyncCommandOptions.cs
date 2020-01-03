@@ -11,7 +11,5 @@ namespace Orang.CommandLine
         }
 
         public bool TwoWay { get; internal set; }
-
-        public FileCompareOptions CompareOptions { get; internal set; }
     }
 }

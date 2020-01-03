@@ -45,13 +45,13 @@ namespace Orang.CommandLine
             }
 
             //TODO: default file compare options
-            if (!TryParseAsEnumFlags(Compare, OptionNames.Compare, out FileCompareOptions compareOptions, FileCompareOptions.All, OptionValueProviders.FileCompareOptionsProvider))
+            if (!TryParseAsEnumFlags(Compare, OptionNames.Compare, out FileCompareOptions compareOptions, FileCompareOptions.Attributes | FileCompareOptions.Content | FileCompareOptions.Size, OptionValueProviders.FileCompareOptionsProvider))
                 return false;
 
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            options.OverwriteOption = OverwriteOption.Yes;
+            options.TargetAction = TargetExistsAction.Overwrite;
             options.SearchTarget = SearchTarget.All;
 
             options.DryRun = DryRun;

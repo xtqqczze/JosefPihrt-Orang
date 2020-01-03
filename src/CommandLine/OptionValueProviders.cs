@@ -338,13 +338,14 @@ namespace Orang.CommandLine
             OptionValues.FileProperty_Size
         );
 
-        public static OptionValueProvider OverwriteOptionProvider { get; } = new OptionValueProvider(MetaValues.OverwriteOption,
-            SimpleOptionValue.Create(OverwriteOption.Ask, description: "Ask when a file or already exists."),
-            SimpleOptionValue.Create(OverwriteOption.Yes, description: "Overwrite a file when it already exists."),
-            SimpleOptionValue.Create(OverwriteOption.No, description: "Do not copy or move a file if it already exists.")
+        public static OptionValueProvider TargetExistsActionProvider { get; } = new OptionValueProvider(MetaValues.TargetAction,
+            SimpleOptionValue.Create(TargetExistsAction.Ask, description: "Ask when a file or already exists."),
+            SimpleOptionValue.Create(TargetExistsAction.Overwrite, description: "Overwrite a file when it already exists."),
+            SimpleOptionValue.Create(TargetExistsAction.Skip, description: "Do not copy or move a file if it already exists.")
         );
 
         public static OptionValueProvider FileCompareOptionsProvider { get; } = new OptionValueProvider(MetaValues.CompareOptions,
+            SimpleOptionValue.Create(FileCompareOptions.None, description: "Compare files only by name."),
             SimpleOptionValue.Create(FileCompareOptions.Attributes, description: "Compare file attributes."),
             SimpleOptionValue.Create(FileCompareOptions.Content, description: "Compare file content."),
             SimpleOptionValue.Create(FileCompareOptions.ModifiedTime, shortValue: "mt", helpValue: "m[odified-]t[ime]", description: "Compare time a file was last modified."),

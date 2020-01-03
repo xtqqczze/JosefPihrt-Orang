@@ -25,35 +25,6 @@ namespace Orang.FileSystem
             RecurseSubdirectories = true,
         };
 
-        public static bool FileEquals(string path1, string path2, FileCompareOptions options = FileCompareOptions.All)
-        {
-            if ((options & FileCompareOptions.ModifiedTime) != 0
-                && File.GetLastWriteTimeUtc(path1) != File.GetLastWriteTimeUtc(path2))
-            {
-                return false;
-            }
-
-            if ((options & FileCompareOptions.Attributes) != 0
-                && File.GetAttributes(path1) != File.GetAttributes(path2))
-            {
-                return false;
-            }
-
-            bool compareSize = (options & (FileCompareOptions.Size)) != 0;
-            bool compareContent = (options & (FileCompareOptions.Content)) != 0;
-
-            if (compareSize || compareContent)
-            {
-                using (var fs1 = new FileStream(path1, FileMode.Open, FileAccess.Read))
-                using (var fs2 = new FileStream(path2, FileMode.Open, FileAccess.Read))
-                {
-                    return StreamComparer.Default.Equals(fs1, fs2, compareSize: compareSize, compareContent: compareContent);
-                }
-            }
-
-            return true;
-        }
-
         internal static int IndexOfDirectorySeparator(string path, int start)
         {
             for (int i = start; i < path.Length; i++)

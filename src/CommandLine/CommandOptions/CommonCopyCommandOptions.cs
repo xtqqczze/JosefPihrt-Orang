@@ -12,6 +12,16 @@ namespace Orang.CommandLine
         {
         }
 
+        public FileCompareOptions CompareOptions { get; internal set; }
+
+        public bool CompareAttributes => (CompareOptions & FileCompareOptions.Attributes) != 0;
+
+        public bool CompareContent => (CompareOptions & FileCompareOptions.Content) != 0;
+
+        public bool CompareModifiedTime => (CompareOptions & FileCompareOptions.ModifiedTime) != 0;
+
+        public bool CompareSize => (CompareOptions & FileCompareOptions.Size) != 0;
+
         public bool DryRun { get; internal set; }
 
         public string Target
@@ -27,6 +37,6 @@ namespace Orang.CommandLine
 
         public string TargetNormalized { get; internal set; }
 
-        public OverwriteOption OverwriteOption { get; internal set; }
+        public TargetExistsAction TargetAction { get; internal set; }
     }
 }

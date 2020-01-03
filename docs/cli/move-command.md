@@ -9,6 +9,7 @@ orang move [<PATH>]
 [   --ask]                <ASK_MODE>
 [-a|--attributes]         <ATTRIBUTES>
 [   --attributes-to-skip] <ATTRIBUTES>
+[   --compare]            <COMPARE_OPTIONS>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
 [-d|--dry-run]
@@ -21,12 +22,12 @@ orang move [<PATH>]
 [-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
-[   --overwrite]          <OVERWRITE_OPTION>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
 [-p|--properties]         <FILE_PROPERTIES>
 [-s|--sort]               <SORT_OPTIONS>
     --target              <DIRECTORY_PATH>
+[   --target-action]      <TARGET_ACTION>
 [-v|--verbosity]          <VERBOSITY>
 ```
 
@@ -49,6 +50,10 @@ File attributes that are required\. Allowed values are archive, compressed, d\[i
 **`[--attributes-to-skip] <ATTRIBUTES>`**
 
 File attributes that should be skipped\. Allowed values are archive, compressed, e\[mpty\], encrypted, h\[idden\], normal, offline, r\[ead\-only\], r\[eparse\]\-p\[oint\], s\[ystem\] and temporary\.
+
+**`[--compare] <COMPARE_OPTIONS>`**
+
+File properties to be compared\. Allowed values are n\[one\], a\[ttributes\], c\[ontent\], m\[odified\-\]t\[ime\] and s\[ize\]\.
 
 **`[-c|--content] <REGEX>`**
 
@@ -98,10 +103,6 @@ Do not search subdirectories\.
 
 Path to a file that should store output\. Syntax is \<PATH> \[\<OUTPUT\_OPTIONS>\]\. Allowed values are e\[ncoding\]=\<ENCODING>, v\[erbosity\]=\<VERBOSITY> and a\[ppend\]\.
 
-**`[--overwrite] <OVERWRITE_OPTION>`**
-
-Defines how to proceed if a file already exists\. Allowed values are a\[sk\], y\[es\] and n\[o\]\.
-
 **`[--paths-from] <FILE_PATH>`**
 
 Read the list of paths to search from a file\. Paths should be separated by newlines\.
@@ -121,6 +122,10 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 **`--target <DIRECTORY_PATH>`**
 
 A directory to move files and directories to\.
+
+**`[--target-action] <TARGET_ACTION>`**
+
+Defines how to proceed if a file already exists\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

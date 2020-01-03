@@ -2,10 +2,11 @@
 
 namespace Orang.FileSystem
 {
-    internal enum OverwriteOption
+    //TODO: TargetAction, Policy, DuplicateBehavior, DuplicateResponse, FileExistsPolicy
+    internal enum TargetExistsAction
     {
         Ask = 0,
-        Yes = 1,
-        No = 2,
+        Overwrite = 1,
+        Skip = 2,
     }
 }

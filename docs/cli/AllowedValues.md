@@ -11,12 +11,12 @@
 * [\<MAX_OPTIONS>](#max-options)
 * [\<NAME_PART>](#name-part)
 * [\<OUTPUT_OPTIONS>](#output-options)
-* [\<OVERWRITE_OPTION>](#overwrite-option)
 * [\<PATH_DISPLAY>](#path-display)
 * [\<PATTERN_OPTIONS>](#pattern-options)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
+* [\<TARGET_ACTION>](#target-action)
 * [\<VERBOSITY>](#verbosity)
 
 ## \<ASK\_MODE>
@@ -52,6 +52,7 @@
 
 | Value                  | Description                             |
 | ---------------------- | --------------------------------------- |
+| n\[one\]               | Compare files only by name\.            |
 | a\[ttributes\]         | Compare file attributes\.               |
 | c\[ontent\]            | Compare file content\.                  |
 | m\[odified\-\]t\[ime\] | Compare time a file was last modified\. |
@@ -147,14 +148,6 @@
 | v\[erbosity\]=\<VERBOSITY> |
 | a\[ppend\]                 | If the file exists output will be appended to the end of the file\. |
 
-## \<OVERWRITE\_OPTION>
-
-| Value   | Description                                       |
-| ------- | ------------------------------------------------- |
-| a\[sk\] | Ask when a file or already exists\.               |
-| y\[es\] | Overwrite a file when it already exists\.         |
-| n\[o\]  | Do not copy or move a file if it already exists\. |
-
 ## \<PATH\_DISPLAY>
 
 | Value        | Description                                     |
@@ -226,6 +219,14 @@
 | o\[ptions\]                     |
 | q\[uantifiers\]                 |
 | s\[ubstitutions\]               |
+
+## \<TARGET\_ACTION>
+
+| Value         | Description                                       |
+| ------------- | ------------------------------------------------- |
+| a\[sk\]       | Ask when a file or already exists\.               |
+| o\[verwrite\] | Overwrite a file when it already exists\.         |
+| s\[kip\]      | Do not copy or move a file if it already exists\. |
 
 ## \<VERBOSITY>
 

@@ -53,7 +53,7 @@ File attributes that should be skipped\. Allowed values are archive, compressed,
 
 **`[--compare] <COMPARE_OPTIONS>`**
 
-File properties to be compared\. Allowed values are a\[ttributes\], c\[ontent\], m\[odified\-\]t\[ime\] and s\[ize\]\.
+File properties to be compared\. Allowed values are n\[one\], a\[ttributes\], c\[ontent\], m\[odified\-\]t\[ime\] and s\[ize\]\.
 
 **`[-c|--content] <REGEX>`**
 

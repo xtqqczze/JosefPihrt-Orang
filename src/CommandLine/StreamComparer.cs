@@ -27,36 +27,31 @@ namespace Orang
 
         public static StreamComparer Default { get; } = new StreamComparer();
 
-        public bool Equals(Stream stream1, Stream stream2, bool compareSize = true, bool compareContent = true)
+        public bool Equals(Stream stream1, Stream stream2)
         {
-            if (compareSize
-                && stream1.Length != stream2.Length)
+            return stream1.Length == stream2.Length
+                && ByteEquals(stream1, stream2);
+        }
+
+        public bool ByteEquals(Stream stream1, Stream stream2)
+        {
+            while (true)
             {
-                return false;
+                int count1 = Read(stream1, _buffer1);
+                int count2 = Read(stream2, _buffer2);
+
+                if (count1 != count2)
+                    return false;
+
+                if (count1 == 0)
+                    return true;
+
+                Span<byte> span1 = _buffer1.AsSpan(0, count1);
+                Span<byte> span2 = _buffer2.AsSpan(0, count1);
+
+                if (!span1.SequenceEqual(span2))
+                    return false;
             }
-
-            if (compareContent)
-            {
-                while (true)
-                {
-                    int count1 = Read(stream1, _buffer1);
-                    int count2 = Read(stream2, _buffer2);
-
-                    if (count1 != count2)
-                        return false;
-
-                    if (count1 == 0)
-                        return true;
-
-                    Span<byte> span1 = _buffer1.AsSpan(0, count1);
-                    Span<byte> span2 = _buffer2.AsSpan(0, count1);
-
-                    if (!span1.SequenceEqual(span2))
-                        return false;
-                }
-            }
-
-            return true;
         }
 
         private static int Read(Stream stream, byte[] buffer)
