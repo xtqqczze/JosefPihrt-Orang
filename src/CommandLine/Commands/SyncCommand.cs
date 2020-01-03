@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using Orang.FileSystem;
 using static Orang.CommandLine.LogHelpers;
@@ -17,12 +18,12 @@ namespace Orang.CommandLine
 
         public override bool CanWriteContent => false;
 
-        protected override bool CanExecuteFileOperation(string sourcePath, string destinationPath)
+        protected override bool CanExecuteOperation(string sourcePath, string destinationPath)
         {
             return !FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
         }
 
-        protected override void ExecuteFileOperation(string sourcePath, string destinationPath)
+        protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
             File.Copy(sourcePath, destinationPath);
         }
@@ -64,7 +65,7 @@ namespace Orang.CommandLine
                                 Directory.Delete(path, recursive: true);
 
                             if (!Options.OmitPath)
-                                WritePathPrefix(path, "DEL", Colors.Sync_Delete, indent);
+                                WritePath(path, OperationKind.Delete, indent);
                         }
                         catch (Exception ex) when (ex is IOException
                             || ex is UnauthorizedAccessException)
@@ -88,7 +89,7 @@ namespace Orang.CommandLine
                                 File.Delete(path);
 
                             if (!Options.OmitPath)
-                                WritePathPrefix(path, "DEL", Colors.Sync_Delete, indent);
+                                WritePath(path, OperationKind.Delete, indent);
                         }
                         catch (Exception ex) when (ex is IOException
                             || ex is UnauthorizedAccessException)
@@ -100,26 +101,48 @@ namespace Orang.CommandLine
             }
         }
 
-        protected override void WritePath(string path, bool exists, string indent)
-        {
-            if (exists)
-            {
-                WritePathPrefix(path, "UPD", Colors.Sync_Update, indent);
-            }
-            else
-            {
-                WritePathPrefix(path, "ADD", Colors.Sync_Add, indent);
-            }
-        }
-
-        private void WritePathPrefix(string sourcePath, string prefix, ConsoleColors colors, string indent)
+        protected override void WritePath(string path, OperationKind kind, string indent)
         {
             if (!ShouldLog(Verbosity.Minimal))
                 return;
 
+            switch (kind)
+            {
+                case OperationKind.None:
+                    {
+                        Debug.Fail("");
+
+                        LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
+                        WriteLine(Verbosity.Minimal);
+                        break;
+                    }
+                case OperationKind.Add:
+                    {
+                        WritePathPrefix(path, "ADD", Colors.Sync_Add, indent);
+                        break;
+                    }
+                case OperationKind.Update:
+                    {
+                        WritePathPrefix(path, "UPD", Colors.Sync_Update, indent);
+                        break;
+                    }
+                case OperationKind.Delete:
+                    {
+                        WritePathPrefix(path, "DEL", Colors.Sync_Delete, indent);
+                        break;
+                    }
+                default:
+                    {
+                        throw new ArgumentException($"Unkonwn enum value '{kind}'.", nameof(kind));
+                    }
+            }
+        }
+
+        private void WritePathPrefix(string path, string prefix, ConsoleColors colors, string indent)
+        {
             Write(prefix, colors, Verbosity.Minimal);
             Write(" ", Verbosity.Minimal);
-            LogHelpers.WritePath(sourcePath, indent: indent, verbosity: Verbosity.Minimal);
+            LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
         }
 

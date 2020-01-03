@@ -44,8 +44,8 @@ namespace Orang.FileSystem
 
             if (compareSize || compareContent)
             {
-                using (var fs1 = new FileStream(path1, FileMode.Open))
-                using (var fs2 = new FileStream(path2, FileMode.Open))
+                using (var fs1 = new FileStream(path1, FileMode.Open, FileAccess.Read))
+                using (var fs2 = new FileStream(path2, FileMode.Open, FileAccess.Read))
                 {
                     return StreamComparer.Default.Equals(fs1, fs2, compareSize: compareSize, compareContent: compareContent);
                 }

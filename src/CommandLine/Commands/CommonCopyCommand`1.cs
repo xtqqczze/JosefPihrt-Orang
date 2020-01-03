@@ -24,9 +24,9 @@ namespace Orang.CommandLine
             private set { Options.OverwriteOption = value; }
         }
 
-        protected abstract void ExecuteFileOperation(string sourcePath, string destinationPath);
+        protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
 
-        protected virtual bool CanExecuteFileOperation(string sourcePath, string destinationPath) => true;
+        protected virtual bool CanExecuteOperation(string sourcePath, string destinationPath) => true;
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
@@ -57,17 +57,17 @@ namespace Orang.CommandLine
         {
             base.ExecuteResult(result, context, writerOptions, match, input, encoding, baseDirectoryPath, columnWidths);
 
-            Execute(result, context, baseDirectoryPath, GetPathIndent(baseDirectoryPath));
+            ExecuteOperation(result, context, baseDirectoryPath, GetPathIndent(baseDirectoryPath));
         }
 
         protected override void ExecuteResult(FileSystemFinderResult result, SearchContext context, string baseDirectoryPath = null, ColumnWidths columnWidths = null)
         {
             base.ExecuteResult(result, context, baseDirectoryPath, columnWidths);
 
-            Execute(result, context, baseDirectoryPath, GetPathIndent(baseDirectoryPath));
+            ExecuteOperation(result, context, baseDirectoryPath, GetPathIndent(baseDirectoryPath));
         }
 
-        public void Execute(
+        private void ExecuteOperation(
             FileSystemFinderResult result,
             SearchContext context,
             string baseDirectoryPath,
@@ -75,13 +75,16 @@ namespace Orang.CommandLine
         {
             string sourcePath = result.Path;
 
-            if (result.IsDirectory)
+            if (result.IsDirectory
+                || baseDirectoryPath != null)
             {
-                //TODO: execute directory
-            }
-            else if (baseDirectoryPath != null)
-            {
-                Execute(sourcePath);
+                Debug.Assert(sourcePath.StartsWith(baseDirectoryPath, StringComparison.OrdinalIgnoreCase));
+
+                string relativePath = sourcePath.Substring(baseDirectoryPath.Length + 1);
+
+                string destinationPath = Path.Combine(Target, relativePath);
+
+                ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
             }
             else
             {
@@ -92,22 +95,11 @@ namespace Orang.CommandLine
                 ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
             }
 
-            void Execute(string path)
-            {
-                Debug.Assert(path.StartsWith(baseDirectoryPath, StringComparison.OrdinalIgnoreCase));
-
-                string relativePath = path.Substring(baseDirectoryPath.Length + 1);
-
-                string destinationPath = Path.Combine(Target, relativePath);
-
-                ExecuteOperationAndCatchIfThrows(path, destinationPath);
-            }
-
             void ExecuteOperationAndCatchIfThrows(string sourcePath, string destinationPath)
             {
                 try
                 {
-                    ExecuteOperation(context, sourcePath, destinationPath, indent);
+                    ExecuteOperation(context, sourcePath, destinationPath, result.IsDirectory, indent);
                 }
                 catch (Exception ex) when (ex is IOException
                     || ex is UnauthorizedAccessException)
@@ -117,21 +109,21 @@ namespace Orang.CommandLine
             }
         }
 
-        private void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, string indent)
+        private void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
         {
             bool overwrite = false;
             bool pathWritten = false;
-            bool exists = FileSystemHelpers.FileOrDirectoryExists(destinationPath);
+            bool fileExists = File.Exists(destinationPath);
 
             switch (OverwriteOption)
             {
                 case OverwriteOption.Ask:
                     {
-                        if (exists)
+                        if (fileExists)
                         {
                             if (!Options.OmitPath)
                             {
-                                WritePath(destinationPath, exists, indent);
+                                WritePath(destinationPath, (isDirectory) ? OperationKind.Add : OperationKind.Update, indent);
                                 pathWritten = true;
                             }
 
@@ -173,36 +165,58 @@ namespace Orang.CommandLine
 
                         break;
                     }
-
                 case OverwriteOption.Yes:
                     {
-                        if (exists)
+                        if (fileExists)
                             overwrite = true;
 
                         break;
                     }
-
                 case OverwriteOption.No:
                     {
-                        if (exists)
+                        if (fileExists)
                             return;
 
                         break;
                     }
-
                 default:
                     {
                         throw new InvalidOperationException($"Unknown enum value '{OverwriteOption}'.");
                     }
             }
 
-            if (!exists
-                || CanExecuteFileOperation(sourcePath, destinationPath))
+            if (isDirectory)
+            {
+                bool directoryExists = Directory.Exists(destinationPath);
+
+                if (overwrite
+                    || !directoryExists)
+                {
+                    if (!Options.OmitPath
+                        && !pathWritten)
+                    {
+                        WritePath(destinationPath, OperationKind.Add, indent);
+                    }
+
+                    if (!Options.DryRun)
+                    {
+                        if (overwrite)
+                            File.Delete(destinationPath);
+
+                        if (!directoryExists)
+                            Directory.CreateDirectory(destinationPath);
+
+                        context.Telemetry.ProcessedDirectoryCount++;
+                    }
+                }
+            }
+            else if (!fileExists
+                || CanExecuteOperation(sourcePath, destinationPath))
             {
                 if (!Options.OmitPath
                     && !pathWritten)
                 {
-                    WritePath(destinationPath, exists, indent);
+                    WritePath(destinationPath, (fileExists) ? OperationKind.Update : OperationKind.Add, indent);
                 }
 
                 if (!Options.DryRun)
@@ -211,22 +225,30 @@ namespace Orang.CommandLine
                     {
                         File.Delete(destinationPath);
                     }
-                    else
+                    else if (!Directory.Exists(destinationPath))
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                     }
 
-                    ExecuteFileOperation(sourcePath, destinationPath);
+                    ExecuteOperation(sourcePath, destinationPath);
 
                     context.Telemetry.ProcessedFileCount++;
                 }
             }
         }
 
-        protected virtual void WritePath(string path, bool exists, string indent)
+        protected virtual void WritePath(string path, OperationKind kind, string indent)
         {
             LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
+        }
+
+        protected enum OperationKind
+        {
+            None,
+            Add,
+            Update,
+            Delete
         }
     }
 }

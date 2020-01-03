@@ -10,7 +10,7 @@ namespace Orang.CommandLine
         {
         }
 
-        protected override void ExecuteFileOperation(string sourcePath, string destinationPath)
+        protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
             File.Copy(sourcePath, destinationPath);
         }
