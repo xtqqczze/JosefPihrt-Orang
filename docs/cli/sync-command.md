@@ -9,8 +9,10 @@ orang sync [<PATH>]
 [   --ask]                <ASK_MODE>
 [-a|--attributes]         <ATTRIBUTES>
 [   --attributes-to-skip] <ATTRIBUTES>
+[   --compare]            <COMPARE_OPTIONS>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
+[-d|--dry-run]
 [   --encoding]           <ENCODING>
 [-e|--extension]          <EXTENSION_FILTER>
 [-h|--help]
@@ -49,6 +51,10 @@ File attributes that are required\. Allowed values are archive, compressed, d\[i
 
 File attributes that should be skipped\. Allowed values are archive, compressed, e\[mpty\], encrypted, h\[idden\], normal, offline, r\[ead\-only\], r\[eparse\]\-p\[oint\], s\[ystem\] and temporary\.
 
+**`[--compare] <COMPARE_OPTIONS>`**
+
+File properties to be compared\. Allowed values are a\[ttributes\], c\[ontent\], m\[odified\-\]t\[ime\] and s\[ize\]\.
+
 **`[-c|--content] <REGEX>`**
 
 Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
@@ -56,6 +62,10 @@ Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTION
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
 Display of the results\. Allowed values are c\[ontent\]=\<CONTENT\_DISPLAY>, c\[ount\], c\[reation\-\]t\[ime\], indent=\<INDENT>, l\[ine\-number\], m\[odified\-\]t\[ime\], p\[ath\]=\<PATH\_DISPLAY>, s\[ize\], s\[eparator\]=\<SEPARATOR>, su\[mmary\] and t\[rim\-line\]\.
+
+**`[-d|--dry-run]`**
+
+Display which files or directories should be copied/deleted but do not actually copy/delete any file or directory\.
 
 **`[--encoding] <ENCODING>`**
 

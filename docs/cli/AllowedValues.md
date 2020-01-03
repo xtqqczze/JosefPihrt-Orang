@@ -2,6 +2,7 @@
 
 * [\<ASK_MODE>](#ask-mode)
 * [\<ATTRIBUTES>](#attributes)
+* [\<COMPARE_OPTIONS>](#compare-options)
 * [\<CONTENT_DISPLAY>](#content-display)
 * [\<DISPLAY_OPTIONS>](#display-options)
 * [\<EXTENSION_OPTIONS>](#extension-options)
@@ -46,6 +47,15 @@
 | sparse\-file           |
 | s\[ystem\]             |
 | temporary              |
+
+## \<COMPARE\_OPTIONS>
+
+| Value                  | Description                             |
+| ---------------------- | --------------------------------------- |
+| a\[ttributes\]         | Compare file attributes\.               |
+| c\[ontent\]            | Compare file content\.                  |
+| m\[odified\-\]t\[ime\] | Compare time a file was last modified\. |
+| s\[ize\]               | Compare file size\.                     |
 
 ## \<CONTENT\_DISPLAY>
 

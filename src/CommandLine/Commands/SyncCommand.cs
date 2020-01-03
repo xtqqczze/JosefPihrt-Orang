@@ -17,12 +17,12 @@ namespace Orang.CommandLine
 
         public override bool CanWriteContent => false;
 
-        protected override bool CanExecuteOperation(string sourcePath, string destinationPath)
+        protected override bool CanExecuteFileOperation(string sourcePath, string destinationPath)
         {
             return !FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
         }
 
-        protected override void ExecuteOperation(string sourcePath, string destinationPath)
+        protected override void ExecuteFileOperation(string sourcePath, string destinationPath)
         {
             File.Copy(sourcePath, destinationPath);
         }

@@ -13,8 +13,6 @@ namespace Orang.CommandLine
 
             options = (CommonCopyCommandOptions)baseOptions;
 
-            options.RecurseSubdirectories = false;
-
             return true;
         }
     }

@@ -24,9 +24,9 @@ namespace Orang.CommandLine
             private set { Options.OverwriteOption = value; }
         }
 
-        protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
+        protected abstract void ExecuteFileOperation(string sourcePath, string destinationPath);
 
-        protected virtual bool CanExecuteOperation(string sourcePath, string destinationPath) => true;
+        protected virtual bool CanExecuteFileOperation(string sourcePath, string destinationPath) => true;
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
@@ -77,13 +77,7 @@ namespace Orang.CommandLine
 
             if (result.IsDirectory)
             {
-                foreach (string filePath in FileSystemHelpers.EnumerateAllFiles(sourcePath))
-                {
-                    Execute(filePath);
-
-                    if (context.State == SearchState.Canceled)
-                        return;
-                }
+                //TODO: execute directory
             }
             else if (baseDirectoryPath != null)
             {
@@ -203,7 +197,7 @@ namespace Orang.CommandLine
             }
 
             if (!exists
-                || CanExecuteOperation(sourcePath, destinationPath))
+                || CanExecuteFileOperation(sourcePath, destinationPath))
             {
                 if (!Options.OmitPath
                     && !pathWritten)
@@ -222,7 +216,7 @@ namespace Orang.CommandLine
                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                     }
 
-                    ExecuteOperation(sourcePath, destinationPath);
+                    ExecuteFileOperation(sourcePath, destinationPath);
 
                     context.Telemetry.ProcessedFileCount++;
                 }

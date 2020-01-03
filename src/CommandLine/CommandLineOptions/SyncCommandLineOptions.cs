@@ -44,6 +44,7 @@ namespace Orang.CommandLine
                 return false;
             }
 
+            //TODO: default file compare options
             if (!TryParseAsEnumFlags(Compare, OptionNames.Compare, out FileCompareOptions compareOptions, FileCompareOptions.All, OptionValueProviders.FileCompareOptionsProvider))
                 return false;
 
