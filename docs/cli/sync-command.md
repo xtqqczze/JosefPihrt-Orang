@@ -27,6 +27,7 @@ orang sync [<PATH>]
 [-p|--properties]         <FILE_PROPERTIES>
 [-s|--sort]               <SORT_OPTIONS>
     --target              <DIRECTORY_PATH>
+[   --target-action]      <TARGET_ACTION>
 [   --two-way]
 [-v|--verbosity]          <VERBOSITY>
 ```
@@ -122,6 +123,10 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 **`--target <DIRECTORY_PATH>`**
 
 A directory to be synchronized\.
+
+**`[--target-action] <TARGET_ACTION>`**
+
+Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
 
 **`[--two-way]`**
 

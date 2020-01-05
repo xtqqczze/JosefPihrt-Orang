@@ -125,7 +125,7 @@ A directory to move files and directories to\.
 
 **`[--target-action] <TARGET_ACTION>`**
 
-Defines how to proceed if a file already exists\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
+Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

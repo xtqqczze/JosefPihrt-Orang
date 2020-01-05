@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using CommandLine;
 using Orang.FileSystem;
 using static Orang.CommandLine.ParseHelpers;
@@ -10,11 +9,6 @@ namespace Orang.CommandLine
     [Verb("copy", HelpText = "Searches the file system for files and directories and copy them to a destination directory.")]
     internal class CopyCommandLineOptions : CommonCopyCommandLineOptions
     {
-        [Option(longName: OptionNames.Compare,
-            HelpText = "File properties to be compared.",
-            MetaValue = MetaValues.CompareOptions)]
-        public IEnumerable<string> Compare { get; set; }
-
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
             HelpText = "Display which files or directories should be copied but do not actually copy any file or directory.")]
         public bool DryRun { get; set; }
@@ -24,11 +18,6 @@ namespace Orang.CommandLine
             HelpText = "A directory to copy files and directories to.",
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
-
-        [Option(longName: OptionNames.TargetAction,
-            HelpText = "Defines how to proceed if a file already exists.",
-            MetaValue = MetaValues.TargetAction)]
-        public string TargetAction { get; set; }
 
         public bool TryParse(ref CopyCommandOptions options)
         {
