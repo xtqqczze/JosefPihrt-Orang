@@ -2,12 +2,18 @@
 
 namespace Orang.CommandLine
 {
-    internal class FindCommandOptions : CommonFindContentCommandOptions
+    internal class FindCommandOptions : CommonFindCommandOptions
     {
         internal FindCommandOptions()
         {
         }
 
+        public AskMode AskMode { get; internal set; }
+
         public ModifyOptions ModifyOptions { get; internal set; }
+
+        public int MaxMatches { get; internal set; }
+
+        public int MaxMatchesInFile { get; internal set; }
     }
 }

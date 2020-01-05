@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -215,20 +214,9 @@ namespace Orang.CommandLine
             if (!commandLineOptions.TryParse(ref options))
                 return 1;
 
-            CommandResult result;
+            var command = new FindCommand<FindCommandOptions>(options);
 
-            if (options.ContentFilter != null)
-            {
-                var command = new FindContentCommand(options);
-
-                result = command.Execute();
-            }
-            else
-            {
-                var command = new FindCommand(options);
-
-                result = command.Execute();
-            }
+            CommandResult result = command.Execute();
 
             return GetExitCode(result.Kind);
         }
@@ -319,13 +307,18 @@ namespace Orang.CommandLine
 
         private static int GetExitCode(CommandResultKind kind)
         {
-            return kind switch
+            switch (kind)
             {
-                CommandResultKind.Success => 0,
-                CommandResultKind.NoMatch => 1,
-                CommandResultKind.Fail => 2,
-                _ => throw new InvalidOperationException($"Unknown enum value '{kind}'."),
-            };
+                case CommandResultKind.Success:
+                    return 0;
+                case CommandResultKind.NoMatch:
+                    return 1;
+                case CommandResultKind.Fail:
+                case CommandResultKind.Canceled:
+                    return 2;
+                default:
+                    throw new InvalidOperationException($"Unknown enum value '{kind}'.");
+            }
         }
     }
 }
