@@ -7,7 +7,7 @@ using static Orang.CommandLine.ParseHelpers;
 namespace Orang.CommandLine
 {
     [Verb("move", HelpText = "Searches the file system for files and directories and move them to a destination directory.")]
-    internal class MoveCommandLineOptions : CommonCopyCommandLineOptions
+    internal sealed class MoveCommandLineOptions : CommonCopyCommandLineOptions
     {
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
             HelpText = "Display which files or directories should be moved but do not actually move any file or directory.")]

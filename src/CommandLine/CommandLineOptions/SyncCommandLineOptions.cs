@@ -7,7 +7,7 @@ using static Orang.CommandLine.ParseHelpers;
 namespace Orang.CommandLine
 {
     [Verb("sync", HelpText = "Synchronizes content of one directory with another directory.")]
-    internal class SyncCommandLineOptions : CommonCopyCommandLineOptions
+    internal sealed class SyncCommandLineOptions : CommonCopyCommandLineOptions
     {
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
             HelpText = "Display which files or directories should be copied/deleted but do not actually copy/delete any file or directory.")]

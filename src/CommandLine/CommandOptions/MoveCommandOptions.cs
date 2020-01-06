@@ -2,7 +2,7 @@
 
 namespace Orang.CommandLine
 {
-    internal class MoveCommandOptions : CommonCopyCommandOptions
+    internal sealed class MoveCommandOptions : CommonCopyCommandOptions
     {
         internal MoveCommandOptions()
         {
