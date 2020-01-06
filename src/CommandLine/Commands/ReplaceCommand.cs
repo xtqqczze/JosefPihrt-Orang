@@ -24,7 +24,7 @@ namespace Orang.CommandLine
             Debug.Assert(!options.ContentFilter.IsNegative);
         }
 
-        protected override bool OmitSummary => Options.Input != null;
+        protected override bool CanDisplaySummary => Options.Input == null;
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 

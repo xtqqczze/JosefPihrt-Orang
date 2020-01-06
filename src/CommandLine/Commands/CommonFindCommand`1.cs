@@ -27,7 +27,7 @@ namespace Orang.CommandLine
 
         protected FileSystemFinderOptions FinderOptions => _finderOptions ?? (_finderOptions = CreateFinderOptions());
 
-        protected virtual bool OmitSummary => false;
+        protected virtual bool CanDisplaySummary => true;
 
         public virtual bool CanEndProgress => !Options.OmitPath;
 
@@ -127,7 +127,7 @@ namespace Orang.CommandLine
 
             stopwatch.Stop();
 
-            if (!OmitSummary)
+            if (CanDisplaySummary)
             {
                 if (ShouldLog(Verbosity.Detailed)
                     || Options.IncludeSummary)
