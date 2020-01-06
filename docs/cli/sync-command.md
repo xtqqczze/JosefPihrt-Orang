@@ -126,7 +126,7 @@ A directory to be synchronized\.
 
 **`[--target-action] <TARGET_ACTION>`**
 
-Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
+Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
 
 **`[--two-way]`**
 

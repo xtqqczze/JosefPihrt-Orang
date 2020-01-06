@@ -72,38 +72,32 @@ namespace Orang.CommandLine
             string indent)
         {
             string sourcePath = result.Path;
+            string destinationPath;
 
             if (result.IsDirectory
-                || baseDirectoryPath != null)
+                || (baseDirectoryPath != null && !Options.Flat))
             {
                 Debug.Assert(sourcePath.StartsWith(baseDirectoryPath, StringComparison.OrdinalIgnoreCase));
 
                 string relativePath = sourcePath.Substring(baseDirectoryPath.Length + 1);
 
-                string destinationPath = Path.Combine(Target, relativePath);
-
-                ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
+                destinationPath = Path.Combine(Target, relativePath);
             }
             else
             {
                 string fileName = Path.GetFileName(sourcePath);
 
-                string destinationPath = Path.Combine(Target, fileName);
-
-                ExecuteOperationAndCatchIfThrows(sourcePath, destinationPath);
+                destinationPath = Path.Combine(Target, fileName);
             }
 
-            void ExecuteOperationAndCatchIfThrows(string sourcePath, string destinationPath)
+            try
             {
-                try
-                {
-                    ExecuteOperation(context, sourcePath, destinationPath, result.IsDirectory, indent);
-                }
-                catch (Exception ex) when (ex is IOException
-                    || ex is UnauthorizedAccessException)
-                {
-                    WriteError(ex, sourcePath, indent: indent);
-                }
+                ExecuteOperation(context, sourcePath, destinationPath, result.IsDirectory, indent);
+            }
+            catch (Exception ex) when (ex is IOException
+                || ex is UnauthorizedAccessException)
+            {
+                WriteError(ex, sourcePath, indent: indent);
             }
         }
 
@@ -112,21 +106,26 @@ namespace Orang.CommandLine
             bool overwrite = false;
             bool pathWritten = false;
             bool fileExists = File.Exists(destinationPath);
+            bool directoryExists = (fileExists) ? false : Directory.Exists(destinationPath);
 
             switch (TargetAction)
             {
                 case TargetExistsAction.Ask:
                     {
-                        if (fileExists
-                            && IsOperationRequired())
+                        if (fileExists || (!isDirectory && directoryExists))
                         {
+                            if (!IsOperationRequired())
+                                return;
+
                             if (!Options.OmitPath)
                             {
                                 WritePath(destinationPath, (isDirectory) ? OperationKind.Add : OperationKind.Update, indent);
                                 pathWritten = true;
                             }
 
-                            DialogResult dialogResult = ConsoleHelpers.QuestionWithResult("Overwrite file?", indent);
+                            string question = (!isDirectory && directoryExists) ? "Overwrite directory?" : "Overwrite file?";
+
+                            DialogResult dialogResult = ConsoleHelpers.QuestionWithResult(question, indent);
                             switch (dialogResult)
                             {
                                 case DialogResult.Yes:
@@ -166,7 +165,7 @@ namespace Orang.CommandLine
                     }
                 case TargetExistsAction.Overwrite:
                     {
-                        if (fileExists)
+                        if (fileExists || (!isDirectory && directoryExists))
                         {
                             if (IsOperationRequired())
                             {
@@ -182,9 +181,13 @@ namespace Orang.CommandLine
                     }
                 case TargetExistsAction.Skip:
                     {
-                        if (fileExists)
+                        if (fileExists || (!isDirectory && directoryExists))
                             return;
 
+                        break;
+                    }
+                case TargetExistsAction.Rename:
+                    {
                         break;
                     }
                 default:
@@ -195,8 +198,6 @@ namespace Orang.CommandLine
 
             if (isDirectory)
             {
-                bool directoryExists = Directory.Exists(destinationPath);
-
                 if (overwrite
                     || !directoryExists)
                 {
@@ -229,12 +230,22 @@ namespace Orang.CommandLine
                 {
                     if (overwrite)
                     {
-                        File.Delete(destinationPath);
+                        if (fileExists)
+                        {
+                            File.Delete(destinationPath);
+                        }
+                        else
+                        {
+                            Directory.Delete(destinationPath, recursive: true);
+                        }
                     }
                     else if (!Directory.Exists(destinationPath))
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                     }
+
+                    if (Options.TargetAction == TargetExistsAction.Rename)
+                        destinationPath = CreateNewFile(destinationPath);
 
                     ExecuteOperation(sourcePath, destinationPath);
 
@@ -254,6 +265,33 @@ namespace Orang.CommandLine
                 return isDirectory
                     || Options.CompareOptions == FileCompareOptions.None
                     || !FileEquals(sourcePath, destinationPath);
+            }
+
+            static string CreateNewFile(string path)
+            {
+                if (!File.Exists(path))
+                    return path;
+
+                int count = 2;
+                int extensionIndex = FileSystemHelpers.GetExtensionIndex(path);
+
+                if (extensionIndex > 0
+                    && FileSystemHelpers.IsDirectorySeparator(path[extensionIndex - 1]))
+                {
+                    extensionIndex = path.Length;
+                }
+
+                string newPath;
+
+                do
+                {
+                    newPath = path.Insert(extensionIndex, count.ToString());
+
+                    count++;
+
+                } while (File.Exists(newPath));
+
+                return newPath;
             }
         }
 

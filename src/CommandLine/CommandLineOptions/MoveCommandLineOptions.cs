@@ -13,6 +13,10 @@ namespace Orang.CommandLine
             HelpText = "Display which files or directories should be moved but do not actually move any file or directory.")]
         public bool DryRun { get; set; }
 
+        [Option(longName: OptionNames.Flat,
+            HelpText = "Move files directly into target directory.")]
+        public bool Flat { get; set; }
+
         [Option(longName: OptionNames.Target,
             Required = true,
             HelpText = "A directory to move files and directories to.",
@@ -39,6 +43,7 @@ namespace Orang.CommandLine
 
             options.CompareOptions = compareOptions;
             options.DryRun = DryRun;
+            options.Flat = Flat;
             options.TargetAction = targetAction;
             options.Target = target;
 

@@ -226,6 +226,7 @@
 | ------------- | ------------------------------------------------- |
 | a\[sk\]       | Ask when a file or already exists\.               |
 | o\[verwrite\] | Overwrite a file when it already exists\.         |
+| r\[ename\]    | Create new file name if it already exists\.       |
 | s\[kip\]      | Do not copy or move a file if it already exists\. |
 
 ## \<VERBOSITY>

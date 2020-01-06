@@ -13,6 +13,10 @@ namespace Orang.CommandLine
             HelpText = "Display which files or directories should be copied but do not actually copy any file or directory.")]
         public bool DryRun { get; set; }
 
+        [Option(longName: OptionNames.Flat,
+            HelpText = "Copy files directly into target directory.")]
+        public bool Flat { get; set; }
+
         [Option(longName: OptionNames.Target,
             Required = true,
             HelpText = "A directory to copy files and directories to.",
@@ -39,6 +43,7 @@ namespace Orang.CommandLine
 
             options.CompareOptions = compareOptions;
             options.DryRun = DryRun;
+            options.Flat = Flat;
             options.TargetAction = targetAction;
             options.Target = target;
 

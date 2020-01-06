@@ -15,6 +15,7 @@ orang move [<PATH>]
 [-d|--dry-run]
 [   --encoding]           <ENCODING>
 [-e|--extension]          <EXTENSION_FILTER>
+[   --flat]
 [-h|--help]
 [-t|--highlight]          <HIGHLIGHT>
 [-i|--include-directory]  <REGEX>
@@ -75,6 +76,10 @@ Encoding to use when a file does not contain byte order mark\. Default encoding 
 
 A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ulture\-\]i\[nvariant\], f\[rom\-file\], i\[gnore\-case\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
 
+**`[--flat]`**
+
+Move files directly into target directory\.
+
 **`[-h|--help]`**
 
 Show command line help\.
@@ -125,7 +130,7 @@ A directory to move files and directories to\.
 
 **`[--target-action] <TARGET_ACTION>`**
 
-Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\] and s\[kip\]\.
+Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

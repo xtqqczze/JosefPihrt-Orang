@@ -22,6 +22,7 @@ namespace Orang.CommandLine
         public const string Evaluator = "evaluator";
         public const string Extension = "extension";
         public const string Filter = "filter";
+        public const string Flat = "flat";
         public const string Help = "help";
         public const string Highlight = "highlight";
         public const string CharGroup = "char-group";
