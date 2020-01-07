@@ -189,14 +189,10 @@ namespace Orang.CommandLine
         {
             var options = new CopyCommandOptions();
 
-            if (!commandLineOptions.TryParse(ref options))
+            if (!commandLineOptions.TryParse(options))
                 return 1;
 
-            var command = new CopyCommand(options);
-
-            CommandResult result = command.Execute();
-
-            return GetExitCode(result.Kind);
+            return Execute(new CopyCommand(options));
         }
 
         private static int Delete(DeleteCommandLineOptions commandLineOptions)
@@ -263,28 +259,20 @@ namespace Orang.CommandLine
         {
             var options = new MoveCommandOptions();
 
-            if (!commandLineOptions.TryParse(ref options))
+            if (!commandLineOptions.TryParse(options))
                 return 1;
 
-            var command = new MoveCommand(options);
-
-            CommandResult result = command.Execute();
-
-            return GetExitCode(result.Kind);
+            return Execute(new MoveCommand(options));
         }
 
         private static int Sync(SyncCommandLineOptions commandLineOptions)
         {
             var options = new SyncCommandOptions();
 
-            if (!commandLineOptions.TryParse(ref options))
+            if (!commandLineOptions.TryParse(options))
                 return 1;
 
-            var command = new SyncCommand(options);
-
-            CommandResult result = command.Execute();
-
-            return GetExitCode(result.Kind);
+            return Execute(new SyncCommand(options));
         }
 
         private static int Rename(RenameCommandLineOptions commandLineOptions)

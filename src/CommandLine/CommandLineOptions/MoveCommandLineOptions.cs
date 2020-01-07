@@ -23,11 +23,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
-        public bool TryParse(ref MoveCommandOptions options)
+        public bool TryParse(MoveCommandOptions options)
         {
             var baseOptions = (CommonCopyCommandOptions)options;
 
-            if (!TryParse(ref baseOptions))
+            if (!TryParse(baseOptions))
                 return false;
 
             options = (MoveCommandOptions)baseOptions;

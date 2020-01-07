@@ -23,11 +23,11 @@ namespace Orang.CommandLine
             HelpText = "Synchronize directories in both directions.")]
         public bool TwoWay { get; set; }
 
-        public bool TryParse(ref SyncCommandOptions options)
+        public bool TryParse(SyncCommandOptions options)
         {
             var baseOptions = (CommonCopyCommandOptions)options;
 
-            if (!TryParse(ref baseOptions))
+            if (!TryParse(baseOptions))
                 return false;
 
             options = (SyncCommandOptions)baseOptions;

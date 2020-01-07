@@ -151,7 +151,7 @@ namespace Orang.CommandLine
                                     }
                                 case DialogResult.Cancel:
                                     {
-                                        context.State = SearchState.Canceled;
+                                        context.TerminationReason = TerminationReason.Canceled;
                                         return;
                                     }
                                 default:
