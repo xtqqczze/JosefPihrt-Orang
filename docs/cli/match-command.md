@@ -11,7 +11,7 @@ orang match [<PATH>]
 [-h|--help]
 [-t|--highlight] <HIGHLIGHT>
 [   --input]     <INPUT>
-[-m|--max-count] <NUMBER>
+[-m|--max-count] <NUM>
 [-o|--output]    <OUTPUT_OPTIONS>
 [-v|--verbosity] <VERBOSITY>
 ```
@@ -30,7 +30,7 @@ Regular expression for the input string\. Syntax is \<PATTERN> \[\<PATTERN\_OPTI
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
-Display of the results\. Allowed values are c\[ontent\]=\<CONTENT\_DISPLAY>, indent=\<INDENT>, separator=\<SEPARATOR> and summary\.
+Display of the results\. Allowed values are c\[ontent\]=\<CONTENT\_DISPLAY>, indent=\<INDENT>, s\[eparator\]=\<SEPARATOR> and su\[mmary\]\.
 
 **`[-h|--help]`**
 
@@ -44,7 +44,7 @@ Parts of the output to highlight\. Allowed values are n\[one\], m\[atch\], e\[mp
 
 Text to search\.
 
-**`[-m|--max-count] <NUMBER>`**
+**`[-m|--max-count] <NUM>`**
 
 Maximum number of matches returned\.
 

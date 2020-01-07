@@ -16,7 +16,7 @@ namespace Orang.CommandLine
     [OptionValueProvider(nameof(Display), OptionValueProviderNames.Display_NonContent)]
     [OptionValueProvider(nameof(Highlight), OptionValueProviderNames.RenameHighlightOptions)]
     [OptionValueProvider(nameof(Name), OptionValueProviderNames.PatternOptionsWithoutGroupAndNegative)]
-    internal class RenameCommandLineOptions : CommonFindCommandLineOptions
+    internal sealed class RenameCommandLineOptions : CommonFindCommandLineOptions
     {
         [Option(longName: OptionNames.Ask,
             HelpText = "Ask for a permission to rename file or directory.")]
@@ -37,8 +37,8 @@ namespace Orang.CommandLine
         public string Evaluator { get; set; }
 
         [Option(shortName: OptionShortNames.MaxCount, longName: OptionNames.MaxCount,
-            HelpText = "Stop deleting after specified number is reached.",
-            MetaValue = MetaValues.Number)]
+            HelpText = "Stop renaming after specified number is reached.",
+            MetaValue = MetaValues.Num)]
         public int MaxCount { get; set; }
 
         [Option(shortName: OptionShortNames.Name, longName: OptionNames.Name,
@@ -52,16 +52,16 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.Replacement)]
         public IEnumerable<string> Replacement { get; set; }
 
-        public bool TryParse(ref RenameCommandOptions options)
+        public bool TryParse(RenameCommandOptions options)
         {
             var baseOptions = (CommonFindCommandOptions)options;
 
-            if (!TryParse(ref baseOptions))
+            if (!TryParse(baseOptions))
                 return false;
 
             options = (RenameCommandOptions)baseOptions;
 
-            if (!TryParseAsEnumFlags(Highlight, OptionNames.Highlight, out HighlightOptions highlightOptions, defaultValue: HighlightOptions.Match | HighlightOptions.Replacement, provider: OptionValueProviders.RenameHighlightOptionsProvider))
+            if (!TryParseAsEnumFlags(Highlight, OptionNames.Highlight, out HighlightOptions highlightOptions, defaultValue: HighlightOptions.Default | HighlightOptions.Replacement, provider: OptionValueProviders.RenameHighlightOptionsProvider))
                 return false;
 
             if (!TryParseFilter(Name, OptionNames.Name, out Filter nameFilter, provider: OptionValueProviders.PatternOptionsWithoutGroupAndNegativeProvider))
@@ -104,7 +104,7 @@ namespace Orang.CommandLine
                 indent: out string indent,
                 separator: out string separator,
                 contentDisplayStyleProvider: OptionValueProviders.ContentDisplayStyleProvider,
-                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider))
+                pathDisplayStyleProvider: OptionValueProviders.PathDisplayStyleProvider_Rename))
             {
                 return false;
             }

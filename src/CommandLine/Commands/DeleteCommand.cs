@@ -34,10 +34,10 @@ namespace Orang.CommandLine
 
                 ProcessResult(result, context, directoryPath);
 
-                if (context.State == SearchState.Canceled)
+                if (context.TerminationReason == TerminationReason.Canceled)
                     break;
 
-                if (context.State == SearchState.MaxReached)
+                if (context.TerminationReason == TerminationReason.MaxReached)
                     break;
             }
         }
@@ -52,9 +52,7 @@ namespace Orang.CommandLine
             if (!result.IsDirectory
                 && Options.ContentFilter != null)
             {
-                string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
-                    ? Options.Indent
-                    : "";
+                string indent = GetPathIndent(baseDirectoryPath);
 
                 string input = ReadFile(result.Path, baseDirectoryPath, Options.DefaultEncoding, context, indent);
 
@@ -79,9 +77,7 @@ namespace Orang.CommandLine
             string baseDirectoryPath = null,
             ColumnWidths columnWidths = null)
         {
-            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
-                ? Options.Indent
-                : "";
+            string indent = GetPathIndent(baseDirectoryPath);
 
             if (!Options.OmitPath)
                 WritePath(context, result, baseDirectoryPath, indent, columnWidths);
@@ -134,7 +130,7 @@ namespace Orang.CommandLine
                 }
                 catch (OperationCanceledException)
                 {
-                    context.State = SearchState.Canceled;
+                    context.TerminationReason = TerminationReason.Canceled;
                     return false;
                 }
             }

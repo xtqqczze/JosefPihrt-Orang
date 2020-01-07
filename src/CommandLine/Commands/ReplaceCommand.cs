@@ -14,7 +14,7 @@ using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
-    internal class ReplaceCommand : CommonFindContentCommand<ReplaceCommandOptions>
+    internal class ReplaceCommand : FindCommand<ReplaceCommandOptions>
     {
         private OutputSymbols _symbols;
         private MatchEvaluator _matchEvaluator;
@@ -23,6 +23,8 @@ namespace Orang.CommandLine
         {
             Debug.Assert(!options.ContentFilter.IsNegative);
         }
+
+        protected override bool CanDisplaySummary => Options.Input == null;
 
         private OutputSymbols Symbols => _symbols ?? (_symbols = OutputSymbols.Create(Options.HighlightOptions));
 
@@ -111,10 +113,10 @@ namespace Orang.CommandLine
             {
                 ProcessResult(result, context, DirectoryWriterOptions, directoryPath);
 
-                if (context.State == SearchState.Canceled)
+                if (context.TerminationReason == TerminationReason.Canceled)
                     break;
 
-                if (context.State == SearchState.MaxReached)
+                if (context.TerminationReason == TerminationReason.MaxReached)
                     break;
             }
         }
@@ -125,9 +127,7 @@ namespace Orang.CommandLine
             ContentWriterOptions writerOptions,
             string baseDirectoryPath = null)
         {
-            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
-                ? Options.Indent
-                : "";
+            string indent = GetPathIndent(baseDirectoryPath);
 
             Encoding encoding = Options.DefaultEncoding;
 
@@ -154,9 +154,7 @@ namespace Orang.CommandLine
             string baseDirectoryPath = null,
             ColumnWidths columnWidths = null)
         {
-            string indent = (baseDirectoryPath != null && Options.DisplayRelativePath)
-                ? Options.Indent
-                : "";
+            string indent = GetPathIndent(baseDirectoryPath);
 
             if (!Options.OmitPath)
                 WritePath(context, result, baseDirectoryPath, indent, columnWidths);
@@ -283,7 +281,7 @@ namespace Orang.CommandLine
 
                 if (Options.AskMode == AskMode.File)
                 {
-                    if (context.State == SearchState.Canceled)
+                    if (context.TerminationReason == TerminationReason.Canceled)
                     {
                         fileReplacementCount = 0;
                     }
@@ -307,7 +305,7 @@ namespace Orang.CommandLine
                         }
                         catch (OperationCanceledException)
                         {
-                            context.State = SearchState.Canceled;
+                            context.TerminationReason = TerminationReason.Canceled;
                             fileReplacementCount = 0;
                         }
                     }

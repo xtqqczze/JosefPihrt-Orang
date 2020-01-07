@@ -19,7 +19,7 @@ orang delete [<PATH>]
 [-t|--highlight]          <HIGHLIGHT>
 [-i|--include-directory]  <REGEX>
 [   --including-bom]
-[-m|--max-count]          <NUMBER>
+[-m|--max-count]          <NUM>
  -n|--name                <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
@@ -60,7 +60,7 @@ Delete content of a file or directory but not the file or directory itself\.
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
-Display of the results\. Allowed values are c\[reation\-\]t\[ime\], indent=\<INDENT>, m\[odified\-\]t\[ime\], p\[ath\]=\<PATH\_DISPLAY>, s\[ize\], separator=\<SEPARATOR> and summary\.
+Display of the results\. Allowed values are c\[reation\-\]t\[ime\], indent=\<INDENT>, m\[odified\-\]t\[ime\], p\[ath\]=\<PATH\_DISPLAY>, s\[ize\], s\[eparator\]=\<SEPARATOR> and su\[mmary\]\.
 
 **`[-d|--dry-run]`**
 
@@ -90,9 +90,9 @@ Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTI
 
 Delete byte order mark \(BOM\) when deleting file's content\.
 
-**`[-m|--max-count] <NUMBER>`**
+**`[-m|--max-count] <NUM>`**
 
-Stop renaming after specified number is reached\.
+Stop deleting after specified number is reached\.
 
 **`-n|--name <REGEX>`**
 

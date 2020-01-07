@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Orang.FileSystem;
 using static Orang.Logger;
 
@@ -61,11 +62,8 @@ namespace Orang.CommandLine
                 WriteCount("Directories searched", telemetry.DirectoryCount, verbosity: verbosity);
             }
 
-            if (searchTarget != SearchTarget.Directories
-                && telemetry.FilesTotalSize > 0)
-            {
+            if (telemetry.FilesTotalSize > 0)
                 WriteCount("  Files total size", telemetry.FilesTotalSize, verbosity: verbosity);
-            }
 
             if (telemetry.Elapsed != default)
                 Write($"  Elapsed Time: {telemetry.Elapsed:mm\\:ss\\.ff}", verbosity);
@@ -210,16 +208,49 @@ namespace Orang.CommandLine
             string indent,
             Verbosity verbosity = Verbosity.Quiet)
         {
-            WritePathImpl(
-                path: result.Path,
-                basePath: basePath,
-                relativePath: relativePath,
-                colors: colors,
-                matchIndex: result.Index,
-                matchLength: result.Length,
-                matchColors: matchColors,
-                indent: indent,
-                verbosity: verbosity);
+            string path = result.Path;
+            int matchIndex = result.Index;
+
+            (int startIndex, bool isWritten) = WritePathImpl(path, basePath, relativePath, colors, matchColors, matchIndex, indent, verbosity);
+
+            if (!isWritten)
+            {
+                int matchLength = result.Length;
+
+                Write(path, startIndex, matchIndex - startIndex, colors: colors, verbosity);
+                Write(path, matchIndex, matchLength, matchColors, verbosity);
+                Write(path, matchIndex + matchLength, path.Length - matchIndex - matchLength, colors: colors, verbosity);
+            }
+        }
+
+        public static void WritePath(
+            in FileSystemFinderResult result,
+            List<ReplaceItem> items,
+            string basePath,
+            bool relativePath,
+            in ConsoleColors colors,
+            in ConsoleColors matchColors,
+            string indent,
+            Verbosity verbosity = Verbosity.Quiet)
+        {
+            string path = result.Path;
+            int matchIndex = result.Part.Index + result.Index;
+
+            (int startIndex, bool isWritten) = WritePathImpl(path, basePath, relativePath, colors, matchColors, matchIndex, indent, verbosity);
+
+            if (!isWritten)
+            {
+                foreach (ReplaceItem item in items)
+                {
+                    Match match = item.Match;
+
+                    Write(path, startIndex, result.Part.Index + match.Index - startIndex);
+                    Write(match.Value, matchColors);
+                    startIndex = result.Part.Index + match.Index + match.Length;
+                }
+
+                Write(path, startIndex, path.Length - startIndex);
+            }
         }
 
         public static void WritePath(
@@ -230,40 +261,32 @@ namespace Orang.CommandLine
             string indent = null,
             Verbosity verbosity = Verbosity.Quiet)
         {
-            WritePathImpl(
-                path: path,
-                basePath: basePath,
-                relativePath: relativePath,
-                colors: colors,
-                matchColors: default,
-                indent: indent,
-                verbosity: verbosity);
+            WritePathImpl(path, basePath, relativePath, colors, indent: indent, verbosity: verbosity);
         }
 
-        private static void WritePathImpl(
+        private static (int startIndex, bool isWritten) WritePathImpl(
             string path,
             string basePath,
-            bool relativePath = false,
-            in ConsoleColors colors = default,
-            int matchIndex = -1,
-            int matchLength = -1,
+            bool relativePath,
+            in ConsoleColors colors,
             in ConsoleColors matchColors = default,
+            int matchIndex = -1,
             string indent = null,
             Verbosity verbosity = Verbosity.Quiet)
         {
             if (!ShouldLog(verbosity))
-                return;
+                return (-1, true);
 
             Write(indent, verbosity);
-
-            int startIndex = 0;
 
             if (string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase))
             {
                 Debug.Assert(matchIndex == -1);
                 Write((relativePath) ? "." : path, colors, verbosity);
-                return;
+                return (-1, true);
             }
+
+            int startIndex = 0;
 
             if (basePath != null
                 && path.Length > basePath.Length
@@ -289,9 +312,7 @@ namespace Orang.CommandLine
                     Write(path, 0, startIndex, Colors.BasePath, verbosity);
                 }
 
-                Write(path, startIndex, matchIndex - startIndex, colors: colors, verbosity);
-                Write(path, matchIndex, matchLength, matchColors, verbosity);
-                Write(path, matchIndex + matchLength, path.Length - matchIndex - matchLength, colors: colors, verbosity);
+                return (startIndex, false);
             }
             else
             {
@@ -299,6 +320,8 @@ namespace Orang.CommandLine
                     Write(path, 0, startIndex, Colors.BasePath, verbosity);
 
                 Write(path, startIndex, path.Length - startIndex, colors: colors, verbosity);
+
+                return (startIndex, true);
             }
         }
     }

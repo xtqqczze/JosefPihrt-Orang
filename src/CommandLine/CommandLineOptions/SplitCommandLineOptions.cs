@@ -9,7 +9,7 @@ namespace Orang.CommandLine
     [Verb("split", HelpText = "Splits the input string into an list of substrings at the positions defined by a regular expression.")]
     [OptionValueProvider(nameof(Content), OptionValueProviderNames.PatternOptionsWithoutGroupAndPartAndNegative)]
     [OptionValueProvider(nameof(Highlight), OptionValueProviderNames.SplitHighlightOptions)]
-    internal class SplitCommandLineOptions : RegexCommandLineOptions
+    internal sealed class SplitCommandLineOptions : RegexCommandLineOptions
     {
         [Option(shortName: OptionShortNames.Content, longName: OptionNames.Content,
             Required = true,
@@ -20,18 +20,18 @@ namespace Orang.CommandLine
         [Option(shortName: OptionShortNames.MaxCount, longName: OptionNames.MaxCount,
             Default = 0,
             HelpText = "Maximum number of times the split can occur.",
-            MetaValue = MetaValues.Number)]
+            MetaValue = MetaValues.Num)]
         public int MaxCount { get; set; }
 
         [Option(longName: OptionNames.NoGroups,
             HelpText = "Do not include groups in the results.")]
         public bool NoGroups { get; set; }
 
-        public bool TryParse(ref SplitCommandOptions options)
+        public bool TryParse(SplitCommandOptions options)
         {
             var baseOptions = (RegexCommandOptions)options;
 
-            if (!TryParse(ref baseOptions))
+            if (!TryParse(baseOptions))
                 return false;
 
             options = (SplitCommandOptions)baseOptions;
