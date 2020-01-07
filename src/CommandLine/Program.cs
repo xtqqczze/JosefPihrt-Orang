@@ -225,14 +225,10 @@ namespace Orang.CommandLine
         {
             var options = new ListPatternsCommandOptions();
 
-            if (!commandLineOptions.TryParse(ref options))
+            if (!commandLineOptions.TryParse(options))
                 return 1;
 
-            var command = new ListPatternsCommand(options);
-
-            CommandResult result = command.Execute();
-
-            return GetExitCode(result.Kind);
+            return Execute(new ListPatternsCommand(options));
         }
 
         private static int ListSyntax(ListSyntaxCommandLineOptions commandLineOptions)

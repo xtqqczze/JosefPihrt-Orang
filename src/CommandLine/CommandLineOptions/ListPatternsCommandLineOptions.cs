@@ -8,7 +8,7 @@ using static Orang.CommandLine.ParseHelpers;
 namespace Orang.CommandLine
 {
     [Verb("list-patterns", HelpText = "Lists all basic patterns that will match specified character.")]
-    internal class ListPatternsCommandLineOptions
+    internal sealed class ListPatternsCommandLineOptions
     {
         [Value(index: 0,
             HelpText = "Character or a decimal number that represents the character. For a number literal use escape like \\1.",
@@ -24,7 +24,7 @@ namespace Orang.CommandLine
             HelpText = "Treat character as if it is in the character group.")]
         public bool CharGroup { get; set; }
 
-        public bool TryParse(ref ListPatternsCommandOptions options)
+        public bool TryParse(ListPatternsCommandOptions options)
         {
             if (!TryParseChar(Value, out char value))
                 return false;

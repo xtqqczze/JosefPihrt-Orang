@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Orang.CommandLine
 {
-    internal class ListPatternsCommandOptions
+    internal sealed class ListPatternsCommandOptions
     {
         internal ListPatternsCommandOptions()
         {
