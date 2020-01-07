@@ -28,11 +28,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.ModifyOptions)]
         public IEnumerable<string> Modify { get; set; }
 
-        public bool TryParse(ref RegexCommandOptions options)
+        public bool TryParse(RegexCommandOptions options)
         {
             var baseOptions = (CommonRegexCommandOptions)options;
 
-            if (!TryParse(ref baseOptions))
+            if (!TryParse(baseOptions))
                 return false;
 
             options = (RegexCommandOptions)baseOptions;

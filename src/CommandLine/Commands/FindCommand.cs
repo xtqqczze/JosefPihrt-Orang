@@ -158,10 +158,10 @@ namespace Orang.CommandLine
                     ExecuteOrAddResult(result, context, directoryPath);
                 }
 
-                if (context.State == SearchState.Canceled)
+                if (context.TerminationReason == TerminationReason.Canceled)
                     break;
 
-                if (context.State == SearchState.MaxReached)
+                if (context.TerminationReason == TerminationReason.MaxReached)
                     break;
             }
         }
@@ -197,7 +197,7 @@ namespace Orang.CommandLine
             context.Telemetry.MatchingFileCount++;
 
             if (Options.MaxMatchingFiles == context.Telemetry.MatchingFileCount)
-                context.State = SearchState.MaxReached;
+                context.TerminationReason = TerminationReason.MaxReached;
 
             if (context.Results != null)
             {
@@ -247,7 +247,7 @@ namespace Orang.CommandLine
                 }
                 catch (OperationCanceledException)
                 {
-                    context.State = SearchState.Canceled;
+                    context.TerminationReason = TerminationReason.Canceled;
                 }
             }
         }
@@ -285,7 +285,7 @@ namespace Orang.CommandLine
                 }
                 catch (OperationCanceledException)
                 {
-                    context.State = SearchState.Canceled;
+                    context.TerminationReason = TerminationReason.Canceled;
                 }
             }
         }
@@ -407,7 +407,7 @@ namespace Orang.CommandLine
             }
             catch (OperationCanceledException)
             {
-                context.State = SearchState.Canceled;
+                context.TerminationReason = TerminationReason.Canceled;
             }
         }
 
@@ -464,7 +464,7 @@ namespace Orang.CommandLine
                 && maxMatches > 0
                 && (maxMatchesInFile == 0 || maxMatches <= maxMatchesInFile))
             {
-                context.State = SearchState.MaxReached;
+                context.TerminationReason = TerminationReason.MaxReached;
             }
 
             if (isPathWritten)
