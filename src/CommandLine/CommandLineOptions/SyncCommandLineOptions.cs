@@ -44,7 +44,7 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            if (!TryParseAsEnum(TargetAction, OptionNames.TargetAction, out TargetExistsAction targetAction, defaultValue: TargetExistsAction.Overwrite, provider: OptionValueProviders.TargetExistsActionProvider))
+            if (!TryParseAsEnum(TargetAction, OptionNames.TargetAction, out TargetExistsAction targetAction, defaultValue: TargetExistsAction.Overwrite, provider: OptionValueProviders.TargetExistsActionProvider_Sync))
                 return false;
 
             options.SearchTarget = SearchTarget.All;

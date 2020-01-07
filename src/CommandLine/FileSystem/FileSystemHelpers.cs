@@ -25,6 +25,28 @@ namespace Orang.FileSystem
             RecurseSubdirectories = true,
         };
 
+        internal static bool IsSubdirectory(string basePath, string path)
+        {
+            return path.Length > basePath.Length
+                && (IsDirectorySeparator(basePath[basePath.Length - 1])
+                    || IsDirectorySeparator(path[basePath.Length]))
+                && path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal static bool UpdateAttributes(string sourcePath, string destinationPath)
+        {
+            FileAttributes sourceAttributes = File.GetAttributes(sourcePath);
+            FileAttributes destinationAttributes = File.GetAttributes(destinationPath);
+
+            if (sourceAttributes != destinationAttributes)
+            {
+                File.SetAttributes(destinationPath, sourceAttributes);
+                return true;
+            }
+
+            return false;
+        }
+
         internal static int IndexOfDirectorySeparator(string path, int start)
         {
             for (int i = start; i < path.Length; i++)
@@ -110,11 +132,6 @@ namespace Orang.FileSystem
         public static IEnumerable<string> EnumerateAllDirectories(string directoryPath)
         {
             return Directory.EnumerateDirectories(directoryPath, "*", _enumerationOptionsRecurse);
-        }
-
-        public static bool FileOrDirectoryExists(string path)
-        {
-            return File.Exists(path) || Directory.Exists(path);
         }
 
         internal static bool TryReadAllText(string path, out string content)

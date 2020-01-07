@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
@@ -12,11 +13,20 @@ namespace Orang.CommandLine
 {
     internal class SyncCommand : CommonCopyCommand<SyncCommandOptions>
     {
+        private HashSet<string> _destinationPaths;
+
         public SyncCommand(SyncCommandOptions options) : base(options)
         {
         }
 
         public override bool CanWriteContent => false;
+
+        protected override void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
+        {
+            base.ExecuteOperation(context, sourcePath, destinationPath, isDirectory, indent);
+
+            _destinationPaths?.Add(destinationPath);
+        }
 
         protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
@@ -30,6 +40,9 @@ namespace Orang.CommandLine
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
+            if (!Options.TwoWay)
+                _destinationPaths = new HashSet<string>();
+
             base.ExecuteDirectory(directoryPath, context);
 
             if (Options.TwoWay)
@@ -44,10 +57,15 @@ namespace Orang.CommandLine
             }
             else
             {
+                Stopwatch sw = Stopwatch.StartNew();
+
                 string indent = GetPathIndent(directoryPath);
 
                 foreach (string path in FileSystemHelpers.EnumerateAllDirectories(Target))
                 {
+                    if (_destinationPaths.Contains(path))
+                        continue;
+
                     string relativePath = path.Substring(Target.Length + 1);
 
                     string sourcePath = Path.Combine(directoryPath, relativePath);
@@ -75,6 +93,9 @@ namespace Orang.CommandLine
 
                 foreach (string path in FileSystemHelpers.EnumerateAllFiles(Target))
                 {
+                    if (_destinationPaths.Contains(path))
+                        continue;
+
                     string relativePath = path.Substring(Target.Length + 1);
 
                     string sourcePath = Path.Combine(directoryPath, relativePath);
@@ -99,6 +120,11 @@ namespace Orang.CommandLine
                         }
                     }
                 }
+
+                sw.Stop();
+                Console.WriteLine(sw.Elapsed);
+
+                _destinationPaths = null;
             }
         }
 

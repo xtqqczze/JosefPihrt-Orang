@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Orang.FileSystem;
+
 namespace Orang.CommandLine
 {
     internal static class OptionValues
@@ -32,6 +34,10 @@ namespace Orang.CommandLine
         public static readonly SimpleOptionValue Display_Summary = SimpleOptionValue.Create("Summary", shortValue: "su", description: "Include summary.");
         public static readonly SimpleOptionValue Display_TrimLine = SimpleOptionValue.Create("TrimLine", description: "Trim leading and trailing white-space from a line.");
         public static readonly SimpleOptionValue Output_Append = SimpleOptionValue.Create("Append", description: "If the file exists output will be appended to the end of the file.");
+        public static readonly SimpleOptionValue TargetExistsAction_Ask = SimpleOptionValue.Create(TargetExistsAction.Ask, description: "Ask when a file or already exists.");
+        public static readonly SimpleOptionValue TargetExistsAction_Overwrite = SimpleOptionValue.Create(TargetExistsAction.Overwrite, description: "Overwrite a file when it already exists.");
+        public static readonly SimpleOptionValue TargetExistsAction_Rename = SimpleOptionValue.Create(TargetExistsAction.Rename, description: "Create new file name if it already exists.");
+        public static readonly SimpleOptionValue TargetExistsAction_Skip = SimpleOptionValue.Create(TargetExistsAction.Skip, description: "Do not copy or move a file if it already exists.");
 
         public static readonly KeyValuePairOptionValue Display_Content = KeyValuePairOptionValue.Create("content", MetaValues.ContentDisplay, shortKey: "c");
         public static readonly KeyValuePairOptionValue Display_Indent = KeyValuePairOptionValue.Create("indent", "<INDENT>", shortKey: "", description: "Indentation for a list of results. Default indentation are 2 spaces.");

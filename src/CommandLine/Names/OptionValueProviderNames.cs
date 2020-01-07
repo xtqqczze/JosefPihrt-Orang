@@ -20,5 +20,6 @@ namespace Orang.CommandLine
         public const string RenameHighlightOptions = nameof(RenameHighlightOptions);
         public const string ReplaceHighlightOptions = nameof(ReplaceHighlightOptions);
         public const string SplitHighlightOptions = nameof(SplitHighlightOptions);
+        public const string TargetExistsAction_Sync = nameof(TargetExistsAction_Sync);
     }
 }

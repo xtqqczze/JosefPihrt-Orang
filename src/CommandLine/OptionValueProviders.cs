@@ -339,10 +339,16 @@ namespace Orang.CommandLine
         );
 
         public static OptionValueProvider TargetExistsActionProvider { get; } = new OptionValueProvider(MetaValues.TargetAction,
-            SimpleOptionValue.Create(TargetExistsAction.Ask, description: "Ask when a file or already exists."),
-            SimpleOptionValue.Create(TargetExistsAction.Overwrite, description: "Overwrite a file when it already exists."),
-            SimpleOptionValue.Create(TargetExistsAction.Rename, description: "Create new file name if it already exists."),
-            SimpleOptionValue.Create(TargetExistsAction.Skip, description: "Do not copy or move a file if it already exists.")
+            OptionValues.TargetExistsAction_Ask,
+            OptionValues.TargetExistsAction_Overwrite,
+            OptionValues.TargetExistsAction_Rename,
+            OptionValues.TargetExistsAction_Skip
+        );
+
+        public static OptionValueProvider TargetExistsActionProvider_Sync { get; } = new OptionValueProvider(OptionValueProviderNames.TargetExistsAction_Sync,
+            OptionValues.TargetExistsAction_Ask,
+            OptionValues.TargetExistsAction_Overwrite,
+            OptionValues.TargetExistsAction_Skip
         );
 
         public static OptionValueProvider FileCompareOptionsProvider { get; } = new OptionValueProvider(MetaValues.CompareOptions,

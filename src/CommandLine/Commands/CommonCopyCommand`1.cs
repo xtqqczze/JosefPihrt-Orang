@@ -33,8 +33,8 @@ namespace Orang.CommandLine
 
             string pathNormalized = directoryPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
-            if (Options.TargetNormalized.StartsWith(pathNormalized, StringComparison.OrdinalIgnoreCase)
-                || pathNormalized.StartsWith(Options.TargetNormalized, StringComparison.OrdinalIgnoreCase))
+            if (FileSystemHelpers.IsSubdirectory(Options.TargetNormalized, pathNormalized)
+                || FileSystemHelpers.IsSubdirectory(pathNormalized, Options.TargetNormalized))
             {
                 WriteWarning("Source directory cannot be subdirectory of a destination directory or vice versa.");
                 return;
@@ -101,7 +101,7 @@ namespace Orang.CommandLine
             }
         }
 
-        private void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
+        protected virtual void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
         {
             bool overwrite = false;
             bool pathWritten = false;
@@ -214,7 +214,22 @@ namespace Orang.CommandLine
 
                         Directory.CreateDirectory(destinationPath);
 
+                        FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
+
                         context.Telemetry.AddedCount++;
+                    }
+                }
+                else if (!Options.DryRun)
+                {
+                    if (FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath))
+                    {
+                        if (!Options.OmitPath
+                            && !pathWritten)
+                        {
+                            WritePath(destinationPath, OperationKind.Update, indent);
+                        }
+
+                        context.Telemetry.UpdatedCount++;
                     }
                 }
             }
