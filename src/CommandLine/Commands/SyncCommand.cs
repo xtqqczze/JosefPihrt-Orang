@@ -57,8 +57,6 @@ namespace Orang.CommandLine
             }
             else
             {
-                Stopwatch sw = Stopwatch.StartNew();
-
                 string indent = GetPathIndent(directoryPath);
 
                 foreach (string path in FileSystemHelpers.EnumerateAllDirectories(Target))
@@ -120,9 +118,6 @@ namespace Orang.CommandLine
                         }
                     }
                 }
-
-                sw.Stop();
-                Console.WriteLine(sw.Elapsed);
 
                 _destinationPaths = null;
             }
