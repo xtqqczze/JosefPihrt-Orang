@@ -1,6 +1,6 @@
 ﻿# `orang sync`
 
-Synchronizes content of one directory with another directory\.
+Synchronizes content of two directories\.
 
 ## Synopsis
 

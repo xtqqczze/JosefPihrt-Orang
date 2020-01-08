@@ -6,7 +6,7 @@ using static Orang.CommandLine.ParseHelpers;
 
 namespace Orang.CommandLine
 {
-    [Verb("sync", HelpText = "Synchronizes content of one directory with another directory.")]
+    [Verb("sync", HelpText = "Synchronizes content of two directories.")]
     internal sealed class SyncCommandLineOptions : CommonCopyCommandLineOptions
     {
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
