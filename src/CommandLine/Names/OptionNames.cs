@@ -31,6 +31,7 @@ namespace Orang.CommandLine
         public const string Input = "input";
         public const string Manual = "manual";
         public const string MaxCount = "max-count";
+        public const string Mode = "mode";
         public const string Name = "name";
         public const string NoGroups = "no-groups";
         public const string NoRecurse = "no-recurse";
@@ -45,7 +46,6 @@ namespace Orang.CommandLine
         public const string Sort = "sort";
         public const string Target = "target";
         public const string Timeout = "timeout";
-        public const string TwoWay = "two-way";
         public const string Values = "values";
         public const string Verbosity = "verbosity";
 

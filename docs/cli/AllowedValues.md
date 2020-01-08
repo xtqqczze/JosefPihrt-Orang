@@ -15,6 +15,7 @@
 * [\<PATTERN_OPTIONS>](#pattern-options)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
+* [\<SYNC_MODE>](#sync-mode)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
 * [\<TARGET_ACTION>](#target-action)
 * [\<VERBOSITY>](#verbosity)
@@ -202,6 +203,14 @@
 | m\[odified\-\]t\[ime\] | Sort items by last modified time\. |
 | n\[ame\]               | Sort items by full name\.          |
 | s\[ize\]               | Sort items by size\.               |
+
+## \<SYNC\_MODE>
+
+| Value           | Description                                                                             |
+| --------------- | --------------------------------------------------------------------------------------- |
+| s\[ynchronize\] | Compares the two folders and makes sure they have exactly the same content\.            |
+| e\[cho\]        | Looks for changes in the left folder and makes the right folder match the left folder\. |
+| c\[ontribute\]  | Similar to 'echo' mode, but it does not delete any files\.                              |
 
 ## \<SYNTAX\_SECTIONS>
 

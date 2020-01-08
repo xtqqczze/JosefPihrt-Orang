@@ -19,9 +19,10 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
-        [Option(longName: OptionNames.TwoWay,
-            HelpText = "Synchronize directories in both directions.")]
-        public bool TwoWay { get; set; }
+        [Option(longName: OptionNames.Mode,
+            HelpText = "Synchronization mode to be used.",
+            MetaValue = MetaValues.SyncMode)]
+        public string Mode { get; set; }
 
         public bool TryParse(SyncCommandOptions options)
         {
@@ -47,13 +48,16 @@ namespace Orang.CommandLine
             if (!TryParseAsEnum(TargetAction, OptionNames.TargetAction, out TargetExistsAction targetAction, defaultValue: TargetExistsAction.Overwrite, provider: OptionValueProviders.TargetExistsActionProvider_Sync))
                 return false;
 
+            if (!TryParseAsEnum(Mode, OptionNames.Mode, out SyncMode syncMode, defaultValue: SyncMode.Synchronize, provider: OptionValueProviders.SyncModeProvider))
+                return false;
+
             options.SearchTarget = SearchTarget.All;
 
             options.CompareOptions = compareOptions;
             options.DryRun = DryRun;
             options.Target = target;
             options.TargetAction = targetAction;
-            options.TwoWay = TwoWay;
+            options.SyncMode = syncMode;
 
             return true;
         }

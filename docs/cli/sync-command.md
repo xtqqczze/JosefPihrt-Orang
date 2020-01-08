@@ -19,6 +19,7 @@ orang sync [<PATH>]
 [-t|--highlight]          <HIGHLIGHT>
 [-i|--include-directory]  <REGEX>
 [-m|--max-count]          <MAX_OPTIONS>
+[   --mode]               <SYNC_MODE>
 [-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
@@ -28,7 +29,6 @@ orang sync [<PATH>]
 [-s|--sort]               <SORT_OPTIONS>
     --target              <DIRECTORY_PATH>
 [   --target-action]      <TARGET_ACTION>
-[   --two-way]
 [-v|--verbosity]          <VERBOSITY>
 ```
 
@@ -92,6 +92,10 @@ Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTI
 
 Stop searching after specified number is reached\. Allowed values are \<NUM>, m\[atches\]=\<NUM> and m\[atching\-\]f\[iles\]\.
 
+**`[--mode] <SYNC_MODE>`**
+
+Synchronization mode to be used\. Allowed values are s\[ynchronize\], e\[cho\] and c\[ontribute\]\.
+
 **`[-n|--name] <REGEX>`**
 
 Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
@@ -127,10 +131,6 @@ A directory to be synchronized\.
 **`[--target-action] <TARGET_ACTION>`**
 
 Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
-
-**`[--two-way]`**
-
-Synchronize directories in both directions\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 

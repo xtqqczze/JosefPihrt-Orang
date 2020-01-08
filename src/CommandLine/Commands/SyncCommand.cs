@@ -44,7 +44,7 @@ namespace Orang.CommandLine
 
             base.ExecuteDirectory(directoryPath, context);
 
-            if (Options.TwoWay)
+            if (Options.SyncMode == SyncMode.Synchronize)
             {
                 IgnoredPaths = _destinationPaths;
                 _destinationPaths = null;
@@ -59,7 +59,7 @@ namespace Orang.CommandLine
 
                 IgnoredPaths = null;
             }
-            else
+            else if (Options.SyncMode == SyncMode.Echo)
             {
                 string indent = GetPathIndent(directoryPath);
 
@@ -124,6 +124,10 @@ namespace Orang.CommandLine
                 }
 
                 _destinationPaths = null;
+            }
+            else
+            {
+                Debug.Assert(Options.SyncMode == SyncMode.Contribute, Options.SyncMode.ToString());
             }
         }
 
