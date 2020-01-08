@@ -40,13 +40,15 @@ namespace Orang.CommandLine
 
         protected override void ExecuteDirectory(string directoryPath, SearchContext context)
         {
-            if (!Options.TwoWay)
-                _destinationPaths = new HashSet<string>();
+            _destinationPaths = new HashSet<string>(FileSystemHelpers.Comparer);
 
             base.ExecuteDirectory(directoryPath, context);
 
             if (Options.TwoWay)
             {
+                IgnoredPaths = _destinationPaths;
+                _destinationPaths = null;
+
                 string target = directoryPath;
                 directoryPath = Target;
 
@@ -54,6 +56,8 @@ namespace Orang.CommandLine
                 Options.Target = target;
 
                 base.ExecuteDirectory(directoryPath, context);
+
+                IgnoredPaths = null;
             }
             else
             {

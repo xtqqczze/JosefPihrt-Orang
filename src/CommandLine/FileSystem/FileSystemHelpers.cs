@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Orang.CommandLine;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace Orang.FileSystem
 {
@@ -25,12 +27,34 @@ namespace Orang.FileSystem
             RecurseSubdirectories = true,
         };
 
+        public static bool IsCaseSensitive { get; } = GetIsCaseSensitive();
+
+        public static StringComparer Comparer { get; } = (IsCaseSensitive) ? StringComparer.CurrentCulture : StringComparer.CurrentCultureIgnoreCase;
+
+        public static StringComparison Comparison { get; } = (IsCaseSensitive) ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase;
+
+        private static bool GetIsCaseSensitive()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return false;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return true;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return true;
+
+            Debug.Fail(RuntimeInformation.OSDescription);
+
+            return true;
+        }
+
         internal static bool IsSubdirectory(string basePath, string path)
         {
             return path.Length > basePath.Length
                 && (IsDirectorySeparator(basePath[basePath.Length - 1])
                     || IsDirectorySeparator(path[basePath.Length]))
-                && path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
+                && path.StartsWith(basePath, Comparison);
         }
 
         internal static bool UpdateAttributes(string sourcePath, string destinationPath)

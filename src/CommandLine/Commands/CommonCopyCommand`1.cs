@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -23,6 +24,8 @@ namespace Orang.CommandLine
             get { return Options.TargetAction; }
             private set { Options.TargetAction = value; }
         }
+
+        protected HashSet<string> IgnoredPaths { get; set; }
 
         protected abstract void ExecuteOperation(string sourcePath, string destinationPath);
 
@@ -77,7 +80,7 @@ namespace Orang.CommandLine
             if (result.IsDirectory
                 || (baseDirectoryPath != null && !Options.Flat))
             {
-                Debug.Assert(sourcePath.StartsWith(baseDirectoryPath, StringComparison.OrdinalIgnoreCase));
+                Debug.Assert(sourcePath.StartsWith(baseDirectoryPath, FileSystemHelpers.Comparison));
 
                 string relativePath = sourcePath.Substring(baseDirectoryPath.Length + 1);
 
@@ -89,6 +92,9 @@ namespace Orang.CommandLine
 
                 destinationPath = Path.Combine(Target, fileName);
             }
+
+            if (IgnoredPaths?.Contains(sourcePath) == true)
+                return;
 
             try
             {
@@ -106,7 +112,7 @@ namespace Orang.CommandLine
             bool overwrite = false;
             bool pathWritten = false;
             bool fileExists = File.Exists(destinationPath);
-            bool directoryExists = (fileExists) ? false : Directory.Exists(destinationPath);
+            bool directoryExists = !fileExists && Directory.Exists(destinationPath);
 
             switch (TargetAction)
             {
