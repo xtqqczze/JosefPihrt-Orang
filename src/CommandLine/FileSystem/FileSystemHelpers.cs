@@ -49,6 +49,43 @@ namespace Orang.FileSystem
             return true;
         }
 
+        //TODO: ?
+        internal static bool FileEquals(string path1, string path2, FileCompareOptions options)
+        {
+            if ((options & FileCompareOptions.ModifiedTime) != 0
+                && File.GetLastWriteTimeUtc(path1) != File.GetLastWriteTimeUtc(path2))
+            {
+                return false;
+            }
+
+            if ((options & FileCompareOptions.Attributes) != 0
+                && File.GetAttributes(path1) != File.GetAttributes(path2))
+            {
+                return false;
+            }
+
+            if ((options & (FileCompareOptions.Size | FileCompareOptions.Content)) != 0)
+            {
+                using (var fs1 = new FileStream(path1, FileMode.Open, FileAccess.Read))
+                using (var fs2 = new FileStream(path2, FileMode.Open, FileAccess.Read))
+                {
+                    if ((options & FileCompareOptions.Size) != 0
+                        && fs1.Length != fs2.Length)
+                    {
+                        return false;
+                    }
+
+                    if ((options & FileCompareOptions.Content) != 0
+                        && !StreamComparer.Default.ByteEquals(fs1, fs2))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         internal static bool IsSubdirectory(string basePath, string path)
         {
             return path.Length > basePath.Length
@@ -148,14 +185,19 @@ namespace Orang.FileSystem
             }
         }
 
-        public static IEnumerable<string> EnumerateAllFiles(string directoryPath)
+        public static IEnumerable<string> EnumerateTopFiles(string directoryPath, string searchPattern = null)
         {
-            return Directory.EnumerateFiles(directoryPath, "*", _enumerationOptionsRecurse);
+            return Directory.EnumerateFiles(directoryPath, searchPattern ?? "*", _enumerationOptionsNoRecurse);
         }
 
-        public static IEnumerable<string> EnumerateAllDirectories(string directoryPath)
+        public static IEnumerable<string> EnumerateAllFiles(string directoryPath, string searchPattern = null)
         {
-            return Directory.EnumerateDirectories(directoryPath, "*", _enumerationOptionsRecurse);
+            return Directory.EnumerateFiles(directoryPath, searchPattern ?? "*", _enumerationOptionsRecurse);
+        }
+
+        public static IEnumerable<string> EnumerateAllDirectories(string directoryPath, string searchPattern = null)
+        {
+            return Directory.EnumerateDirectories(directoryPath, searchPattern ?? "*", _enumerationOptionsRecurse);
         }
 
         internal static bool TryReadAllText(string path, out string content)

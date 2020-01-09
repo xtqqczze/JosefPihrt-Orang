@@ -15,21 +15,288 @@ namespace Orang.CommandLine
     {
         private HashSet<string> _destinationPaths;
 
+        private static readonly ImmutableDictionary<string, DialogResult> _dialogResultMap = CreateDialogResultMap();
+
+        private static ImmutableDictionary<string, DialogResult> CreateDialogResultMap()
+        {
+            ImmutableDictionary<string, DialogResult>.Builder builder = ImmutableDictionary.CreateBuilder<string, DialogResult>();
+
+            builder.Add("s", DialogResult.Source);
+            builder.Add("sa", DialogResult.AlwaysSource);
+            builder.Add("t", DialogResult.Target);
+            builder.Add("ta", DialogResult.AlwaysTarget);
+            builder.Add("c", DialogResult.Cancel);
+
+            return builder.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
+        }
+
         public SyncCommand(SyncCommandOptions options) : base(options)
         {
         }
 
         public override bool CanWriteContent => false;
 
+        public SyncPreference SyncPreference
+        {
+            get { return Options.SyncPreference; }
+            private set { Options.SyncPreference = value; }
+        }
+
         protected override void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
         {
-            base.ExecuteOperation(context, sourcePath, destinationPath, isDirectory, indent);
+            if (Options.SyncMode == SyncMode.Synchronize)
+            {
+                Synchronize(context, sourcePath, destinationPath, isDirectory, indent);
+            }
+            else
+            {
+                base.ExecuteOperation(context, sourcePath, destinationPath, isDirectory, indent);
+            }
+        }
+
+        private void Synchronize(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
+        {
+            bool fileExists = File.Exists(destinationPath);
+            bool directoryExists = !fileExists && Directory.Exists(destinationPath);
+
+            bool? preferTarget = null;
+
+            if (isDirectory)
+            {
+                if (directoryExists
+                    && File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
+                {
+                    return;
+                }
+            }
+            else if (Options.PreferNewer
+                && fileExists)
+            {
+                //TODO: inline
+                DateTime dt1 = File.GetLastWriteTimeUtc(sourcePath);
+                DateTime dt2 = File.GetLastWriteTimeUtc(destinationPath);
+
+                int diff = dt1.CompareTo(dt2);
+
+                if (diff > 0)
+                {
+                    preferTarget = false;
+                }
+                else if (diff < 0)
+                {
+                    preferTarget = true;
+                }
+            }
+
+
+            if (preferTarget == null)
+            {
+                if (SyncPreference == SyncPreference.Ask)
+                {
+                    if (isDirectory)
+                    {
+                        if (directoryExists
+                            && File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
+                        {
+                            return;
+                        }
+                    }
+                    else if (fileExists)
+                    {
+                        if (FileEquals())
+                            return;
+                    }
+
+                    WritePathPrefix(sourcePath, "S  ", default, indent);
+                    WritePathPrefix(destinationPath, "T  ", default, indent);
+
+                    DialogResult dialogResult = GetDialogResult(indent);
+
+                    switch (dialogResult)
+                    {
+                        case DialogResult.None:
+                        case DialogResult.Source:
+                            {
+                                preferTarget = false;
+                                break;
+                            }
+                        case DialogResult.AlwaysSource:
+                            {
+                                preferTarget = false;
+                                SyncPreference = SyncPreference.Source;
+                                break;
+                            }
+                        case DialogResult.Target:
+                            {
+                                preferTarget = true;
+                                break;
+                            }
+                        case DialogResult.AlwaysTarget:
+                            {
+                                preferTarget = true;
+                                SyncPreference = SyncPreference.Target;
+                                break;
+                            }
+                        case DialogResult.Cancel:
+                            {
+                                context.TerminationReason = TerminationReason.Canceled;
+                                return;
+                            }
+                        default:
+                            {
+                                throw new InvalidOperationException($"Unknown enum value '{dialogResult}'.");
+                            }
+                    }
+                }
+                else if (SyncPreference == SyncPreference.Source)
+                {
+                    preferTarget = false;
+                }
+                else if (SyncPreference == SyncPreference.Target)
+                {
+                    preferTarget = true;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unknown enum value '{Options.SyncPreference}'.");
+                }
+            }
+
+            if (isDirectory)
+            {
+                if (preferTarget == true)
+                {
+                    if (directoryExists)
+                    {
+                        WritePath(sourcePath, OperationKind.Update, indent);
+                        FileSystemHelpers.UpdateAttributes(destinationPath, sourcePath);
+                        context.Telemetry.UpdatedCount++;
+                    }
+                    else
+                    {
+                        WritePath(sourcePath, OperationKind.Delete, indent);
+                        DeleteDirectory(sourcePath);
+                        context.Telemetry.DeletedCount++;
+
+                        if (fileExists)
+                        {
+                            WritePath(sourcePath, OperationKind.Add, indent);
+                            CopyFile(destinationPath, sourcePath);
+                            context.Telemetry.AddedCount++;
+                        }
+                    }
+                }
+                else if (directoryExists)
+                {
+                    WritePath(destinationPath, OperationKind.Update, indent);
+                    FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
+                    context.Telemetry.UpdatedCount++;
+                }
+                else
+                {
+                    if (fileExists)
+                    {
+                        WritePath(destinationPath, OperationKind.Delete, indent);
+                        DeleteFile(destinationPath);
+                        context.Telemetry.DeletedCount++;
+                    }
+
+                    WritePath(destinationPath, OperationKind.Add, indent);
+                    CreateDirectory(destinationPath);
+                    context.Telemetry.AddedCount++;
+                }
+            }
+            else if (preferTarget == true)
+            {
+                WritePath(sourcePath, (fileExists) ? OperationKind.Update : OperationKind.Delete, indent);
+                DeleteFile(sourcePath);
+
+                if (!fileExists)
+                    context.Telemetry.DeletedCount++;
+
+                if (fileExists)
+                {
+                    CopyFile(destinationPath, sourcePath);
+                    context.Telemetry.UpdatedCount++;
+                }
+                else if (directoryExists)
+                {
+                    WritePath(sourcePath, OperationKind.Add, indent);
+                    CreateDirectory(sourcePath);
+                    context.Telemetry.AddedCount++;
+                }
+            }
+            else
+            {
+                if (fileExists)
+                {
+                    WritePath(destinationPath, OperationKind.Update, indent);
+                    DeleteFile(destinationPath);
+                }
+                else if (directoryExists)
+                {
+                    WritePath(destinationPath, OperationKind.Delete, indent);
+                    DeleteDirectory(destinationPath);
+                    context.Telemetry.DeletedCount++;
+                }
+
+                if (!fileExists)
+                    WritePath(destinationPath, OperationKind.Add, indent);
+
+                CopyFile(sourcePath, destinationPath);
+
+                if (fileExists)
+                {
+                    context.Telemetry.UpdatedCount++;
+                }
+                else
+                {
+                    context.Telemetry.AddedCount++;
+                }
+            }
 
             _destinationPaths?.Add(destinationPath);
+
+            bool FileEquals()
+            {
+                return Options.CompareOptions != FileCompareOptions.None
+                    && FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
+            }
+
+            void DeleteDirectory(string path)
+            {
+                if (!Options.DryRun)
+                    Directory.Delete(path, recursive: true);
+            }
+
+            void CreateDirectory(string path)
+            {
+                if (!Options.DryRun)
+                    Directory.CreateDirectory(path);
+            }
+
+            void DeleteFile(string path)
+            {
+                if (!Options.DryRun)
+                    File.Delete(path);
+            }
+
+            void CopyFile(string sourcePath, string destinationPath)
+            {
+                if (!Options.DryRun)
+                    File.Copy(sourcePath, destinationPath);
+            }
+
+            static void UpdateAttributes(string sourcePath, string destinationPath)
+            {
+                FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
+            }
         }
 
         protected override void ExecuteOperation(string sourcePath, string destinationPath)
         {
+            Debug.Assert(Options.SyncMode != SyncMode.Synchronize);
+
             File.Copy(sourcePath, destinationPath);
         }
 
@@ -55,6 +322,7 @@ namespace Orang.CommandLine
                 Options.Paths = ImmutableArray.Create(directoryPath);
                 Options.Target = target;
 
+                //TODO: prohodit SyncPreference
                 base.ExecuteDirectory(directoryPath, context);
 
                 IgnoredPaths = null;
@@ -206,6 +474,36 @@ namespace Orang.CommandLine
             Write("  ", verbosity);
 
             WriteLine(verbosity);
+        }
+
+        private DialogResult GetDialogResult(string indent)
+        {
+            ConsoleOut.Write(indent);
+            ConsoleOut.Write("Prefer source or target?  (S[A]/T[A]/C):");
+
+            string s = Console.ReadLine()?.Trim();
+
+            if (s != null)
+            {
+                if (_dialogResultMap.TryGetValue(s, out DialogResult dialogResult))
+                    return dialogResult;
+            }
+            else
+            {
+                ConsoleOut.WriteLine();
+            }
+
+            return DialogResult.None;
+        }
+
+        private enum DialogResult
+        {
+            None = 0,
+            Source = 1,
+            AlwaysSource = 2,
+            Target = 3,
+            AlwaysTarget = 4,
+            Cancel = 5,
         }
     }
 }

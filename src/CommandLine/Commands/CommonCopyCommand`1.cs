@@ -332,38 +332,7 @@ namespace Orang.CommandLine
 
         private bool FileEquals(string path1, string path2)
         {
-            if (Options.CompareModifiedTime
-                && File.GetLastWriteTimeUtc(path1) != File.GetLastWriteTimeUtc(path2))
-            {
-                return false;
-            }
-
-            if (Options.CompareAttributes
-                && File.GetAttributes(path1) != File.GetAttributes(path2))
-            {
-                return false;
-            }
-
-            if (Options.CompareSize || Options.CompareContent)
-            {
-                using (var fs1 = new FileStream(path1, FileMode.Open, FileAccess.Read))
-                using (var fs2 = new FileStream(path2, FileMode.Open, FileAccess.Read))
-                {
-                    if (Options.CompareSize
-                        && fs1.Length != fs2.Length)
-                    {
-                        return false;
-                    }
-
-                    if (Options.CompareContent
-                        && !StreamComparer.Default.ByteEquals(fs1, fs2))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
+            return FileSystemHelpers.FileEquals(path1, path2, Options.CompareOptions);
         }
 
         protected enum OperationKind
