@@ -16,21 +16,6 @@ namespace Orang.CommandLine
         private HashSet<string> _destinationPaths;
         private bool _canUpdate;
 
-        private static readonly ImmutableDictionary<string, DialogResult> _dialogResultMap = CreateDialogResultMap();
-
-        private static ImmutableDictionary<string, DialogResult> CreateDialogResultMap()
-        {
-            ImmutableDictionary<string, DialogResult>.Builder builder = ImmutableDictionary.CreateBuilder<string, DialogResult>();
-
-            builder.Add("s", DialogResult.Source);
-            builder.Add("sa", DialogResult.AlwaysSource);
-            builder.Add("t", DialogResult.Target);
-            builder.Add("ta", DialogResult.AlwaysTarget);
-            builder.Add("c", DialogResult.Cancel);
-
-            return builder.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
-        }
-
         public SyncCommand(SyncCommandOptions options) : base(options)
         {
             Preference = (options.TargetAction == TargetExistsAction.Ask) ? SyncPreference.Ask : SyncPreference.Source;
@@ -102,31 +87,31 @@ namespace Orang.CommandLine
                     WritePathPrefix(sourcePath, "S  ", default, indent);
                     WritePathPrefix(destinationPath, "T  ", default, indent);
 
-                    DialogResult dialogResult = GetDialogResult(indent);
+                    DialogResult dialogResult = ConsoleHelpers.QuestionWithResult("Prefer target directory?", indent);
 
                     switch (dialogResult)
                     {
-                        case DialogResult.None:
-                        case DialogResult.Source:
-                            {
-                                preferTarget = false;
-                                break;
-                            }
-                        case DialogResult.AlwaysSource:
-                            {
-                                preferTarget = false;
-                                Preference = SyncPreference.Source;
-                                break;
-                            }
-                        case DialogResult.Target:
+                        case DialogResult.Yes:
                             {
                                 preferTarget = true;
                                 break;
                             }
-                        case DialogResult.AlwaysTarget:
+                        case DialogResult.YesToAll:
                             {
                                 preferTarget = true;
                                 Preference = SyncPreference.Target;
+                                break;
+                            }
+                        case DialogResult.No:
+                        case DialogResult.None:
+                            {
+                                preferTarget = false;
+                                break;
+                            }
+                        case DialogResult.NoToAll:
+                            {
+                                preferTarget = false;
+                                Preference = SyncPreference.Source;
                                 break;
                             }
                         case DialogResult.Cancel:
@@ -477,36 +462,6 @@ namespace Orang.CommandLine
             Write("  ", verbosity);
 
             WriteLine(verbosity);
-        }
-
-        private DialogResult GetDialogResult(string indent)
-        {
-            ConsoleOut.Write(indent);
-            ConsoleOut.Write("Prefer source or target?  (S[A]/T[A]/C):");
-
-            string s = Console.ReadLine()?.Trim();
-
-            if (s != null)
-            {
-                if (_dialogResultMap.TryGetValue(s, out DialogResult dialogResult))
-                    return dialogResult;
-            }
-            else
-            {
-                ConsoleOut.WriteLine();
-            }
-
-            return DialogResult.None;
-        }
-
-        private enum DialogResult
-        {
-            None = 0,
-            Source = 1,
-            AlwaysSource = 2,
-            Target = 3,
-            AlwaysTarget = 4,
-            Cancel = 5,
         }
 
         private enum SyncPreference

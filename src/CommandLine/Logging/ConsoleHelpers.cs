@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using static Orang.Logger;
 
 namespace Orang.CommandLine
@@ -11,16 +12,36 @@ namespace Orang.CommandLine
     internal static class ConsoleHelpers
     {
         private static readonly ImmutableDictionary<string, DialogResult> _dialogResultMap = CreateDialogResultMap();
+        private static readonly ImmutableDictionary<string, DialogResult> _yesNoCancelMap = CreateYesNoCancelMap();
 
         private static ImmutableDictionary<string, DialogResult> CreateDialogResultMap()
         {
             ImmutableDictionary<string, DialogResult>.Builder builder = ImmutableDictionary.CreateBuilder<string, DialogResult>();
 
             builder.Add("y", DialogResult.Yes);
+            builder.Add("yes", DialogResult.Yes);
             builder.Add("ya", DialogResult.YesToAll);
+            builder.Add("yes to all", DialogResult.YesToAll);
             builder.Add("n", DialogResult.No);
+            builder.Add("no", DialogResult.No);
             builder.Add("na", DialogResult.NoToAll);
+            builder.Add("no to all", DialogResult.NoToAll);
             builder.Add("c", DialogResult.Cancel);
+            builder.Add("cancel", DialogResult.Cancel);
+
+            return builder.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static ImmutableDictionary<string, DialogResult> CreateYesNoCancelMap()
+        {
+            ImmutableDictionary<string, DialogResult>.Builder builder = ImmutableDictionary.CreateBuilder<string, DialogResult>();
+
+            builder.Add("y", DialogResult.Yes);
+            builder.Add("yes", DialogResult.Yes);
+            builder.Add("n", DialogResult.No);
+            builder.Add("no", DialogResult.No);
+            builder.Add("c", DialogResult.Cancel);
+            builder.Add("cancel", DialogResult.Cancel);
 
             return builder.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
         }
@@ -64,51 +85,52 @@ namespace Orang.CommandLine
             if (!condition)
                 return true;
 
-            ConsoleOut.Write(indent);
-            ConsoleOut.Write(question);
-            ConsoleOut.Write(" (Y/N/C): ");
-
-            switch (Console.ReadLine()?.Trim())
+            return (QuestionWithResult(question, " (Y/N/C): ", "y (yes), n (no), c (cancel)", _yesNoCancelMap, indent)) switch
             {
-                case "y":
-                case "Y":
-                    {
-                        return true;
-                    }
-                case "c":
-                case "C":
-                    {
-                        throw new OperationCanceledException();
-                    }
-                case null:
-                    {
-                        ConsoleOut.WriteLine();
-                        break;
-                    }
-            }
-
-            return false;
+                DialogResult.Yes => true,
+                DialogResult.No => false,
+                DialogResult.Cancel => throw new OperationCanceledException(),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         public static DialogResult QuestionWithResult(string question, string indent = null)
         {
-            ConsoleOut.Write(indent);
-            ConsoleOut.Write(question);
-            ConsoleOut.Write(" (Y[A]/N[A]/C): ");
+            return QuestionWithResult(question, " (Y[A]/N[A]/C): ", "y (yes), ya (yes to all), n (no), na (no to all), c (cancel)", _dialogResultMap, indent);
+        }
 
-            string s = Console.ReadLine()?.Trim();
-
-            if (s != null)
+        private static DialogResult QuestionWithResult(
+            string question,
+            string suffix,
+            string helpText,
+            ImmutableDictionary<string, DialogResult> map,
+            string indent)
+        {
+            while (true)
             {
-                if (_dialogResultMap.TryGetValue(s, out DialogResult dialogResult))
-                    return dialogResult;
-            }
-            else
-            {
-                ConsoleOut.WriteLine();
-            }
+                ConsoleOut.Write(indent);
+                ConsoleOut.Write(question);
+                ConsoleOut.Write(suffix);
 
-            return DialogResult.None;
+                string s = Console.ReadLine()?.Trim();
+
+                if (s != null)
+                {
+                    if (s.Length == 0)
+                        return DialogResult.None;
+
+                    if (map.TryGetValue(s, out DialogResult dialogResult))
+                        return dialogResult;
+                }
+                else
+                {
+                    ConsoleOut.WriteLine();
+                    return DialogResult.None;
+                }
+
+                ConsoleOut.Write(indent);
+                ConsoleOut.WriteLine($"Value '{s}' is invalid. Allowed values are: {helpText}");
+            }
         }
     }
 }
