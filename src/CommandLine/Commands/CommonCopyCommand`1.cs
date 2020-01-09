@@ -285,7 +285,7 @@ namespace Orang.CommandLine
             {
                 return isDirectory
                     || Options.CompareOptions == FileCompareOptions.None
-                    || !FileEquals(sourcePath, destinationPath);
+                    || !FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
             }
 
             static string CreateNewFile(string path)
@@ -328,11 +328,6 @@ namespace Orang.CommandLine
             string indent)
         {
             LogHelpers.WriteFileError(ex, path, relativePath: Options.DisplayRelativePath, indent: indent);
-        }
-
-        private bool FileEquals(string path1, string path2)
-        {
-            return FileSystemHelpers.FileEquals(path1, path2, Options.CompareOptions);
         }
 
         protected enum OperationKind

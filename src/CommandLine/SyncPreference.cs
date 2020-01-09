@@ -2,10 +2,11 @@
 
 namespace Orang.CommandLine
 {
-    internal enum SyncPreference
-    {
-        Source = 0,
-        Target = 1,
-        Ask = 2
-    }
+    //TODO: del
+    //internal enum SyncPreference
+    //{
+    //    Source = 0,
+    //    Target = 1,
+    //    Ask = 2
+    //}
 }

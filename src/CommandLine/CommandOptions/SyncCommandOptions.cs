@@ -11,7 +11,5 @@ namespace Orang.CommandLine
         }
 
         public SyncMode SyncMode { get; internal set; }
-
-        public SyncPreference SyncPreference { get; internal set; }
     }
 }

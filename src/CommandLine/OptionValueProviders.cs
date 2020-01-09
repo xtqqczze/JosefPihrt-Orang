@@ -365,12 +365,6 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(SyncMode.Contribute, description: "Similar to 'echo' mode, but it does not delete any files.")
         );
 
-        public static OptionValueProvider SyncPreferenceProvider { get; } = new OptionValueProvider(MetaValues.SyncPreference,
-            SimpleOptionValue.Create(SyncPreference.Source, description: ""),
-            SimpleOptionValue.Create(SyncPreference.Target, description: ""),
-            SimpleOptionValue.Create(SyncPreference.Ask, description: "")
-        );
-
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName
         {
             get
