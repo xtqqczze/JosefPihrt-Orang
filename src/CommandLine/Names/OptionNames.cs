@@ -39,6 +39,7 @@ namespace Orang.CommandLine
         public const string Output = "output";
         public const string TargetAction = "target-action";
         public const string PathsFrom = "paths-from";
+        public const string Prefer = "prefer";
         public const string Progress = "progress";
         public const string Properties = "properties";
         public const string Replacement = "replacement";

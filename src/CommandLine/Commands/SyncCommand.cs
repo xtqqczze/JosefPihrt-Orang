@@ -14,6 +14,7 @@ namespace Orang.CommandLine
     internal class SyncCommand : CommonCopyCommand<SyncCommandOptions>
     {
         private HashSet<string> _destinationPaths;
+        private bool _canUpdate;
 
         private static readonly ImmutableDictionary<string, DialogResult> _dialogResultMap = CreateDialogResultMap();
 
@@ -63,20 +64,21 @@ namespace Orang.CommandLine
 
             if (isDirectory)
             {
-                if (directoryExists
-                    && File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
+                if (directoryExists)
                 {
-                    return;
+                    if (!_canUpdate)
+                        return;
+
+                    if (File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
+                        return;
                 }
             }
-            else if (Options.PreferNewer
-                && fileExists)
+            else if (fileExists)
             {
-                //TODO: inline
-                DateTime dt1 = File.GetLastWriteTimeUtc(sourcePath);
-                DateTime dt2 = File.GetLastWriteTimeUtc(destinationPath);
+                if (!_canUpdate)
+                    return;
 
-                int diff = dt1.CompareTo(dt2);
+                int diff = File.GetLastWriteTimeUtc(sourcePath).CompareTo(File.GetLastWriteTimeUtc(destinationPath));
 
                 if (diff > 0)
                 {
@@ -88,25 +90,18 @@ namespace Orang.CommandLine
                 }
             }
 
-
             if (preferTarget == null)
             {
+                if (!isDirectory
+                    && fileExists
+                    && Options.CompareOptions != FileCompareOptions.None
+                    && FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions))
+                {
+                    return;
+                }
+
                 if (SyncPreference == SyncPreference.Ask)
                 {
-                    if (isDirectory)
-                    {
-                        if (directoryExists
-                            && File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
-                        {
-                            return;
-                        }
-                    }
-                    else if (fileExists)
-                    {
-                        if (FileEquals())
-                            return;
-                    }
-
                     WritePathPrefix(sourcePath, "S  ", default, indent);
                     WritePathPrefix(destinationPath, "T  ", default, indent);
 
@@ -169,7 +164,7 @@ namespace Orang.CommandLine
                     if (directoryExists)
                     {
                         WritePath(sourcePath, OperationKind.Update, indent);
-                        FileSystemHelpers.UpdateAttributes(destinationPath, sourcePath);
+                        UpdateAttributes(destinationPath, sourcePath);
                         context.Telemetry.UpdatedCount++;
                     }
                     else
@@ -189,7 +184,7 @@ namespace Orang.CommandLine
                 else if (directoryExists)
                 {
                     WritePath(destinationPath, OperationKind.Update, indent);
-                    FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
+                    UpdateAttributes(sourcePath, destinationPath);
                     context.Telemetry.UpdatedCount++;
                 }
                 else
@@ -257,12 +252,6 @@ namespace Orang.CommandLine
 
             _destinationPaths?.Add(destinationPath);
 
-            bool FileEquals()
-            {
-                return Options.CompareOptions != FileCompareOptions.None
-                    && FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
-            }
-
             void DeleteDirectory(string path)
             {
                 if (!Options.DryRun)
@@ -287,9 +276,10 @@ namespace Orang.CommandLine
                     File.Copy(sourcePath, destinationPath);
             }
 
-            static void UpdateAttributes(string sourcePath, string destinationPath)
+            void UpdateAttributes(string sourcePath, string destinationPath)
             {
-                FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
+                if (!Options.DryRun)
+                    FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
             }
         }
 
@@ -309,7 +299,15 @@ namespace Orang.CommandLine
         {
             _destinationPaths = new HashSet<string>(FileSystemHelpers.Comparer);
 
-            base.ExecuteDirectory(directoryPath, context);
+            try
+            {
+                _canUpdate = true;
+                base.ExecuteDirectory(directoryPath, context);
+            }
+            finally
+            {
+                _canUpdate = false;
+            }
 
             if (Options.SyncMode == SyncMode.Synchronize)
             {
@@ -322,7 +320,15 @@ namespace Orang.CommandLine
                 Options.Paths = ImmutableArray.Create(directoryPath);
                 Options.Target = target;
 
-                //TODO: prohodit SyncPreference
+                if (SyncPreference == SyncPreference.Source)
+                {
+                    SyncPreference = SyncPreference.Target;
+                }
+                else if (SyncPreference == SyncPreference.Target)
+                {
+                    SyncPreference = SyncPreference.Source;
+                }
+
                 base.ExecuteDirectory(directoryPath, context);
 
                 IgnoredPaths = null;

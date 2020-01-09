@@ -24,6 +24,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.SyncMode)]
         public string Mode { get; set; }
 
+        [Option(longName: OptionNames.Prefer,
+            HelpText = "",
+            MetaValue = MetaValues.SyncPreference)]
+        public string Prefer { get; set; }
+
         public bool TryParse(SyncCommandOptions options)
         {
             var baseOptions = (CommonCopyCommandOptions)options;
@@ -51,6 +56,9 @@ namespace Orang.CommandLine
             if (!TryParseAsEnum(Mode, OptionNames.Mode, out SyncMode syncMode, defaultValue: SyncMode.Synchronize, provider: OptionValueProviders.SyncModeProvider))
                 return false;
 
+            if (!TryParseAsEnum(Prefer, OptionNames.Prefer, out SyncPreference syncPreference, defaultValue: SyncPreference.Source, provider: OptionValueProviders.SyncPreferenceProvider))
+                return false;
+
             options.SearchTarget = SearchTarget.All;
 
             options.CompareOptions = compareOptions;
@@ -58,6 +66,7 @@ namespace Orang.CommandLine
             options.Target = target;
             options.TargetAction = targetAction;
             options.SyncMode = syncMode;
+            options.SyncPreference = syncPreference;
 
             return true;
         }

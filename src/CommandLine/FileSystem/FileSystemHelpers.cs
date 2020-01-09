@@ -49,7 +49,6 @@ namespace Orang.FileSystem
             return true;
         }
 
-        //TODO: ?
         internal static bool FileEquals(string path1, string path2, FileCompareOptions options)
         {
             if ((options & FileCompareOptions.ModifiedTime) != 0

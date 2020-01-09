@@ -13,7 +13,5 @@ namespace Orang.CommandLine
         public SyncMode SyncMode { get; internal set; }
 
         public SyncPreference SyncPreference { get; internal set; }
-
-        public bool PreferNewer { get; internal set; } = true;
     }
 }
