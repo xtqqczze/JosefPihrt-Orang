@@ -85,7 +85,7 @@ namespace Orang.CommandLine
             if (!condition)
                 return true;
 
-            return (QuestionWithResult(question, " (Y/N/C): ", "y (yes), n (no), c (cancel)", _yesNoCancelMap, indent)) switch
+            return (QuestionWithResult(question, " (Y/N/C): ", "Y (Yes), N (No), C (Cancel)", _yesNoCancelMap, indent)) switch
             {
                 DialogResult.Yes => true,
                 DialogResult.No => false,
@@ -96,7 +96,7 @@ namespace Orang.CommandLine
 
         public static DialogResult QuestionWithResult(string question, string indent = null)
         {
-            return QuestionWithResult(question, " (Y[A]/N[A]/C): ", "y (yes), ya (yes to all), n (no), na (no to all), c (cancel)", _dialogResultMap, indent);
+            return QuestionWithResult(question, " (Y[A]/N[A]/C): ", "Y (Yes), YA (Yes to All), N (No), NA (No to All), C (Cancel)", _dialogResultMap, indent);
         }
 
         private static DialogResult QuestionWithResult(
