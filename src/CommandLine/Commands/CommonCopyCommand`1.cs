@@ -22,7 +22,7 @@ namespace Orang.CommandLine
         public TargetExistsAction TargetAction
         {
             get { return Options.TargetAction; }
-            private set { Options.TargetAction = value; }
+            protected set { Options.TargetAction = value; }
         }
 
         protected HashSet<string> IgnoredPaths { get; set; }
@@ -125,7 +125,7 @@ namespace Orang.CommandLine
 
                             if (!Options.OmitPath)
                             {
-                                WritePath(destinationPath, (isDirectory) ? OperationKind.Add : OperationKind.Update, indent);
+                                WritePath(destinationPath, indent);
                                 pathWritten = true;
                             }
 
@@ -210,7 +210,7 @@ namespace Orang.CommandLine
                     if (!Options.OmitPath
                         && !pathWritten)
                     {
-                        WritePath(destinationPath, OperationKind.Add, indent);
+                        WritePath(destinationPath, indent);
                     }
 
                     if (!Options.DryRun)
@@ -232,7 +232,7 @@ namespace Orang.CommandLine
                         if (!Options.OmitPath
                             && !pathWritten)
                         {
-                            WritePath(destinationPath, OperationKind.Update, indent);
+                            WritePath(destinationPath, indent);
                         }
 
                         context.Telemetry.UpdatedCount++;
@@ -244,7 +244,7 @@ namespace Orang.CommandLine
                 if (!Options.OmitPath
                     && !pathWritten)
                 {
-                    WritePath(destinationPath, (fileExists) ? OperationKind.Update : OperationKind.Add, indent);
+                    WritePath(destinationPath, indent);
                 }
 
                 if (!Options.DryRun)
@@ -316,7 +316,7 @@ namespace Orang.CommandLine
             }
         }
 
-        protected virtual void WritePath(string path, OperationKind kind, string indent)
+        private void WritePath(string path, string indent)
         {
             LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
             WriteLine(Verbosity.Minimal);
@@ -328,14 +328,6 @@ namespace Orang.CommandLine
             string indent)
         {
             LogHelpers.WriteFileError(ex, path, relativePath: Options.DisplayRelativePath, indent: indent);
-        }
-
-        protected enum OperationKind
-        {
-            None,
-            Add,
-            Update,
-            Delete
         }
     }
 }

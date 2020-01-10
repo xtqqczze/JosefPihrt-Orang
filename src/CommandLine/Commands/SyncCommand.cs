@@ -27,13 +27,23 @@ namespace Orang.CommandLine
 
         protected override void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
         {
-            if (Options.SyncMode == SyncMode.Synchronize)
+            switch (Options.SyncMode)
             {
-                Synchronize(context, sourcePath, destinationPath, isDirectory, indent);
-            }
-            else
-            {
-                base.ExecuteOperation(context, sourcePath, destinationPath, isDirectory, indent);
+                case SyncMode.Synchronize:
+                    {
+                        Synchronize(context, sourcePath, destinationPath, isDirectory, indent);
+                        break;
+                    }
+                case SyncMode.Echo:
+                case SyncMode.Contribute:
+                    {
+                        Echo(context, sourcePath, destinationPath, isDirectory, indent);
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException($"Unknown enum value '{Options.SyncMode}'.");
+                    }
             }
         }
 
@@ -84,8 +94,8 @@ namespace Orang.CommandLine
 
                 if (Preference == SyncPreference.Ask)
                 {
-                    WritePathPrefix(sourcePath, "S  ", default, indent);
-                    WritePathPrefix(destinationPath, "T  ", default, indent);
+                    WritePathPrefix(sourcePath, "SRC", default, indent);
+                    WritePathPrefix(destinationPath, "TRG", default, indent);
 
                     DialogResult dialogResult = ConsoleHelpers.QuestionWithResult("Prefer target directory?", indent);
 
@@ -139,27 +149,65 @@ namespace Orang.CommandLine
                 }
             }
 
+            ExecuteOperations(context, sourcePath, destinationPath, isDirectory, fileExists, directoryExists, preferTarget ?? false, indent);
+        }
+
+        private void Echo(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
+        {
+            bool fileExists = File.Exists(destinationPath);
+            bool directoryExists = !fileExists && Directory.Exists(destinationPath);
+
             if (isDirectory)
             {
-                if (preferTarget == true)
+                if (directoryExists
+                    && File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
+                {
+                    return;
+                }
+            }
+            else if (fileExists
+                && Options.CompareOptions != FileCompareOptions.None
+                && FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions))
+            {
+                return;
+            }
+
+            ExecuteOperations(context, sourcePath, destinationPath, isDirectory, fileExists, directoryExists, preferTarget: false, indent);
+        }
+
+        private void ExecuteOperations(
+            SearchContext context,
+            string sourcePath,
+            string destinationPath,
+            bool isDirectory,
+            bool fileExists,
+            bool directoryExists,
+            bool preferTarget,
+            string indent)
+        {
+            SearchTelemetry telemetry = context.Telemetry;
+
+            if (isDirectory)
+            {
+                if (preferTarget)
                 {
                     if (directoryExists)
                     {
                         WritePath(sourcePath, OperationKind.Update, indent);
                         UpdateAttributes(destinationPath, sourcePath);
-                        context.Telemetry.UpdatedCount++;
+                        telemetry.UpdatedCount++;
                     }
                     else
                     {
                         WritePath(sourcePath, OperationKind.Delete, indent);
                         DeleteDirectory(sourcePath);
-                        context.Telemetry.DeletedCount++;
+                        telemetry.DeletedCount++;
 
                         if (fileExists)
                         {
                             WritePath(sourcePath, OperationKind.Add, indent);
                             CopyFile(destinationPath, sourcePath);
-                            context.Telemetry.AddedCount++;
+                            telemetry.AddedCount++;
                         }
                     }
                 }
@@ -167,7 +215,7 @@ namespace Orang.CommandLine
                 {
                     WritePath(destinationPath, OperationKind.Update, indent);
                     UpdateAttributes(sourcePath, destinationPath);
-                    context.Telemetry.UpdatedCount++;
+                    telemetry.UpdatedCount++;
                 }
                 else
                 {
@@ -175,32 +223,32 @@ namespace Orang.CommandLine
                     {
                         WritePath(destinationPath, OperationKind.Delete, indent);
                         DeleteFile(destinationPath);
-                        context.Telemetry.DeletedCount++;
+                        telemetry.DeletedCount++;
                     }
 
                     WritePath(destinationPath, OperationKind.Add, indent);
                     CreateDirectory(destinationPath);
-                    context.Telemetry.AddedCount++;
+                    telemetry.AddedCount++;
                 }
             }
-            else if (preferTarget == true)
+            else if (preferTarget)
             {
                 WritePath(sourcePath, (fileExists) ? OperationKind.Update : OperationKind.Delete, indent);
                 DeleteFile(sourcePath);
 
                 if (!fileExists)
-                    context.Telemetry.DeletedCount++;
+                    telemetry.DeletedCount++;
 
                 if (fileExists)
                 {
                     CopyFile(destinationPath, sourcePath);
-                    context.Telemetry.UpdatedCount++;
+                    telemetry.UpdatedCount++;
                 }
                 else if (directoryExists)
                 {
                     WritePath(sourcePath, OperationKind.Add, indent);
                     CreateDirectory(sourcePath);
-                    context.Telemetry.AddedCount++;
+                    telemetry.AddedCount++;
                 }
             }
             else
@@ -214,7 +262,7 @@ namespace Orang.CommandLine
                 {
                     WritePath(destinationPath, OperationKind.Delete, indent);
                     DeleteDirectory(destinationPath);
-                    context.Telemetry.DeletedCount++;
+                    telemetry.DeletedCount++;
                 }
 
                 if (!fileExists)
@@ -224,11 +272,11 @@ namespace Orang.CommandLine
 
                 if (fileExists)
                 {
-                    context.Telemetry.UpdatedCount++;
+                    telemetry.UpdatedCount++;
                 }
                 else
                 {
-                    context.Telemetry.AddedCount++;
+                    telemetry.AddedCount++;
                 }
             }
 
@@ -263,6 +311,8 @@ namespace Orang.CommandLine
                 if (!Options.DryRun)
                     FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
             }
+
+            _destinationPaths?.Add(destinationPath);
         }
 
         protected override void ExecuteOperation(string sourcePath, string destinationPath)
@@ -387,7 +437,7 @@ namespace Orang.CommandLine
             }
         }
 
-        protected override void WritePath(string path, OperationKind kind, string indent)
+        private void WritePath(string path, OperationKind kind, string indent)
         {
             if (!ShouldLog(Verbosity.Minimal))
                 return;
@@ -462,6 +512,14 @@ namespace Orang.CommandLine
             Write("  ", verbosity);
 
             WriteLine(verbosity);
+        }
+
+        private enum OperationKind
+        {
+            None,
+            Add,
+            Update,
+            Delete
         }
 
         private enum SyncPreference
