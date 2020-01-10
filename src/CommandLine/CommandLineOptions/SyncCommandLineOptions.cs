@@ -39,7 +39,7 @@ namespace Orang.CommandLine
                 return false;
             }
 
-            if (!TryParseAsEnumFlags(Compare, OptionNames.Compare, out FileCompareOptions compareOptions, FileCompareOptions.Attributes | FileCompareOptions.Content | FileCompareOptions.ModifiedTime |  FileCompareOptions.Size, OptionValueProviders.FileCompareOptionsProvider))
+            if (!TryParseAsEnumFlags(Compare, OptionNames.Compare, out FileCompareOptions compareOptions, FileCompareOptions.Attributes | FileCompareOptions.Content | FileCompareOptions.ModifiedTime | FileCompareOptions.Size, OptionValueProviders.FileCompareOptionsProvider))
                 return false;
 
             if (!TryEnsureFullPath(Target, out string target))
