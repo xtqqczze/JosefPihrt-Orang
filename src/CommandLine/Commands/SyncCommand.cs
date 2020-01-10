@@ -288,6 +288,7 @@ namespace Orang.CommandLine
                     Directory.Delete(path, recursive: true);
             }
 
+            //TODO: is file or directory
             void CreateDirectory(string path)
             {
                 if (!Options.DryRun)

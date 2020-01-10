@@ -109,190 +109,160 @@ namespace Orang.CommandLine
 
         protected virtual void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
         {
-            bool overwrite = false;
-            bool pathWritten = false;
             bool fileExists = File.Exists(destinationPath);
             bool directoryExists = !fileExists && Directory.Exists(destinationPath);
+            bool ask = false;
 
-            switch (TargetAction)
+            if (isDirectory)
             {
-                case TargetExistsAction.Ask:
-                    {
-                        if (fileExists || (!isDirectory && directoryExists))
+                if (fileExists)
+                {
+                    ask = true;
+                }
+                else if (directoryExists)
+                {
+                    if (File.GetAttributes(sourcePath) == File.GetAttributes(destinationPath))
+                        return;
+
+                    ask = true;
+                }
+            }
+            else if (fileExists)
+            {
+                if (Options.CompareOptions != FileCompareOptions.None
+                    && FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions))
+                {
+                    return;
+                }
+
+                ask = true;
+            }
+            else if (directoryExists)
+            {
+                ask = true;
+            }
+
+            if (ask
+                && TargetAction == TargetExistsAction.Skip)
+            {
+                return;
+            }
+
+            if (!Options.OmitPath)
+                WritePath(destinationPath, indent);
+
+            if (ask
+                && TargetAction == TargetExistsAction.Ask)
+            {
+                string question;
+                if (directoryExists)
+                {
+                    question = (isDirectory) ? "Update directory attributes?" : "Overwrite directory?";
+                }
+                else
+                {
+                    question = "Overwrite file?";
+                }
+
+                DialogResult dialogResult = ConsoleHelpers.QuestionWithResult(question, indent);
+                switch (dialogResult)
+                {
+                    case DialogResult.Yes:
                         {
-                            if (!IsOperationRequired())
-                                return;
-
-                            if (!Options.OmitPath)
-                            {
-                                WritePath(destinationPath, indent);
-                                pathWritten = true;
-                            }
-
-                            string question = (!isDirectory && directoryExists) ? "Overwrite directory?" : "Overwrite file?";
-
-                            DialogResult dialogResult = ConsoleHelpers.QuestionWithResult(question, indent);
-                            switch (dialogResult)
-                            {
-                                case DialogResult.Yes:
-                                    {
-                                        overwrite = true;
-                                        break;
-                                    }
-                                case DialogResult.YesToAll:
-                                    {
-                                        overwrite = true;
-                                        TargetAction = TargetExistsAction.Overwrite;
-                                        break;
-                                    }
-                                case DialogResult.No:
-                                case DialogResult.None:
-                                    {
-                                        return;
-                                    }
-                                case DialogResult.NoToAll:
-                                    {
-                                        TargetAction = TargetExistsAction.Skip;
-                                        return;
-                                    }
-                                case DialogResult.Cancel:
-                                    {
-                                        context.TerminationReason = TerminationReason.Canceled;
-                                        return;
-                                    }
-                                default:
-                                    {
-                                        throw new InvalidOperationException($"Unknown enum value '{dialogResult}'.");
-                                    }
-                            }
+                            break;
                         }
-
-                        break;
-                    }
-                case TargetExistsAction.Overwrite:
-                    {
-                        if (fileExists || (!isDirectory && directoryExists))
+                    case DialogResult.YesToAll:
                         {
-                            if (IsOperationRequired())
-                            {
-                                overwrite = true;
-                            }
-                            else
-                            {
-                                return;
-                            }
+                            TargetAction = TargetExistsAction.Overwrite;
+                            break;
                         }
-
-                        break;
-                    }
-                case TargetExistsAction.Skip:
-                    {
-                        if (fileExists || (!isDirectory && directoryExists))
+                    case DialogResult.No:
+                    case DialogResult.None:
+                        {
                             return;
+                        }
+                    case DialogResult.NoToAll:
+                        {
+                            TargetAction = TargetExistsAction.Skip;
+                            return;
+                        }
+                    case DialogResult.Cancel:
+                        {
+                            context.TerminationReason = TerminationReason.Canceled;
+                            return;
+                        }
+                    default:
+                        {
+                            throw new InvalidOperationException($"Unknown enum value '{dialogResult}'.");
+                        }
+                }
+            }
 
-                        break;
-                    }
-                case TargetExistsAction.Rename:
-                    {
-                        break;
-                    }
-                default:
-                    {
-                        throw new InvalidOperationException($"Unknown enum value '{TargetAction}'.");
-                    }
+            if (!isDirectory
+                && fileExists
+                && TargetAction == TargetExistsAction.Rename)
+            {
+                destinationPath = CreateNewFile(destinationPath);
             }
 
             if (isDirectory)
             {
-                if (overwrite
-                    || !directoryExists)
+                if (directoryExists)
                 {
-                    if (!Options.OmitPath
-                        && !pathWritten)
-                    {
-                        WritePath(destinationPath, indent);
-                    }
-
-                    if (!Options.DryRun)
-                    {
-                        if (overwrite)
-                            File.Delete(destinationPath);
-
-                        Directory.CreateDirectory(destinationPath);
-
-                        FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
-
-                        context.Telemetry.AddedCount++;
-                    }
+                    UpdateAttributes(sourcePath, destinationPath);
                 }
-                else if (!Options.DryRun)
+                else
                 {
-                    if (FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath))
-                    {
-                        if (!Options.OmitPath
-                            && !pathWritten)
-                        {
-                            WritePath(destinationPath, indent);
-                        }
+                    if (fileExists)
+                        DeleteFile(destinationPath);
 
-                        context.Telemetry.UpdatedCount++;
-                    }
+                    CreateDirectory(destinationPath);
                 }
             }
             else
             {
-                if (!Options.OmitPath
-                    && !pathWritten)
+                if (fileExists)
                 {
-                    WritePath(destinationPath, indent);
+                    DeleteFile(destinationPath);
+                }
+                else if (directoryExists)
+                {
+                    DeleteDirectory(destinationPath);
                 }
 
+                //TODO: check directory exists
                 if (!Options.DryRun)
-                {
-                    if (overwrite)
-                    {
-                        if (fileExists)
-                        {
-                            File.Delete(destinationPath);
-                        }
-                        else
-                        {
-                            Directory.Delete(destinationPath, recursive: true);
-                        }
-                    }
-                    else if (!Directory.Exists(destinationPath))
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
-                    }
-
-                    if (Options.TargetAction == TargetExistsAction.Rename)
-                        destinationPath = CreateNewFile(destinationPath);
-
                     ExecuteOperation(sourcePath, destinationPath);
 
-                    if (fileExists)
-                    {
-                        context.Telemetry.UpdatedCount++;
-                    }
-                    else
-                    {
-                        context.Telemetry.AddedCount++;
-                    }
-                }
+                context.Telemetry.ProcessedFileCount++;
             }
 
-            bool IsOperationRequired()
+            void DeleteDirectory(string path)
             {
-                return isDirectory
-                    || Options.CompareOptions == FileCompareOptions.None
-                    || !FileSystemHelpers.FileEquals(sourcePath, destinationPath, Options.CompareOptions);
+                if (!Options.DryRun)
+                    Directory.Delete(path, recursive: true);
+            }
+
+            void CreateDirectory(string path)
+            {
+                if (!Options.DryRun)
+                    Directory.CreateDirectory(path);
+            }
+
+            void DeleteFile(string path)
+            {
+                if (!Options.DryRun)
+                    File.Delete(path);
+            }
+
+            void UpdateAttributes(string sourcePath, string destinationPath)
+            {
+                if (!Options.DryRun)
+                    FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
             }
 
             static string CreateNewFile(string path)
             {
-                if (!File.Exists(path))
-                    return path;
-
                 int count = 2;
                 int extensionIndex = FileSystemHelpers.GetExtensionIndex(path);
 
