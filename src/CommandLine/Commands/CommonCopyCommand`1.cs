@@ -218,6 +218,8 @@ namespace Orang.CommandLine
 
                     CreateDirectory(destinationPath);
                 }
+
+                context.Telemetry.ProcessedDirectoryCount++;
             }
             else
             {
@@ -229,8 +231,11 @@ namespace Orang.CommandLine
                 {
                     DeleteDirectory(destinationPath);
                 }
+                else if (!Options.DryRun)
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                }
 
-                //TODO: check directory exists
                 if (!Options.DryRun)
                     ExecuteOperation(sourcePath, destinationPath);
 
