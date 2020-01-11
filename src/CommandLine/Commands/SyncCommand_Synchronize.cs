@@ -14,10 +14,13 @@ namespace Orang.CommandLine
 
         public SyncCommand_Synchronize(SyncCommandOptions options) : base(options)
         {
-            Preference = (options.TargetAction == TargetExistsAction.Ask) ? SyncPreference.Ask : SyncPreference.Source;
         }
 
-        private SyncPreference Preference { get; set; }
+        public SyncAction SyncAction
+        {
+            get { return Options.SyncAction; }
+            private set { Options.SyncAction = value; }
+        }
 
         protected override void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
         {
@@ -64,7 +67,7 @@ namespace Orang.CommandLine
                     return;
                 }
 
-                if (Preference == SyncPreference.Ask)
+                if (SyncAction == SyncAction.Ask)
                 {
                     WritePathPrefix(sourcePath, "SRC", default, indent);
                     WritePathPrefix(destinationPath, "TRG", default, indent);
@@ -81,7 +84,7 @@ namespace Orang.CommandLine
                         case DialogResult.YesToAll:
                             {
                                 preferTarget = true;
-                                Preference = SyncPreference.Target;
+                                SyncAction = SyncAction.PreferTarget;
                                 break;
                             }
                         case DialogResult.No:
@@ -93,7 +96,7 @@ namespace Orang.CommandLine
                         case DialogResult.NoToAll:
                             {
                                 preferTarget = false;
-                                Preference = SyncPreference.Source;
+                                SyncAction = SyncAction.PreferSource;
                                 break;
                             }
                         case DialogResult.Cancel:
@@ -107,17 +110,17 @@ namespace Orang.CommandLine
                             }
                     }
                 }
-                else if (Preference == SyncPreference.Source)
+                else if (SyncAction == SyncAction.PreferSource)
                 {
                     preferTarget = false;
                 }
-                else if (Preference == SyncPreference.Target)
+                else if (SyncAction == SyncAction.PreferTarget)
                 {
                     preferTarget = true;
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Unknown enum value '{Preference}'.");
+                    throw new InvalidOperationException($"Unknown enum value '{SyncAction}'.");
                 }
             }
 
@@ -141,25 +144,18 @@ namespace Orang.CommandLine
             Options.Paths = ImmutableArray.Create(new PathInfo(directoryPath, PathOrigin.None));
             Options.Target = target;
 
-            if (Preference == SyncPreference.Source)
+            if (SyncAction == SyncAction.PreferSource)
             {
-                Preference = SyncPreference.Target;
+                SyncAction = SyncAction.PreferTarget;
             }
-            else if (Preference == SyncPreference.Target)
+            else if (SyncAction == SyncAction.PreferTarget)
             {
-                Preference = SyncPreference.Source;
+                SyncAction = SyncAction.PreferSource;
             }
 
             base.ExecuteDirectory(directoryPath, context);
 
             IgnoredPaths = null;
-        }
-
-        private enum SyncPreference
-        {
-            Source = 0,
-            Target = 1,
-            Ask = 2
         }
     }
 }

@@ -9,6 +9,11 @@ namespace Orang.CommandLine
     [Verb("sync", HelpText = "Synchronizes content of two directories.")]
     internal sealed class SyncCommandLineOptions : CommonCopyCommandLineOptions
     {
+        [Option(longName: OptionNames.SyncAction,
+            HelpText = "Action to choose if a file or directory exists in one directory and it is missing in the second directory.",
+            MetaValue = MetaValues.SyncAction)]
+        public string SyncAction { get; set; }
+
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
             HelpText = "Display which files or directories should be copied/deleted but do not actually copy/delete any file or directory.")]
         public bool DryRun { get; set; }
@@ -45,7 +50,7 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            if (!TryParseAsEnum(TargetAction, OptionNames.TargetAction, out TargetExistsAction targetAction, defaultValue: TargetExistsAction.Overwrite, provider: OptionValueProviders.TargetExistsActionProvider_Sync))
+            if (!TryParseAsEnum(SyncAction, OptionNames.SyncAction, out SyncAction syncAction, defaultValue: FileSystem.SyncAction.PreferSource, provider: OptionValueProviders.SyncActionProvider))
                 return false;
 
             if (!TryParseAsEnum(Mode, OptionNames.Mode, out SyncMode syncMode, defaultValue: SyncMode.Synchronize, provider: OptionValueProviders.SyncModeProvider))
@@ -56,7 +61,7 @@ namespace Orang.CommandLine
             options.CompareOptions = compareOptions;
             options.DryRun = DryRun;
             options.Target = target;
-            options.TargetAction = targetAction;
+            options.SyncAction = syncAction;
             options.SyncMode = syncMode;
 
             return true;

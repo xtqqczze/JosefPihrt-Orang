@@ -10,6 +10,8 @@ namespace Orang.CommandLine
         {
         }
 
+        public SyncAction SyncAction { get; internal set; }
+
         public SyncMode SyncMode { get; internal set; }
     }
 }

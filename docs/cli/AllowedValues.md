@@ -15,6 +15,7 @@
 * [\<PATTERN_OPTIONS>](#pattern-options)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
+* [\<SYNC_ACTION>](#sync-action)
 * [\<SYNC_MODE>](#sync-mode)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
 * [\<TARGET_ACTION>](#target-action)
@@ -203,6 +204,14 @@
 | m\[odified\-\]t\[ime\] | Sort items by last modified time\. |
 | n\[ame\]               | Sort items by full name\.          |
 | s\[ize\]               | Sort items by size\.               |
+
+## \<SYNC\_ACTION>
+
+| Value      | Description |
+| ---------- | ----------- |
+| a\[sk\]    |
+| s\[ource\] |
+| t\[arget\] |
 
 ## \<SYNC\_MODE>
 

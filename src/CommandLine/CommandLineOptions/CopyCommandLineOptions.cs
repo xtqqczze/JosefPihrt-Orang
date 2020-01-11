@@ -23,6 +23,11 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
+        [Option(longName: OptionNames.TargetAction,
+            HelpText = "Action to choose if a file already exists.",
+            MetaValue = MetaValues.TargetAction)]
+        public string TargetAction { get; set; }
+
         public bool TryParse(CopyCommandOptions options)
         {
             var baseOptions = (CommonCopyCommandOptions)options;

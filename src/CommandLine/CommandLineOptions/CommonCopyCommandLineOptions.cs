@@ -12,11 +12,6 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.CompareOptions)]
         public IEnumerable<string> Compare { get; set; }
 
-        [Option(longName: OptionNames.TargetAction,
-            HelpText = "Action to choose if a file already exists.",
-            MetaValue = MetaValues.TargetAction)]
-        public string TargetAction { get; set; }
-
         public bool TryParse(CommonCopyCommandOptions options)
         {
             var baseOptions = (FindCommandOptions)options;
