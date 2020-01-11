@@ -209,14 +209,19 @@ namespace Orang.CommandLine
             {
                 if (directoryExists)
                 {
-                    UpdateAttributes(sourcePath, destinationPath);
+                    if (!Options.DryRun)
+                        FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
                 }
                 else
                 {
-                    if (fileExists)
-                        DeleteFile(destinationPath);
+                    if (fileExists
+                        && !Options.DryRun)
+                    {
+                        File.Delete(destinationPath);
+                    }
 
-                    CreateDirectory(destinationPath);
+                    if (!Options.DryRun)
+                        Directory.CreateDirectory(destinationPath);
                 }
 
                 context.Telemetry.ProcessedDirectoryCount++;
@@ -225,11 +230,13 @@ namespace Orang.CommandLine
             {
                 if (fileExists)
                 {
-                    DeleteFile(destinationPath);
+                    if (!Options.DryRun)
+                        File.Delete(destinationPath);
                 }
                 else if (directoryExists)
                 {
-                    DeleteDirectory(destinationPath);
+                    if (!Options.DryRun)
+                        Directory.Delete(destinationPath, recursive: true);
                 }
                 else if (!Options.DryRun)
                 {
@@ -240,30 +247,6 @@ namespace Orang.CommandLine
                     ExecuteOperation(sourcePath, destinationPath);
 
                 context.Telemetry.ProcessedFileCount++;
-            }
-
-            void DeleteDirectory(string path)
-            {
-                if (!Options.DryRun)
-                    Directory.Delete(path, recursive: true);
-            }
-
-            void CreateDirectory(string path)
-            {
-                if (!Options.DryRun)
-                    Directory.CreateDirectory(path);
-            }
-
-            void DeleteFile(string path)
-            {
-                if (!Options.DryRun)
-                    File.Delete(path);
-            }
-
-            void UpdateAttributes(string sourcePath, string destinationPath)
-            {
-                if (!Options.DryRun)
-                    FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
             }
 
             static string CreateNewFile(string path)

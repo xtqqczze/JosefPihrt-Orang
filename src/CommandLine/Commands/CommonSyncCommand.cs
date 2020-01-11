@@ -18,7 +18,9 @@ namespace Orang.CommandLine
         {
         }
 
-        public override bool CanWriteContent => false;
+        public bool DryRun => Options.DryRun;
+
+        public sealed override bool CanWriteContent => false;
 
         protected void ExecuteOperations(
             SearchContext context,
@@ -129,31 +131,31 @@ namespace Orang.CommandLine
 
             void DeleteDirectory(string path)
             {
-                if (!Options.DryRun)
+                if (!DryRun)
                     Directory.Delete(path, recursive: true);
             }
 
             void CreateDirectory(string path)
             {
-                if (!Options.DryRun)
+                if (!DryRun)
                     Directory.CreateDirectory(path);
             }
 
             void DeleteFile(string path)
             {
-                if (!Options.DryRun)
+                if (!DryRun)
                     File.Delete(path);
             }
 
             void CopyFile(string sourcePath, string destinationPath)
             {
-                if (!Options.DryRun)
+                if (!DryRun)
                     File.Copy(sourcePath, destinationPath);
             }
 
             void UpdateAttributes(string sourcePath, string destinationPath)
             {
-                if (!Options.DryRun)
+                if (!DryRun)
                     FileSystemHelpers.UpdateAttributes(sourcePath, destinationPath);
             }
         }

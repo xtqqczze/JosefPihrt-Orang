@@ -47,12 +47,6 @@ namespace Orang
             writer.Write(path, startIndex, path.Length - startIndex, verbosity);
         }
 
-        public static void WriteLineIf(this TextWriter writer, bool condition, string value)
-        {
-            if (condition)
-                writer.WriteLine(value);
-        }
-
         public static IEnumerable<RegexOptions> GetFlags(this RegexOptions options)
         {
             return GetFlags();

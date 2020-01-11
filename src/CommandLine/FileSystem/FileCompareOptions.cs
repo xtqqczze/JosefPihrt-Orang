@@ -12,6 +12,5 @@ namespace Orang.FileSystem
         ModifiedTime = 1 << 1,
         Attributes = 1 << 2,
         Content = 1 << 3,
-        All = int.MaxValue,
     }
 }

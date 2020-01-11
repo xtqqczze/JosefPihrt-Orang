@@ -34,7 +34,7 @@ namespace Orang.CommandLine
                 {
                     try
                     {
-                        if (!Options.DryRun)
+                        if (!DryRun)
                         {
                             Directory.Delete(path, recursive: true);
                             context.Telemetry.DeletedCount++;
@@ -64,7 +64,7 @@ namespace Orang.CommandLine
                 {
                     try
                     {
-                        if (!Options.DryRun)
+                        if (!DryRun)
                         {
                             File.Delete(path);
                             context.Telemetry.DeletedCount++;

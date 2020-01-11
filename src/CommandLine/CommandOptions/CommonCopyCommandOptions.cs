@@ -4,23 +4,15 @@ using Orang.FileSystem;
 
 namespace Orang.CommandLine
 {
-    internal class CommonCopyCommandOptions : FindCommandOptions
+    internal abstract class CommonCopyCommandOptions : FindCommandOptions
     {
         private string _target;
 
-        internal CommonCopyCommandOptions()
+        protected CommonCopyCommandOptions()
         {
         }
 
         public FileCompareOptions CompareOptions { get; internal set; }
-
-        public bool CompareAttributes => (CompareOptions & FileCompareOptions.Attributes) != 0;
-
-        public bool CompareContent => (CompareOptions & FileCompareOptions.Content) != 0;
-
-        public bool CompareModifiedTime => (CompareOptions & FileCompareOptions.ModifiedTime) != 0;
-
-        public bool CompareSize => (CompareOptions & FileCompareOptions.Size) != 0;
 
         public bool DryRun { get; internal set; }
 
