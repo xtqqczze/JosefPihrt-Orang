@@ -27,7 +27,7 @@ orang sync [<PATH>]
 [   --progress]
 [-p|--properties]         <FILE_PROPERTIES>
 [-s|--sort]               <SORT_OPTIONS>
-[   --sync-action]        <SYNC_ACTION>
+[   --sync-base]          <SYNC_BASE>
  -g|--target              <DIRECTORY_PATH>
 [-v|--verbosity]          <VERBOSITY>
 ```
@@ -124,7 +124,7 @@ A filter for file properties\. Allowed values are c\[reation\-\]t\[ime\], m\[odi
 
 Sort matched files and directories\. Allowed values are a\[scending\], c\[reation\-\]t\[ime\], d\[escending\], m\[ax\-count\]=\<NUM>, m\[odified\-\]t\[ime\], n\[ame\] and s\[ize\]\.
 
-**`[--sync-action] <SYNC_ACTION>`**
+**`[--sync-base] <SYNC_BASE>`**
 
 Action to choose if a file or directory exists in one directory and it is missing in the second directory\. Allowed values are a\[sk\], s\[ource\] and t\[arget\]\.
 

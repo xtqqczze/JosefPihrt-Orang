@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Orang.FileSystem
+namespace Orang
 {
-    //TODO: SyncAction > SyncPriority, SyncBase
-    internal enum SyncAction
+    internal enum SyncMode
     {
-        PreferSource = 0,
-        PreferTarget = 1,
-        Ask = 2
+        Synchronize = 0,
+        Echo = 1,
+        Contribute = 2
     }
 }

@@ -43,7 +43,7 @@ namespace Orang.CommandLine
         public const string Replacement = "replacement";
         public const string Section = "section";
         public const string Sort = "sort";
-        public const string SyncAction = "sync-action";
+        public const string SyncBase = "sync-base";
         public const string Target = "target";
         public const string TargetAction = "target-action";
         public const string Timeout = "timeout";

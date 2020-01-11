@@ -15,7 +15,7 @@
 * [\<PATTERN_OPTIONS>](#pattern-options)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
-* [\<SYNC_ACTION>](#sync-action)
+* [\<SYNC_BASE>](#sync-base)
 * [\<SYNC_MODE>](#sync-mode)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
 * [\<TARGET_ACTION>](#target-action)
@@ -205,7 +205,7 @@
 | n\[ame\]               | Sort items by full name\.          |
 | s\[ize\]               | Sort items by size\.               |
 
-## \<SYNC\_ACTION>
+## \<SYNC\_BASE>
 
 | Value      | Description |
 | ---------- | ----------- |

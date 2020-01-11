@@ -274,9 +274,9 @@ namespace Orang.CommandLine
 
             return options.SyncMode switch
             {
-                FileSystem.SyncMode.Synchronize => Execute(new SyncCommand_Synchronize(options)),
-                FileSystem.SyncMode.Echo => Execute(new SyncCommand_Echo(options)),
-                FileSystem.SyncMode.Contribute => Execute(new SyncCommand_Contribute(options)),
+                SyncMode.Synchronize => Execute(new SyncCommand_Synchronize(options)),
+                SyncMode.Echo => Execute(new SyncCommand_Echo(options)),
+                SyncMode.Contribute => Execute(new SyncCommand_Contribute(options)),
                 _ => throw new InvalidOperationException(),
             };
         }

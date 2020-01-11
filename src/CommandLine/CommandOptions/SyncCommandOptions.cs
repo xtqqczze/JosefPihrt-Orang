@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Josef Pihrt. All rights reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Orang.FileSystem;
-
 namespace Orang.CommandLine
 {
     internal sealed class SyncCommandOptions : CommonCopyCommandOptions
@@ -10,7 +8,7 @@ namespace Orang.CommandLine
         {
         }
 
-        public SyncAction SyncAction { get; internal set; }
+        public SyncBase SyncBase { get; internal set; }
 
         public SyncMode SyncMode { get; internal set; }
     }
