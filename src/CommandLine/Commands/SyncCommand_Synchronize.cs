@@ -138,7 +138,7 @@ namespace Orang.CommandLine
             string target = directoryPath;
             directoryPath = Target;
 
-            Options.Paths = ImmutableArray.Create(directoryPath);
+            Options.Paths = ImmutableArray.Create(new PathInfo(directoryPath, PathOrigin.None));
             Options.Target = target;
 
             if (Preference == SyncPreference.Source)

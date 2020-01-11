@@ -13,7 +13,7 @@ namespace Orang.CommandLine
             HelpText = "Display which files or directories should be copied/deleted but do not actually copy/delete any file or directory.")]
         public bool DryRun { get; set; }
 
-        [Option(longName: OptionNames.Target,
+        [Option(shortName: OptionShortNames.Target, longName: OptionNames.Target,
             Required = true,
             HelpText = "A directory to be synchronized.",
             MetaValue = MetaValues.DirectoryPath)]

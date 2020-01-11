@@ -4,9 +4,10 @@ namespace Orang.FileSystem
 {
     internal enum PathOrigin
     {
-        Argument = 0,
-        File = 1,
-        RedirectedInput = 2,
-        CurrentDirectory = 3,
+        None = 0,
+        Argument = 1,
+        File = 2,
+        RedirectedInput = 3,
+        CurrentDirectory = 4,
     }
 }

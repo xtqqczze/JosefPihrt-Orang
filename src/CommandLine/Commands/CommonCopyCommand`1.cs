@@ -149,7 +149,10 @@ namespace Orang.CommandLine
             }
 
             if (!Options.OmitPath)
-                WritePath(destinationPath, indent);
+            {
+                LogHelpers.WritePath(destinationPath, basePath: Target, relativePath: Options.DisplayRelativePath, colors: Colors.Matched_Path, indent: indent, verbosity: Verbosity.Minimal);
+                WriteLine(Verbosity.Minimal);
+            }
 
             if (ask
                 && TargetAction == TargetExistsAction.Ask)
@@ -274,10 +277,8 @@ namespace Orang.CommandLine
             }
         }
 
-        private void WritePath(string path, string indent)
+        protected sealed override void WritePath(SearchContext context, FileSystemFinderResult result, string baseDirectoryPath, string indent, ColumnWidths columnWidths)
         {
-            LogHelpers.WritePath(path, indent: indent, verbosity: Verbosity.Minimal);
-            WriteLine(Verbosity.Minimal);
         }
 
         protected virtual void WriteError(

@@ -216,10 +216,6 @@ namespace Orang.CommandLine
             WriteLine(Verbosity.Minimal);
         }
 
-        protected override void WritePath(SearchContext context, FileSystemFinderResult result, string baseDirectoryPath, string indent, ColumnWidths columnWidths)
-        {
-        }
-
         protected override void WriteError(Exception ex, string path, string indent)
         {
             Write(indent, Verbosity.Minimal);
@@ -237,13 +233,14 @@ namespace Orang.CommandLine
         {
             base.WriteSummary(telemetry, verbosity);
 
-            WriteCount("Added", telemetry.AddedCount, verbosity: verbosity);
-            Write("  ", verbosity);
-            WriteCount("Updated", telemetry.UpdatedCount, verbosity: verbosity);
-            Write("  ", verbosity);
-            WriteCount("Deleted", telemetry.DeletedCount, verbosity: verbosity);
-            Write("  ", verbosity);
+            ConsoleColors colors = (Options.DryRun) ? Colors.Message_DryRun : default;
 
+            WriteCount("Added", telemetry.AddedCount, colors, verbosity: verbosity);
+            Write("  ", verbosity);
+            WriteCount("Updated", telemetry.UpdatedCount, colors, verbosity: verbosity);
+            Write("  ", verbosity);
+            WriteCount("Deleted", telemetry.DeletedCount, colors, verbosity: verbosity);
+            Write("  ", verbosity);
             WriteLine(verbosity);
         }
 

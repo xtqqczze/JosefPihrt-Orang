@@ -19,7 +19,19 @@ namespace Orang.CommandLine
         {
             base.WriteSummary(telemetry, verbosity);
 
-            LogHelpers.WriteCount("Copied files", telemetry.ProcessedFileCount, Colors.Message_Change, verbosity);
+            ConsoleColors colors = (Options.DryRun) ? Colors.Message_DryRun : Colors.Message_Change;
+
+            if (telemetry.ProcessedFileCount > 0)
+                LogHelpers.WriteCount("Copied files", telemetry.ProcessedFileCount, colors, verbosity);
+
+            if (telemetry.ProcessedDirectoryCount > 0)
+            {
+                if (telemetry.ProcessedFileCount > 0)
+                    Logger.Write("  ", verbosity);
+
+                LogHelpers.WriteCount("Copied directories", telemetry.ProcessedDirectoryCount, colors, verbosity);
+            }
+
             Logger.WriteLine(verbosity);
         }
     }

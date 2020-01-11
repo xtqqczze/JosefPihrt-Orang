@@ -20,7 +20,7 @@ orang delete [<PATH>]
 [-i|--include-directory]  <REGEX>
 [   --including-bom]
 [-m|--max-count]          <NUM>
- -n|--name                <REGEX>
+[-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
 [   --paths-from]         <FILE_PATH>
@@ -94,7 +94,7 @@ Delete byte order mark \(BOM\) when deleting file's content\.
 
 Stop deleting after specified number is reached\.
 
-**`-n|--name <REGEX>`**
+**`[-n|--name] <REGEX>`**
 
 Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
