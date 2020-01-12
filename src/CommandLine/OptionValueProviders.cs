@@ -338,17 +338,17 @@ namespace Orang.CommandLine
             OptionValues.FileProperty_Size
         );
 
-        public static OptionValueProvider TargetExistsActionProvider { get; } = new OptionValueProvider(MetaValues.TargetAction,
-            OptionValues.TargetExistsAction_Ask,
-            OptionValues.TargetExistsAction_Overwrite,
-            OptionValues.TargetExistsAction_Rename,
-            OptionValues.TargetExistsAction_Skip
+        public static OptionValueProvider ConflictResolutionProvider { get; } = new OptionValueProvider(MetaValues.ConflictResolution,
+            OptionValues.ConflictResolution_Ask,
+            OptionValues.ConflictResolution_Overwrite,
+            OptionValues.ConflictResolution_Rename,
+            OptionValues.ConflictResolution_Skip
         );
 
-        public static OptionValueProvider TargetExistsActionProvider_Sync { get; } = new OptionValueProvider(OptionValueProviderNames.TargetExistsAction_Sync,
-            OptionValues.TargetExistsAction_Ask,
-            OptionValues.TargetExistsAction_Overwrite,
-            OptionValues.TargetExistsAction_Skip
+        public static OptionValueProvider ConflictResolutionProvider_Sync { get; } = new OptionValueProvider(OptionValueProviderNames.ConflictResolution_Sync,
+            OptionValues.ConflictResolution_Ask,
+            OptionValues.ConflictResolution_Overwrite,
+            OptionValues.ConflictResolution_Skip
         );
 
         public static OptionValueProvider FileCompareOptionsProvider { get; } = new OptionValueProvider(MetaValues.CompareOptions,

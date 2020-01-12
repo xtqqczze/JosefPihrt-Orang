@@ -26,9 +26,9 @@ orang copy [<PATH>]
 [   --paths-from]         <FILE_PATH>
 [   --progress]
 [-p|--properties]         <FILE_PROPERTIES>
+[   --resolve]            <CONFLICT_RESOLUTION>
 [-s|--sort]               <SORT_OPTIONS>
  -g|--target              <DIRECTORY_PATH>
-[   --target-action]      <TARGET_ACTION>
 [-v|--verbosity]          <VERBOSITY>
 ```
 
@@ -120,6 +120,10 @@ Display dot \(\.\) for every hundredth searched file or directory\.
 
 A filter for file properties\. Allowed values are c\[reation\-\]t\[ime\], m\[odified\-\]t\[ime\] and s\[ize\]=\<NUM>\.
 
+**`[--resolve] <CONFLICT_RESOLUTION>`**
+
+Defines how to resolve conflict when a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
+
 **`[-s|--sort] <SORT_OPTIONS>`**
 
 Sort matched files and directories\. Allowed values are a\[scending\], c\[reation\-\]t\[ime\], d\[escending\], m\[ax\-count\]=\<NUM>, m\[odified\-\]t\[ime\], n\[ame\] and s\[ize\]\.
@@ -127,10 +131,6 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 **`-g|--target <DIRECTORY_PATH>`**
 
 A directory to copy files and directories to\.
-
-**`[--target-action] <TARGET_ACTION>`**
-
-Action to choose if a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
 
 **`[-v|--verbosity] <VERBOSITY>`**
 
@@ -151,7 +151,8 @@ Backup Visual Studio project but exclude directories that are not necessary.
 ```
 orang copy MyProject ^
  --target "backup/MyProject" ^
- --overwrite yes ^
+ --target-action overwrite ^
+ --compare attributes size content ^
  --include-directory "bin,obj,packages,node_modules,.vs" literal list whole-input negative
 ```
 
@@ -159,8 +160,9 @@ orang copy MyProject ^
 
 ```
 orang copy MyProject ^
- --target "backup/MyProject" ^
- --overwrite y ^
+ -g "backup/MyProject" ^
+ --target-action o ^
+ --compare a s c ^
  -i "bin,obj,packages,node_modules,.vs" l li wi ne
 ```
 *\(Generated with [DotMarkdown](http://github.com/JosefPihrt/DotMarkdown)\)*

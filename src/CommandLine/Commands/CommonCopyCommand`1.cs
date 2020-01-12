@@ -19,10 +19,10 @@ namespace Orang.CommandLine
 
         public string Target => Options.Target;
 
-        public TargetExistsAction TargetAction
+        public ConflictResolution ConflictResolution
         {
-            get { return Options.TargetAction; }
-            protected set { Options.TargetAction = value; }
+            get { return Options.ConflictResolution; }
+            protected set { Options.ConflictResolution = value; }
         }
 
         protected HashSet<string> IgnoredPaths { get; set; }
@@ -143,9 +143,16 @@ namespace Orang.CommandLine
             }
 
             if (ask
-                && TargetAction == TargetExistsAction.Skip)
+                && ConflictResolution == ConflictResolution.Skip)
             {
                 return;
+            }
+
+            if (!isDirectory
+                && fileExists
+                && ConflictResolution == ConflictResolution.Rename)
+            {
+                destinationPath = CreateNewFile(destinationPath);
             }
 
             if (!Options.OmitPath)
@@ -155,7 +162,7 @@ namespace Orang.CommandLine
             }
 
             if (ask
-                && TargetAction == TargetExistsAction.Ask)
+                && ConflictResolution == ConflictResolution.Ask)
             {
                 string question;
                 if (directoryExists)
@@ -176,7 +183,7 @@ namespace Orang.CommandLine
                         }
                     case DialogResult.YesToAll:
                         {
-                            TargetAction = TargetExistsAction.Overwrite;
+                            ConflictResolution = ConflictResolution.Overwrite;
                             break;
                         }
                     case DialogResult.No:
@@ -186,7 +193,7 @@ namespace Orang.CommandLine
                         }
                     case DialogResult.NoToAll:
                         {
-                            TargetAction = TargetExistsAction.Skip;
+                            ConflictResolution = ConflictResolution.Skip;
                             return;
                         }
                     case DialogResult.Cancel:
@@ -199,13 +206,6 @@ namespace Orang.CommandLine
                             throw new InvalidOperationException($"Unknown enum value '{dialogResult}'.");
                         }
                 }
-            }
-
-            if (!isDirectory
-                && fileExists
-                && TargetAction == TargetExistsAction.Rename)
-            {
-                destinationPath = CreateNewFile(destinationPath);
             }
 
             if (isDirectory)

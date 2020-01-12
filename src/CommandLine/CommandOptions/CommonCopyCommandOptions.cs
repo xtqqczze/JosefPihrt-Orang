@@ -31,6 +31,6 @@ namespace Orang.CommandLine
 
         public string TargetNormalized { get; internal set; }
 
-        public TargetExistsAction TargetAction { get; internal set; }
+        public ConflictResolution ConflictResolution { get; internal set; }
     }
 }

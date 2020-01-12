@@ -2,7 +2,7 @@
 
 namespace Orang.FileSystem
 {
-    internal enum TargetExistsAction
+    internal enum ConflictResolution
     {
         Ask = 0,
         Overwrite = 1,

@@ -3,6 +3,7 @@
 * [\<ASK_MODE>](#ask-mode)
 * [\<ATTRIBUTES>](#attributes)
 * [\<COMPARE_OPTIONS>](#compare-options)
+* [\<CONFLICT_RESOLUTION>](#conflict-resolution)
 * [\<CONTENT_DISPLAY>](#content-display)
 * [\<DISPLAY_OPTIONS>](#display-options)
 * [\<EXTENSION_OPTIONS>](#extension-options)
@@ -18,7 +19,6 @@
 * [\<SYNC_BASE>](#sync-base)
 * [\<SYNC_MODE>](#sync-mode)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
-* [\<TARGET_ACTION>](#target-action)
 * [\<VERBOSITY>](#verbosity)
 
 ## \<ASK\_MODE>
@@ -59,6 +59,15 @@
 | c\[ontent\]            | Compare file content\.                  |
 | m\[odified\-\]t\[ime\] | Compare time a file was last modified\. |
 | s\[ize\]               | Compare file size\.                     |
+
+## \<CONFLICT\_RESOLUTION>
+
+| Value         | Description                                       |
+| ------------- | ------------------------------------------------- |
+| a\[sk\]       | Ask when a file or already exists\.               |
+| o\[verwrite\] | Overwrite a file when it already exists\.         |
+| r\[ename\]    | Create new file name if it already exists\.       |
+| s\[kip\]      | Do not copy or move a file if it already exists\. |
 
 ## \<CONTENT\_DISPLAY>
 
@@ -237,15 +246,6 @@
 | o\[ptions\]                     |
 | q\[uantifiers\]                 |
 | s\[ubstitutions\]               |
-
-## \<TARGET\_ACTION>
-
-| Value         | Description                                       |
-| ------------- | ------------------------------------------------- |
-| a\[sk\]       | Ask when a file or already exists\.               |
-| o\[verwrite\] | Overwrite a file when it already exists\.         |
-| r\[ename\]    | Create new file name if it already exists\.       |
-| s\[kip\]      | Do not copy or move a file if it already exists\. |
 
 ## \<VERBOSITY>
 

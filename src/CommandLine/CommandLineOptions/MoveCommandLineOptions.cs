@@ -23,10 +23,10 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
-        [Option(longName: OptionNames.TargetAction,
-            HelpText = "Action to choose if a file already exists.",
-            MetaValue = MetaValues.TargetAction)]
-        public string TargetAction { get; set; }
+        [Option(longName: OptionNames.Resolve,
+            HelpText = "Defines how to resolve conflict when a file already exists.",
+            MetaValue = MetaValues.ConflictResolution)]
+        public string Resolve { get; set; }
 
         public bool TryParse(MoveCommandOptions options)
         {
@@ -43,13 +43,13 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            if (!TryParseAsEnum(TargetAction, OptionNames.TargetAction, out TargetExistsAction targetAction, defaultValue: TargetExistsAction.Ask, provider: OptionValueProviders.TargetExistsActionProvider))
+            if (!TryParseAsEnum(Resolve, OptionNames.Resolve, out ConflictResolution conflictResolution, defaultValue: ConflictResolution.Ask, provider: OptionValueProviders.ConflictResolutionProvider))
                 return false;
 
             options.CompareOptions = compareOptions;
             options.DryRun = DryRun;
             options.Flat = Flat;
-            options.TargetAction = targetAction;
+            options.ConflictResolution = conflictResolution;
             options.Target = target;
 
             return true;
