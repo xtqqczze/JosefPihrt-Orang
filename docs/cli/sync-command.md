@@ -19,7 +19,6 @@ orang sync [<PATH>]
 [-t|--highlight]          <HIGHLIGHT>
 [-i|--include-directory]  <REGEX>
 [-m|--max-count]          <MAX_OPTIONS>
-[   --mode]               <SYNC_MODE>
 [-n|--name]               <REGEX>
 [   --no-recurse]
 [-o|--output]             <OUTPUT_OPTIONS>
@@ -28,6 +27,7 @@ orang sync [<PATH>]
 [-p|--properties]         <FILE_PROPERTIES>
 [-s|--sort]               <SORT_OPTIONS>
 [   --sync-base]          <SYNC_BASE>
+[   --sync-mode]          <SYNC_MODE>
  -g|--target              <DIRECTORY_PATH>
 [-v|--verbosity]          <VERBOSITY>
 ```
@@ -74,7 +74,7 @@ Encoding to use when a file does not contain byte order mark\. Default encoding 
 
 **`[-e|--extension] <EXTENSION_FILTER>`**
 
-A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ulture\-\]i\[nvariant\], f\[rom\-file\], i\[gnore\-case\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
+A filter for file extensions \(case\-insensitive by default\)\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ase\-\]s\[ensitive\], c\[ulture\-\]i\[nvariant\], f\[rom\-file\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
 
 **`[-h|--help]`**
 
@@ -91,10 +91,6 @@ Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTI
 **`[-m|--max-count] <MAX_OPTIONS>`**
 
 Stop searching after specified number is reached\. Allowed values are \<NUM>, m\[atches\]=\<NUM> and m\[atching\-\]f\[iles\]\.
-
-**`[--mode] <SYNC_MODE>`**
-
-Synchronization mode to be used\. Allowed values are s\[ynchronize\], e\[cho\] and c\[ontribute\]\.
 
 **`[-n|--name] <REGEX>`**
 
@@ -127,6 +123,10 @@ Sort matched files and directories\. Allowed values are a\[scending\], c\[reatio
 **`[--sync-base] <SYNC_BASE>`**
 
 Action to choose if a file or directory exists in one directory and it is missing in the second directory\. Allowed values are a\[sk\], s\[ource\] and t\[arget\]\.
+
+**`[--sync-mode] <SYNC_MODE>`**
+
+Synchronization mode to be used\. Allowed values are s\[ynchronize\], e\[cho\] and c\[ontribute\]\.
 
 **`-g|--target <DIRECTORY_PATH>`**
 

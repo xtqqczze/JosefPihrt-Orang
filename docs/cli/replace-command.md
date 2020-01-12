@@ -73,7 +73,7 @@ Path to the evaluator method to compute replacements\. The format is "LibraryPat
 
 **`[-e|--extension] <EXTENSION_FILTER>`**
 
-A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ulture\-\]i\[nvariant\], f\[rom\-file\], i\[gnore\-case\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
+A filter for file extensions \(case\-insensitive by default\)\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ase\-\]s\[ensitive\], c\[ulture\-\]i\[nvariant\], f\[rom\-file\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
 
 **`[-h|--help]`**
 

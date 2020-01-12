@@ -90,9 +90,9 @@
 
 | Value                      | Description                                                                                                             |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| c\[ase\-\]s\[ensitive\]    | Use case\-sensitive matching\.                                                                                          |
 | c\[ulture\-\]i\[nvariant\] | Ignore cultural differences between languages\.                                                                         |
 | f\[rom\-file\]             | Load pattern from a file\.                                                                                              |
-| i\[gnore\-case\]           | Use case\-insensitive matching\.                                                                                        |
 | l\[ist\-\]s\[eparator\]    | String that separate each value in a list\. Default value is comma \(,\) or newline if the list is loaded from a file\. |
 | l\[iteral\]                | Pattern should be treated as a literal expression and not as a regular expression\.                                     |
 | ne\[gative\]               | Search succeeds if the regular expression does not match\.                                                              |

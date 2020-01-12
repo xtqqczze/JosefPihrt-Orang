@@ -24,10 +24,10 @@ namespace Orang.CommandLine
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
 
-        [Option(longName: OptionNames.Mode,
+        [Option(longName: OptionNames.SyncMode,
             HelpText = "Synchronization mode to be used.",
             MetaValue = MetaValues.SyncMode)]
-        public string Mode { get; set; }
+        public string SyncMode { get; set; }
 
         public bool TryParse(SyncCommandOptions options)
         {
@@ -53,7 +53,7 @@ namespace Orang.CommandLine
             if (!TryParseAsEnum(SyncBase, OptionNames.SyncBase, out SyncBase syncBase, defaultValue: Orang.SyncBase.Source, provider: OptionValueProviders.SyncBaseProvider))
                 return false;
 
-            if (!TryParseAsEnum(Mode, OptionNames.Mode, out SyncMode syncMode, defaultValue: SyncMode.Synchronize, provider: OptionValueProviders.SyncModeProvider))
+            if (!TryParseAsEnum(SyncMode, OptionNames.SyncMode, out SyncMode syncMode, defaultValue: Orang.SyncMode.Synchronize, provider: OptionValueProviders.SyncModeProvider))
                 return false;
 
             options.SearchTarget = SearchTarget.All;
