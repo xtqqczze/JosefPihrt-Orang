@@ -29,6 +29,7 @@ namespace Orang.CommandLine
         public const string RegexOptions = "<REGEX_OPTIONS>";
         public const string Replacement = "<REPLACEMENT>";
         public const string ReplacementOptions = "<REPLACEMENT_OPTIONS>";
+        public const string ReplaceModify = "<REPLACE_MODIFY>";
         public const string SortOptions = "<SORT_OPTIONS>";
         public const string SyncBase = "<SYNC_BASE>";
         public const string SyncMode = "<SYNC_MODE>";

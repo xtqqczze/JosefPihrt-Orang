@@ -31,6 +31,7 @@ namespace Orang.CommandLine
         public const string Input = "input";
         public const string Manual = "manual";
         public const string MaxCount = "max-count";
+        public const string Modify = "modify";
         public const string SyncMode = "sync-mode";
         public const string Name = "name";
         public const string NoGroups = "no-groups";
