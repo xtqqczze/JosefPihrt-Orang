@@ -29,7 +29,7 @@ namespace Orang.CommandLine
             if (!TryParseChar(Value, out char value))
                 return false;
 
-            if (!TryParseRegexOptions(Options, OptionNames.Options, out RegexOptions regexOptions))
+            if (!TryParseAsEnumFlags(Options, OptionNames.Options, out RegexOptions regexOptions, provider: OptionValueProviders.RegexOptionsProvider))
                 return false;
 
             options.Value = value;

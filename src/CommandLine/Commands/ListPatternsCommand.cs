@@ -11,14 +11,11 @@ using static Orang.Logger;
 
 namespace Orang.CommandLine
 {
-    internal class ListPatternsCommand : AbstractCommand
+    internal class ListPatternsCommand : AbstractCommand<ListPatternsCommandOptions>
     {
-        public ListPatternsCommand(ListPatternsCommandOptions options)
+        public ListPatternsCommand(ListPatternsCommandOptions options) : base(options)
         {
-            Options = options;
         }
-
-        public ListPatternsCommandOptions Options { get; }
 
         protected override CommandResult ExecuteCore(CancellationToken cancellationToken = default)
         {
