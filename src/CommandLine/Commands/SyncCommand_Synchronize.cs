@@ -16,10 +16,10 @@ namespace Orang.CommandLine
         {
         }
 
-        public SyncBase SyncBase
+        new public SyncConflictResolution ConflictResolution
         {
-            get { return Options.SyncBase; }
-            private set { Options.SyncBase = value; }
+            get { return Options.ConflictResolution; }
+            private set { Options.ConflictResolution = value; }
         }
 
         protected override void ExecuteOperation(SearchContext context, string sourcePath, string destinationPath, bool isDirectory, string indent)
@@ -67,7 +67,7 @@ namespace Orang.CommandLine
                     return;
                 }
 
-                if (SyncBase == SyncBase.Ask)
+                if (ConflictResolution == SyncConflictResolution.Ask)
                 {
                     WritePathPrefix(sourcePath, "SRC", default, indent);
                     WritePathPrefix(destinationPath, "TRG", default, indent);
@@ -84,7 +84,7 @@ namespace Orang.CommandLine
                         case DialogResult.YesToAll:
                             {
                                 preferTarget = true;
-                                SyncBase = SyncBase.Target;
+                                ConflictResolution = SyncConflictResolution.TargetWins;
                                 break;
                             }
                         case DialogResult.No:
@@ -96,7 +96,7 @@ namespace Orang.CommandLine
                         case DialogResult.NoToAll:
                             {
                                 preferTarget = false;
-                                SyncBase = SyncBase.Source;
+                                ConflictResolution = SyncConflictResolution.SourceWins;
                                 break;
                             }
                         case DialogResult.Cancel:
@@ -110,17 +110,17 @@ namespace Orang.CommandLine
                             }
                     }
                 }
-                else if (SyncBase == SyncBase.Source)
+                else if (ConflictResolution == SyncConflictResolution.SourceWins)
                 {
                     preferTarget = false;
                 }
-                else if (SyncBase == SyncBase.Target)
+                else if (ConflictResolution == SyncConflictResolution.TargetWins)
                 {
                     preferTarget = true;
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Unknown enum value '{SyncBase}'.");
+                    throw new InvalidOperationException($"Unknown enum value '{ConflictResolution}'.");
                 }
             }
 
@@ -144,13 +144,13 @@ namespace Orang.CommandLine
             Options.Paths = ImmutableArray.Create(new PathInfo(directoryPath, PathOrigin.None));
             Options.Target = target;
 
-            if (SyncBase == SyncBase.Source)
+            if (ConflictResolution == SyncConflictResolution.SourceWins)
             {
-                SyncBase = SyncBase.Target;
+                ConflictResolution = SyncConflictResolution.TargetWins;
             }
-            else if (SyncBase == SyncBase.Target)
+            else if (ConflictResolution == SyncConflictResolution.TargetWins)
             {
-                SyncBase = SyncBase.Source;
+                ConflictResolution = SyncConflictResolution.SourceWins;
             }
 
             base.ExecuteDirectory(directoryPath, context);

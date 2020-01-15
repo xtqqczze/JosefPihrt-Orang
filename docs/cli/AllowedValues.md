@@ -14,9 +14,10 @@
 * [\<OUTPUT_OPTIONS>](#output-options)
 * [\<PATH_DISPLAY>](#path-display)
 * [\<PATTERN_OPTIONS>](#pattern-options)
+* [\<REPLACE_MODIFY>](#replace-modify)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
-* [\<SYNC_BASE>](#sync-base)
+* [\<SYNC_CONFLICT_RESOLUTION>](#sync-conflict-resolution)
 * [\<SYNC_MODE>](#sync-mode)
 * [\<SYNTAX_SECTIONS>](#syntax-sections)
 * [\<VERBOSITY>](#verbosity)
@@ -175,6 +176,8 @@
 | compiled                          | Compile the regular expression to an assembly\.                                                                                                        |
 | c\[ulture\-\]i\[nvariant\]        | Ignore cultural differences between languages\.                                                                                                        |
 | e\[cma\-\]s\[cript\]              | Enable ECMAScript\-compliant behavior for the expression\.                                                                                             |
+| e\[nds\-\]w\[ith\]                | Pattern should match from the end of the input string\.                                                                                                |
+| e\[quals\]                        | Pattern should match whole input string\.                                                                                                              |
 | n \[explicit\-capture\]           | Do not capture unnamed groups\.                                                                                                                        |
 | f\[rom\-file\]                    | Load pattern from a file\.                                                                                                                             |
 | g\[roup\]=\<GROUP\_NAME>          |
@@ -189,10 +192,21 @@
 | p\[art\]=\<NAME\_PART>            | The part of a file or a directory name that should be matched\.                                                                                        |
 | r\[ight\-to\-left\]               | Specifies that the search will be from right to left\.                                                                                                 |
 | s\[ingleline\]                    | The period \(\.\) matches every character \(instead of every character except \\n\)\.                                                                  |
+| s\[tarts\-\]w\[ith\]              | Pattern should match from the start of the input string\.                                                                                              |
 | timeout=\<NUM>                    | Match time\-out interval in seconds\.                                                                                                                  |
-| w\[hole\-\]i\[nput\]              | Pattern should match whole input string\.                                                                                                              |
 | w\[hole\-\]l\[ine\]               | Pattern should match whole line\.                                                                                                                      |
 | w\[hole\-word\]                   | Pattern should match whole word\.                                                                                                                      |
+
+## \<REPLACE\_MODIFY>
+
+| Value                     | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| ci \[culture\-invariant\] | Ignore cultural differences between languages\. |
+| tl \[to\-lower\]          | Convert value to lowercase\.                    |
+| tu \[to\-upper\]          | Convert value to uppercase\.                    |
+| t\[rim\]                  | Trim leading and trailing white\-space\.        |
+| te \[trim\-end\]          | Trim trailing white\-space\.                    |
+| ts \[trim\-start\]        | Trim leading white\-space\.                     |
 
 ## \<REPLACEMENT\_OPTIONS>
 
@@ -214,13 +228,13 @@
 | n\[ame\]               | Sort items by full name\.          |
 | s\[ize\]               | Sort items by size\.               |
 
-## \<SYNC\_BASE>
+## \<SYNC\_CONFLICT\_RESOLUTION>
 
-| Value      | Description |
-| ---------- | ----------- |
-| a\[sk\]    |
-| s\[ource\] |
-| t\[arget\] |
+| Value            | Description |
+| ---------------- | ----------- |
+| a\[sk\]          |
+| s\[ource\-wins\] |
+| t\[arget\-wins\] |
 
 ## \<SYNC\_MODE>
 

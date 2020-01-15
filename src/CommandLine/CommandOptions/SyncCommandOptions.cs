@@ -8,7 +8,7 @@ namespace Orang.CommandLine
         {
         }
 
-        public SyncBase SyncBase { get; internal set; }
+        new public SyncConflictResolution ConflictResolution { get; internal set; }
 
         public SyncMode SyncMode { get; internal set; }
     }

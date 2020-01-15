@@ -21,12 +21,12 @@ orang sync [<PATH>]
 [-m|--max-count]          <MAX_OPTIONS>
 [-n|--name]               <REGEX>
 [   --no-recurse]
+[   --on-conflict]        <SYNC_CONFLICT_RESOLUTION>
 [-o|--output]             <OUTPUT_OPTIONS>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
 [-p|--properties]         <FILE_PROPERTIES>
 [-s|--sort]               <SORT_OPTIONS>
-[   --sync-base]          <SYNC_BASE>
 [   --sync-mode]          <SYNC_MODE>
  -g|--target              <DIRECTORY_PATH>
 [-v|--verbosity]          <VERBOSITY>
@@ -58,7 +58,7 @@ File properties to be compared\. Allowed values are n\[one\], a\[ttributes\], c\
 
 **`[-c|--content] <REGEX>`**
 
-Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
@@ -86,7 +86,7 @@ Parts of the output to highlight\. Allowed values are n\[one\], m\[atch\], e\[mp
 
 **`[-i|--include-directory] <REGEX>`**
 
-Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[-m|--max-count] <MAX_OPTIONS>`**
 
@@ -94,11 +94,15 @@ Stop searching after specified number is reached\. Allowed values are \<NUM>, m\
 
 **`[-n|--name] <REGEX>`**
 
-Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[--no-recurse]`**
 
 Do not search subdirectories\.
+
+**`[--on-conflict] <SYNC_CONFLICT_RESOLUTION>`**
+
+Action to choose if a file or directory exists in one directory and it is missing in the second directory\. Allowed values are a\[sk\], s\[ource\-wins\] and t\[arget\-wins\]\.
 
 **`[-o|--output] <OUTPUT_OPTIONS>`**
 
@@ -119,10 +123,6 @@ A filter for file properties\. Allowed values are c\[reation\-\]t\[ime\], m\[odi
 **`[-s|--sort] <SORT_OPTIONS>`**
 
 Sort matched files and directories\. Allowed values are a\[scending\], c\[reation\-\]t\[ime\], d\[escending\], m\[ax\-count\]=\<NUM>, m\[odified\-\]t\[ime\], n\[ame\] and s\[ize\]\.
-
-**`[--sync-base] <SYNC_BASE>`**
-
-Action to choose if a file or directory exists in one directory and it is missing in the second directory\. Allowed values are a\[sk\], s\[ource\] and t\[arget\]\.
 
 **`[--sync-mode] <SYNC_MODE>`**
 

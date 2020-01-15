@@ -2,10 +2,10 @@
 
 namespace Orang
 {
-    internal enum SyncBase
+    internal enum SyncConflictResolution
     {
-        Source = 0,
-        Target = 1,
-        Ask = 2
+        SourceWins = 0,
+        TargetWins = 1,
+        Ask = 2,
     }
 }

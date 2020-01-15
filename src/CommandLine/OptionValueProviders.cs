@@ -376,10 +376,10 @@ namespace Orang.CommandLine
             SimpleOptionValue.Create(SyncMode.Contribute, description: "Similar to 'echo' mode, but it does not delete any files.")
         );
 
-        public static OptionValueProvider SyncBaseProvider { get; } = new OptionValueProvider(MetaValues.SyncBase,
-            SimpleOptionValue.Create(SyncBase.Ask, description: ""),
-            SimpleOptionValue.Create(SyncBase.Source, description: ""),
-            SimpleOptionValue.Create(SyncBase.Target, description: "")
+        public static OptionValueProvider SyncConflictResolutionProvider { get; } = new OptionValueProvider(MetaValues.SyncConflictResolution,
+            SimpleOptionValue.Create(SyncConflictResolution.Ask, description: ""),
+            SimpleOptionValue.Create(SyncConflictResolution.SourceWins, description: ""),
+            SimpleOptionValue.Create(SyncConflictResolution.TargetWins, description: "")
         );
 
         public static ImmutableDictionary<string, OptionValueProvider> ProvidersByName

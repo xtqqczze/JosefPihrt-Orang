@@ -36,16 +36,15 @@ namespace Orang.CommandLine
         public const string Name = "name";
         public const string NoGroups = "no-groups";
         public const string NoRecurse = "no-recurse";
+        public const string OnConflict = "on-conflict";
         public const string Options = "options";
         public const string Output = "output";
         public const string PathsFrom = "paths-from";
         public const string Progress = "progress";
         public const string Properties = "properties";
         public const string Replacement = "replacement";
-        public const string Resolve = "resolve";
         public const string Section = "section";
         public const string Sort = "sort";
-        public const string SyncBase = "sync-base";
         public const string Target = "target";
         public const string Timeout = "timeout";
         public const string Values = "values";
