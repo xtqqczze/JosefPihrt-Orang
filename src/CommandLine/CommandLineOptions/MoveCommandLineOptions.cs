@@ -22,7 +22,7 @@ namespace Orang.CommandLine
             HelpText = "Move files directly into target directory.")]
         public bool Flat { get; set; }
 
-        [Option(shortName: OptionShortNames.Target, longName: OptionNames.Target,
+        [Option(longName: OptionNames.Target,
             Required = true,
             HelpText = "A directory to move files and directories to.",
             MetaValue = MetaValues.DirectoryPath)]
