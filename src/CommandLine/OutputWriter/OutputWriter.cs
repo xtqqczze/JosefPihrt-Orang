@@ -218,14 +218,14 @@ namespace Orang.CommandLine
                 else
                 {
                     bool addDetails = options.ContentDisplayStyle == ContentDisplayStyle.ValueDetail;
-                SplitOutputInfo outputInfo = null;
-                string indent = null;
+                    SplitOutputInfo outputInfo = null;
+                    string indent = null;
 
-                if (addDetails)
-                {
-                    outputInfo = SplitOutputInfo.Create(splitData);
-                    indent = new string(' ', outputInfo.Width);
-                }
+                    if (addDetails)
+                    {
+                        outputInfo = SplitOutputInfo.Create(splitData);
+                        indent = new string(' ', outputInfo.Width);
+                    }
 
                     using (IEnumerator<SplitItem> en = splitData.Items.GetEnumerator())
                     {

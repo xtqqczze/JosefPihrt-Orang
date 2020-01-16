@@ -24,7 +24,7 @@ namespace Orang.CommandLine
         public string Input { get; set; }
 
         [Option(longName: OptionNames.Modify,
-            HelpText = "",
+            HelpText = "Functions to modify results.",
             MetaValue = MetaValues.ModifyOptions)]
         public IEnumerable<string> Modify { get; set; }
 
