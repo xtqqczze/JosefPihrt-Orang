@@ -13,6 +13,7 @@
 * [\<OUTPUT_OPTIONS>](#output-options)
 * [\<PATH_DISPLAY>](#path-display)
 * [\<PATTERN_OPTIONS>](#pattern-options)
+* [\<REPLACE_MODIFY>](#replace-modify)
 * [\<REPLACEMENT_OPTIONS>](#replacement-options)
 * [\<SORT_OPTIONS>](#sort-options)
 * [\<SORT_PROPERTY>](#sort-property)
@@ -78,9 +79,9 @@
 
 | Value                      | Description                                                                                                             |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| c\[ase\-\]s\[ensitive\]    | Use case\-sensitive matching\.                                                                                          |
 | c\[ulture\-\]i\[nvariant\] | Ignore cultural differences between languages\.                                                                         |
 | f\[rom\-file\]             | Load pattern from a file\.                                                                                              |
-| i\[gnore\-case\]           | Use case\-insensitive matching\.                                                                                        |
 | l\[ist\-\]s\[eparator\]    | String that separate each value in a list\. Default value is comma \(,\) or newline if the list is loaded from a file\. |
 | l\[iteral\]                | Pattern should be treated as a literal expression and not as a regular expression\.                                     |
 | ne\[gative\]               | Search succeeds if the regular expression does not match\.                                                              |
@@ -123,26 +124,26 @@
 
 ## \<MODIFY\_OPTIONS>
 
-| Value                       | Description                                                    |
-| --------------------------- | -------------------------------------------------------------- |
-| ag\[gregate\]               | Display list of all values at the end of search\.              |
-| aggregate\-only             | Display only list of all values at the end of search\.         |
-| a\[scending\]               | Sort values in an ascending order\.                            |
-| ci \[culture\-invariant\]   | Ignore cultural differences between languages\.                |
-| d\[escending\]              | Sort values in a descending order\.                            |
-| distinct                    | Return distinct values\.                                       |
-| e\[xcept\]                  | Return values from first file except values from second file\. |
-| intersect                   | Return values that were found in all files\.                   |
-| i\[gnore\-case\]            | Use case\-insensitive matching\.                               |
-| m\[ethod\]=\<METHOD>        |
-| re\[move\-empty\]           | Remove values that are empty strings\.                         |
-| rw \[remove\-white\-space\] | Remove values that are empty or consist of white\-space\.      |
+| Value                       | Description                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ag\[gregate\]               | Display list of all values at the end of search\.                                                                                                                  |
+| ao \[aggregate\-only\]      | Display only list of all values at the end of search\.                                                                                                             |
+| a\[scending\]               | Sort values in an ascending order\.                                                                                                                                |
+| ci \[culture\-invariant\]   | Ignore cultural differences between languages\.                                                                                                                    |
+| d\[escending\]              | Sort values in a descending order\.                                                                                                                                |
+| distinct                    | Return distinct values\.                                                                                                                                           |
+| e\[xcept\]                  | Return values from first file except values from second file\.                                                                                                     |
+| intersect                   | Return values that were found in all files\.                                                                                                                       |
+| i\[gnore\-case\]            | Use case\-insensitive matching\.                                                                                                                                   |
+| method=\<METHOD>            | Path to a method that modifies values\. The signature is "IEnumerable\<string> M\(IEnumerable\<string>\)"\. The syntax is "LibraryPath,FullTypeName\.MethodName"\. |
+| re\[move\-empty\]           | Remove values that are empty strings\.                                                                                                                             |
+| rw \[remove\-white\-space\] | Remove values that are empty or consist of white\-space\.                                                                                                          |
 | sort\-by=\<SORT\_PROPERTY>  |
-| tl \[to\-lower\]            | Convert value to lowercase\.                                   |
-| tu \[to\-upper\]            | Convert value to uppercase\.                                   |
-| t\[rim\]                    | Trim leading and trailing white\-space\.                       |
-| te \[trim\-end\]            | Trim trailing white\-space\.                                   |
-| ts \[trim\-start\]          | Trim leading white\-space\.                                    |
+| tl \[to\-lower\]            | Convert value to lowercase\.                                                                                                                                       |
+| tu \[to\-upper\]            | Convert value to uppercase\.                                                                                                                                       |
+| t\[rim\]                    | Trim leading and trailing white\-space\.                                                                                                                           |
+| te \[trim\-end\]            | Trim trailing white\-space\.                                                                                                                                       |
+| ts \[trim\-start\]          | Trim leading white\-space\.                                                                                                                                        |
 
 ## \<NAME\_PART>
 
@@ -177,6 +178,8 @@
 | compiled                          | Compile the regular expression to an assembly\.                                                                                                        |
 | c\[ulture\-\]i\[nvariant\]        | Ignore cultural differences between languages\.                                                                                                        |
 | e\[cma\-\]s\[cript\]              | Enable ECMAScript\-compliant behavior for the expression\.                                                                                             |
+| e\[nds\-\]w\[ith\]                | Pattern should match from the end of the input string\.                                                                                                |
+| e\[quals\]                        | Pattern should match whole input string\.                                                                                                              |
 | n \[explicit\-capture\]           | Do not capture unnamed groups\.                                                                                                                        |
 | f\[rom\-file\]                    | Load pattern from a file\.                                                                                                                             |
 | g\[roup\]=\<GROUP\_NAME>          |
@@ -191,10 +194,21 @@
 | p\[art\]=\<NAME\_PART>            | The part of a file or a directory name that should be matched\.                                                                                        |
 | r\[ight\-to\-left\]               | Specifies that the search will be from right to left\.                                                                                                 |
 | s\[ingleline\]                    | The period \(\.\) matches every character \(instead of every character except \\n\)\.                                                                  |
+| s\[tarts\-\]w\[ith\]              | Pattern should match from the start of the input string\.                                                                                              |
 | timeout=\<NUM>                    | Match time\-out interval in seconds\.                                                                                                                  |
-| w\[hole\-\]i\[nput\]              | Pattern should match whole input string\.                                                                                                              |
 | w\[hole\-\]l\[ine\]               | Pattern should match whole line\.                                                                                                                      |
 | w\[hole\-word\]                   | Pattern should match whole word\.                                                                                                                      |
+
+## \<REPLACE\_MODIFY>
+
+| Value                     | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| ci \[culture\-invariant\] | Ignore cultural differences between languages\. |
+| tl \[to\-lower\]          | Convert value to lowercase\.                    |
+| tu \[to\-upper\]          | Convert value to uppercase\.                    |
+| t\[rim\]                  | Trim leading and trailing white\-space\.        |
+| te \[trim\-end\]          | Trim trailing white\-space\.                    |
+| ts \[trim\-start\]        | Trim leading white\-space\.                     |
 
 ## \<REPLACEMENT\_OPTIONS>
 

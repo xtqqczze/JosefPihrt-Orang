@@ -50,7 +50,7 @@ File attributes that should be skipped\. Allowed values are archive, compressed,
 
 **`[-c|--content] <REGEX>`**
 
-Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for files' content\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
@@ -62,7 +62,7 @@ Encoding to use when a file does not contain byte order mark\. Default encoding 
 
 **`[-e|--extension] <EXTENSION_FILTER>`**
 
-A filter for file extensions\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ulture\-\]i\[nvariant\], f\[rom\-file\], i\[gnore\-case\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
+A filter for file extensions \(case\-insensitive by default\)\. Syntax is EXT1\[,EXT2,\.\.\.\] \[\<EXTENSION\_OPTIONS>\]\. Allowed values are c\[ase\-\]s\[ensitive\], c\[ulture\-\]i\[nvariant\], f\[rom\-file\], l\[ist\-\]s\[eparator\], l\[iteral\], ne\[gative\] and timeout=\<NUM>\.
 
 **`[-h|--help]`**
 
@@ -74,7 +74,7 @@ Parts of the output to highlight\. Allowed values are n\[one\], m\[atch\], e\[mp
 
 **`[-i|--include-directory] <REGEX>`**
 
-Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for a directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[-m|--max-count] <MAX_OPTIONS>`**
 
@@ -82,11 +82,11 @@ Stop searching after specified number is reached\. Allowed values are \<NUM>, m\
 
 **`[--modify] <MODIFY_OPTIONS>`**
 
-Allowed values are ag\[gregate\], aggregate\-only, a\[scending\], ci \[culture\-invariant\], d\[escending\], distinct, e\[xcept\], intersect, i\[gnore\-case\], m\[ethod\]=\<METHOD>, re\[move\-empty\], rw \[remove\-white\-space\], sort\-by=\<SORT\_PROPERTY>, tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\] and ts \[trim\-start\]\.
+Allowed values are ag\[gregate\], ao \[aggregate\-only\], a\[scending\], ci \[culture\-invariant\], d\[escending\], distinct, e\[xcept\], intersect, i\[gnore\-case\], method=\<METHOD>, re\[move\-empty\], rw \[remove\-white\-space\], sort\-by=\<SORT\_PROPERTY>, tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\] and ts \[trim\-start\]\.
 
 **`[-n|--name] <REGEX>`**
 
-Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], g\[roup\]=\<GROUP\_NAME>, i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], ne\[gative\], p\[art\]=\<NAME\_PART>, r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[--no-recurse]`**
 

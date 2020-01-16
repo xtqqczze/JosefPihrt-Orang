@@ -28,7 +28,7 @@ Path to a file that should be analyzed\.
 
 **`-c|--content <REGEX>`**
 
-Regular expression for the input string\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], n \[explicit\-capture\], f\[rom\-file\], i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], r\[ight\-to\-left\], s\[ingleline\], timeout=\<NUM>, w\[hole\-\]i\[nput\], w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
+Regular expression for the input string\. Syntax is \<PATTERN> \[\<PATTERN\_OPTIONS>\]\. Allowed values are compiled, c\[ulture\-\]i\[nvariant\], e\[cma\-\]s\[cript\], e\[nds\-\]w\[ith\], e\[quals\], n \[explicit\-capture\], f\[rom\-file\], i\[gnore\-case\], x \[ignore\-pattern\-whitespace\], li\[st\], length=\<NUM>, l\[ist\-\]s\[eparator\], l\[iteral\], m\[ultiline\], r\[ight\-to\-left\], s\[ingleline\], s\[tarts\-\]w\[ith\], timeout=\<NUM>, w\[hole\-\]l\[ine\] and w\[hole\-word\]\.
 
 **`[-y|--display] <DISPLAY_OPTIONS>`**
 
@@ -52,7 +52,7 @@ Maximum number of times the split can occur\.
 
 **`[--modify] <MODIFY_OPTIONS>`**
 
-Allowed values are ag\[gregate\], aggregate\-only, a\[scending\], ci \[culture\-invariant\], d\[escending\], distinct, e\[xcept\], intersect, i\[gnore\-case\], m\[ethod\]=\<METHOD>, re\[move\-empty\], rw \[remove\-white\-space\], sort\-by=\<SORT\_PROPERTY>, tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\] and ts \[trim\-start\]\.
+Allowed values are ag\[gregate\], ao \[aggregate\-only\], a\[scending\], ci \[culture\-invariant\], d\[escending\], distinct, e\[xcept\], intersect, i\[gnore\-case\], method=\<METHOD>, re\[move\-empty\], rw \[remove\-white\-space\], sort\-by=\<SORT\_PROPERTY>, tl \[to\-lower\], tu \[to\-upper\], t\[rim\], te \[trim\-end\] and ts \[trim\-start\]\.
 
 **`[--no-groups]`**
 

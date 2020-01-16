@@ -57,7 +57,7 @@ namespace Orang.CommandLine
         public static readonly KeyValuePairOptionValue MaxCount = KeyValuePairOptionValue.Create("max-count", "<NUM>", description: "Show only <NUM> items.");
         public static readonly KeyValuePairOptionValue MaxMatches = KeyValuePairOptionValue.Create("matches", "<NUM>", description: "Stop searching after <NUM> matches.");
         public static readonly KeyValuePairOptionValue MaxMatchingFiles = KeyValuePairOptionValue.Create("matching-files", "<NUM>", shortKey: "mf", helpValue: "m[atching-]f[iles]", description: "Stop searching after <NUM> matching files.");
-        public static readonly KeyValuePairOptionValue Method = KeyValuePairOptionValue.Create("method", "<METHOD>", shortKey: "m");
+        public static readonly KeyValuePairOptionValue Method = KeyValuePairOptionValue.Create("method", "<METHOD>", shortKey: "", description: "Path to a method that modifies values. The signature is \"IEnumerable<string> M(IEnumerable<string>)\". The syntax is \"LibraryPath,FullTypeName.MethodName\".");
         public static readonly KeyValuePairOptionValue Part = KeyValuePairOptionValue.Create("part", MetaValues.NamePart, shortKey: "p", description: "The part of a file or a directory name that should be matched.");
         public static readonly KeyValuePairOptionValue SortBy = KeyValuePairOptionValue.Create("sort-by", MetaValues.SortProperty, shortKey: "", description: "");
         public static readonly KeyValuePairOptionValue Timeout = KeyValuePairOptionValue.Create("timeout", "<NUM>", shortKey: "", description: "Match time-out interval in seconds.");
