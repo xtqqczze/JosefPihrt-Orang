@@ -10,6 +10,7 @@ orang sync [<PATH>]
 [-a|--attributes]         <ATTRIBUTES>
 [   --attributes-to-skip] <ATTRIBUTES>
 [   --compare]            <COMPARE_OPTIONS>
+[   --conflict]           <SYNC_CONFLICT_RESOLUTION>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
 [-d|--dry-run]
@@ -21,7 +22,6 @@ orang sync [<PATH>]
 [-m|--max-count]          <MAX_OPTIONS>
 [-n|--name]               <REGEX>
 [   --no-recurse]
-[   --on-conflict]        <SYNC_CONFLICT_RESOLUTION>
 [-o|--output]             <OUTPUT_OPTIONS>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
@@ -55,6 +55,10 @@ File attributes that should be skipped\. Allowed values are archive, compressed,
 **`[--compare] <COMPARE_OPTIONS>`**
 
 File properties to be compared\. Allowed values are n\[one\], a\[ttributes\], c\[ontent\], m\[odified\-\]t\[ime\] and s\[ize\]\.
+
+**`[--conflict] <SYNC_CONFLICT_RESOLUTION>`**
+
+Action to choose if a file or directory exists in one directory and it is missing in the second directory\. Allowed values are a\[sk\], s\[ource\-wins\] and t\[arget\-wins\]\.
 
 **`[-c|--content] <REGEX>`**
 
@@ -99,10 +103,6 @@ Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN
 **`[--no-recurse]`**
 
 Do not search subdirectories\.
-
-**`[--on-conflict] <SYNC_CONFLICT_RESOLUTION>`**
-
-Action to choose if a file or directory exists in one directory and it is missing in the second directory\. Allowed values are a\[sk\], s\[ource\-wins\] and t\[arget\-wins\]\.
 
 **`[-o|--output] <OUTPUT_OPTIONS>`**
 

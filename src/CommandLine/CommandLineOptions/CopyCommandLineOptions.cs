@@ -9,6 +9,11 @@ namespace Orang.CommandLine
     [Verb("copy", HelpText = "Searches the file system for files and directories and copy them to a destination directory.")]
     internal sealed class CopyCommandLineOptions : CommonCopyCommandLineOptions
     {
+        [Option(longName: OptionNames.Conflict,
+            HelpText = "Defines how to resolve conflict when a file already exists.",
+            MetaValue = MetaValues.ConflictResolution)]
+        public string OnConflict { get; set; }
+
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
             HelpText = "Display which files or directories should be copied but do not actually copy any file or directory.")]
         public bool DryRun { get; set; }
@@ -22,11 +27,6 @@ namespace Orang.CommandLine
             HelpText = "A directory to copy files and directories to.",
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
-
-        [Option(longName: OptionNames.OnConflict,
-            HelpText = "Defines how to resolve conflict when a file already exists.",
-            MetaValue = MetaValues.ConflictResolution)]
-        public string OnConflict { get; set; }
 
         public bool TryParse(CopyCommandOptions options)
         {
@@ -43,7 +43,7 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            if (!TryParseAsEnum(OnConflict, OptionNames.OnConflict, out ConflictResolution conflictResolution, defaultValue: ConflictResolution.Ask, provider: OptionValueProviders.ConflictResolutionProvider))
+            if (!TryParseAsEnum(OnConflict, OptionNames.Conflict, out ConflictResolution conflictResolution, defaultValue: ConflictResolution.Ask, provider: OptionValueProviders.ConflictResolutionProvider))
                 return false;
 
             options.CompareOptions = compareOptions;

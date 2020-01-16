@@ -9,25 +9,25 @@ namespace Orang.CommandLine
     [Verb("sync", HelpText = "Synchronizes content of two directories.")]
     internal sealed class SyncCommandLineOptions : CommonCopyCommandLineOptions
     {
-        [Option(longName: OptionNames.OnConflict,
+        [Option(longName: OptionNames.Conflict,
             HelpText = "Action to choose if a file or directory exists in one directory and it is missing in the second directory.",
             MetaValue = MetaValues.SyncConflictResolution)]
-        public string OnConflict { get; set; }
+        public string Conflict { get; set; }
 
         [Option(shortName: OptionShortNames.DryRun, longName: OptionNames.DryRun,
             HelpText = "Display which files or directories should be copied/deleted but do not actually copy/delete any file or directory.")]
         public bool DryRun { get; set; }
+
+        [Option(longName: OptionNames.SyncMode,
+            HelpText = "Synchronization mode to be used.",
+            MetaValue = MetaValues.SyncMode)]
+        public string SyncMode { get; set; }
 
         [Option(shortName: OptionShortNames.Target, longName: OptionNames.Target,
             Required = true,
             HelpText = "A directory to be synchronized.",
             MetaValue = MetaValues.DirectoryPath)]
         public string Target { get; set; }
-
-        [Option(longName: OptionNames.SyncMode,
-            HelpText = "Synchronization mode to be used.",
-            MetaValue = MetaValues.SyncMode)]
-        public string SyncMode { get; set; }
 
         public bool TryParse(SyncCommandOptions options)
         {
@@ -50,7 +50,7 @@ namespace Orang.CommandLine
             if (!TryEnsureFullPath(Target, out string target))
                 return false;
 
-            if (!TryParseAsEnum(OnConflict, OptionNames.OnConflict, out SyncConflictResolution conflictResolution, defaultValue: SyncConflictResolution.SourceWins, provider: OptionValueProviders.SyncConflictResolutionProvider))
+            if (!TryParseAsEnum(Conflict, OptionNames.Conflict, out SyncConflictResolution conflictResolution, defaultValue: SyncConflictResolution.SourceWins, provider: OptionValueProviders.SyncConflictResolutionProvider))
                 return false;
 
             if (!TryParseAsEnum(SyncMode, OptionNames.SyncMode, out SyncMode syncMode, defaultValue: Orang.SyncMode.Synchronize, provider: OptionValueProviders.SyncModeProvider))

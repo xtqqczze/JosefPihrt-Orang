@@ -10,6 +10,7 @@ orang copy [<PATH>]
 [-a|--attributes]         <ATTRIBUTES>
 [   --attributes-to-skip] <ATTRIBUTES>
 [   --compare]            <COMPARE_OPTIONS>
+[   --conflict]           <CONFLICT_RESOLUTION>
 [-c|--content]            <REGEX>
 [-y|--display]            <DISPLAY_OPTIONS>
 [-d|--dry-run]
@@ -22,7 +23,6 @@ orang copy [<PATH>]
 [-m|--max-count]          <MAX_OPTIONS>
 [-n|--name]               <REGEX>
 [   --no-recurse]
-[   --on-conflict]        <CONFLICT_RESOLUTION>
 [-o|--output]             <OUTPUT_OPTIONS>
 [   --paths-from]         <FILE_PATH>
 [   --progress]
@@ -55,6 +55,10 @@ File attributes that should be skipped\. Allowed values are archive, compressed,
 **`[--compare] <COMPARE_OPTIONS>`**
 
 File properties to be compared\. Allowed values are n\[one\], a\[ttributes\], c\[ontent\], m\[odified\-\]t\[ime\] and s\[ize\]\.
+
+**`[--conflict] <CONFLICT_RESOLUTION>`**
+
+Defines how to resolve conflict when a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
 
 **`[-c|--content] <REGEX>`**
 
@@ -103,10 +107,6 @@ Regular expression for file or directory name\. Syntax is \<PATTERN> \[\<PATTERN
 **`[--no-recurse]`**
 
 Do not search subdirectories\.
-
-**`[--on-conflict] <CONFLICT_RESOLUTION>`**
-
-Defines how to resolve conflict when a file already exists\. Allowed values are a\[sk\], o\[verwrite\], r\[ename\] and s\[kip\]\.
 
 **`[-o|--output] <OUTPUT_OPTIONS>`**
 
